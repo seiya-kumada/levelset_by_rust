@@ -1,3 +1,4 @@
+use crate::core::initial_front::IntInitialFront2D;
 use clap::Parser;
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -47,7 +48,16 @@ pub struct CommandlineArguments {
     #[arg(long)]
     back: Option<i32>,
 }
+fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
+    // set an initial front
+    let left = args.left;
+    let top = args.top;
+    let right = args.right;
+    let bottom = args.bottom;
 
+    let inital_front = IntInitialFront2D::new(left, top, right, bottom);
+}
+fn execute_level_set_method_in_3d(args: &CommandlineArguments) {}
 fn print_args(args: &CommandlineArguments) {
     println!("dim: {}", args.dim);
     println!("verbose: {:?}", args.verbose);
@@ -73,4 +83,10 @@ fn print_args(args: &CommandlineArguments) {
 }
 pub fn execute_level_set_method(args: &CommandlineArguments) {
     print_args(&args);
+
+    match args.dim {
+        2 => execute_level_set_method_in_2d(&args),
+        3 => execute_level_set_method_in_3d(&args),
+        _ => println!("unsupported dimension!"),
+    }
 }
