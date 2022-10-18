@@ -7,5 +7,4 @@ pub mod interface;
 pub fn main() {
     let args = ci::CommandlineArguments::parse();
     ci::execute_level_set_method(&args);
-    let a = [1, 2, 3];
 }

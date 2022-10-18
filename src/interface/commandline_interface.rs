@@ -1,5 +1,9 @@
-use crate::core::initial_front::IntInitialFront2D;
+use crate::core::initial_front::InitialFront2d;
+use crate::core::space_size::SpaceSize2d;
 use clap::Parser;
+use image::GenericImageView;
+use image::ImageFormat;
+
 #[derive(Parser)]
 #[command(author, version, about)]
 pub struct CommandlineArguments {
@@ -48,16 +52,38 @@ pub struct CommandlineArguments {
     #[arg(long)]
     back: Option<i32>,
 }
+
+fn load_input_image(input_path: &std::path::PathBuf) {
+    let image = image::open(input_path).unwrap().grayscale(); //.into_bytes();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_load_input_image() {
+        let path = std::path::PathBuf::from("/Users/kumada/Data/levelset/dreamworks.png");
+        let image = image::open(path).unwrap().grayscale(); //.into_bytes();
+        assert_eq!(image.width(), 254);
+        assert_eq!(image.height(), 240);
+        let data = image.into_bytes();
+        assert_eq!(2 * 254 * 240, data.len()); // ???
+    }
+}
 fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
     // set an initial front
     let left = args.left;
     let top = args.top;
     let right = args.right;
     let bottom = args.bottom;
+    let inital_front = InitialFront2d::new(left, top, right, bottom);
 
-    let inital_front = IntInitialFront2D::new(left, top, right, bottom);
+    // load an input image
+    load_input_image(&args.input_path);
 }
+
 fn execute_level_set_method_in_3d(args: &CommandlineArguments) {}
+
 fn print_args(args: &CommandlineArguments) {
     println!("dim: {}", args.dim);
     println!("verbose: {:?}", args.verbose);
@@ -81,6 +107,7 @@ fn print_args(args: &CommandlineArguments) {
         None => println!("back: no used"),
     }
 }
+
 pub fn execute_level_set_method(args: &CommandlineArguments) {
     print_args(&args);
 
