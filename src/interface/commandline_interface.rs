@@ -3,7 +3,8 @@ use crate::core::space_size::SpaceSize2d;
 use clap::Parser;
 use image::GenericImageView;
 use image::ImageFormat;
-
+use opencv as cv;
+use opencv::prelude::*;
 #[derive(Parser)]
 #[command(author, version, about)]
 pub struct CommandlineArguments {
@@ -54,22 +55,19 @@ pub struct CommandlineArguments {
 }
 
 fn load_input_image(input_path: &std::path::PathBuf) {
-    let image = image::open(input_path).unwrap().grayscale(); //.into_bytes();
+    //let image = image::open(input_path).unwrap().grayscale(); //.into_bytes();
+    //let image = cv::imgcodecs::imread(input_path, cv::imgcodecs::IMREAD_COLOR).unwrap();
+    let img = cv::imgcodecs::imread(
+        "/Users/kumada/Data/levelset/dreamworks.png",
+        cv::imgcodecs::IMREAD_COLOR,
+    )
+    .unwrap();
+    let s = img.size().unwrap();
+    let w = s.width;
+    let h = s.height;
+    println!("{},{}", w, h);
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_load_input_image() {
-        let path = std::path::PathBuf::from("/Users/kumada/Data/levelset/dreamworks.png");
-        let image = image::open(path).unwrap().grayscale(); //.into_bytes();
-        assert_eq!(image.width(), 254);
-        assert_eq!(image.height(), 240);
-        let data = image.into_bytes();
-        assert_eq!(2 * 254 * 240, data.len()); // ???
-    }
-}
 fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
     // set an initial front
     let left = args.left;
