@@ -1,4 +1,5 @@
 use crate::core::initial_front::InitialFront2d;
+use crate::core::space_size;
 use crate::core::space_size::SpaceSize2d;
 use clap::Parser;
 use image::GenericImageView;
@@ -54,18 +55,23 @@ pub struct CommandlineArguments {
     back: Option<i32>,
 }
 
-fn load_input_image(input_path: &std::path::PathBuf) {
-    //let image = image::open(input_path).unwrap().grayscale(); //.into_bytes();
-    //let image = cv::imgcodecs::imread(input_path, cv::imgcodecs::IMREAD_COLOR).unwrap();
-    let img = cv::imgcodecs::imread(
-        "/Users/kumada/Data/levelset/dreamworks.png",
-        cv::imgcodecs::IMREAD_COLOR,
+pub fn load_input_image(input_path: &std::path::PathBuf) -> Option<(SpaceSize2d, Vec<u8>)> {
+    let gray = cv::imgcodecs::imread(
+        input_path.to_str().unwrap(),
+        cv::imgcodecs::IMREAD_GRAYSCALE,
     )
     .unwrap();
-    let s = img.size().unwrap();
-    let w = s.width;
-    let h = s.height;
-    println!("{},{}", w, h);
+
+    if gray.empty() {
+        return None;
+    }
+    let space_size = SpaceSize2d {
+        width: gray.cols(),
+        height: gray.rows(),
+        total: gray.cols() * gray.rows(),
+    };
+    let image: Vec<u8> = gray.data_typed::<u8>().unwrap().iter().cloned().collect();
+    Some((space_size, image))
 }
 
 fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
@@ -77,7 +83,9 @@ fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
     let inital_front = InitialFront2d::new(left, top, right, bottom);
 
     // load an input image
-    load_input_image(&args.input_path);
+    let (space_size, image) = load_input_image(&args.input_path).unwrap();
+
+    // Viewer2d
 }
 
 fn execute_level_set_method_in_3d(args: &CommandlineArguments) {}
