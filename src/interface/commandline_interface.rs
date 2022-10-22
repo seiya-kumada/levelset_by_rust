@@ -1,6 +1,8 @@
+use crate::core::dimension_types::TwoDimension;
 use crate::core::initial_front::InitialFront2d;
+use crate::core::parameters::Parameters;
 use crate::core::space_size;
-use crate::core::space_size::SpaceSize2d;
+use crate::core::space_size::SpaceSize;
 use clap::Parser;
 use image::GenericImageView;
 use image::ImageFormat;
@@ -55,7 +57,9 @@ pub struct CommandlineArguments {
     back: Option<i32>,
 }
 
-pub fn load_input_image(input_path: &std::path::PathBuf) -> Option<(SpaceSize2d, Vec<u8>)> {
+pub fn load_input_image(
+    input_path: &std::path::PathBuf,
+) -> Option<(SpaceSize<TwoDimension>, Vec<u8>)> {
     let gray = cv::imgcodecs::imread(
         input_path.to_str().unwrap(),
         cv::imgcodecs::IMREAD_GRAYSCALE,
@@ -65,16 +69,23 @@ pub fn load_input_image(input_path: &std::path::PathBuf) -> Option<(SpaceSize2d,
     if gray.empty() {
         return None;
     }
-    let space_size = SpaceSize2d {
-        width: gray.cols(),
-        height: gray.rows(),
-        total: gray.cols() * gray.rows(),
-    };
+    let space_size = SpaceSize::<TwoDimension>::new(gray.cols(), gray.rows());
     let image: Vec<u8> = gray.data_typed::<u8>().unwrap().iter().cloned().collect();
     Some((space_size, image))
 }
 
-fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
+fn make_parameters(args: &CommandlineArguments) -> Parameters {
+    Parameters {
+        wband: args.wband,
+        wreset: args.wreset,
+        time_step: args.time_step,
+        gain: args.gain,
+        constant_speed: args.constant_speed,
+        speed_threshold: args.speed_threshold,
+    }
+}
+
+fn execute_level_set_method_in_2d(args: &CommandlineArguments, params: &Parameters) {
     // set an initial front
     let left = args.left;
     let top = args.top;
@@ -88,7 +99,7 @@ fn execute_level_set_method_in_2d(args: &CommandlineArguments) {
     // Viewer2d
 }
 
-fn execute_level_set_method_in_3d(args: &CommandlineArguments) {}
+fn execute_level_set_method_in_3d(args: &CommandlineArguments, params: &Parameters) {}
 
 fn print_args(args: &CommandlineArguments) {
     println!("dim: {}", args.dim);
@@ -116,10 +127,10 @@ fn print_args(args: &CommandlineArguments) {
 
 pub fn execute_level_set_method(args: &CommandlineArguments) {
     print_args(&args);
-
+    let params = make_parameters(&args);
     match args.dim {
-        2 => execute_level_set_method_in_2d(&args),
-        3 => execute_level_set_method_in_3d(&args),
+        2 => execute_level_set_method_in_2d(&args, &params),
+        3 => execute_level_set_method_in_3d(&args, &params),
         _ => println!("unsupported dimension!"),
     }
 }

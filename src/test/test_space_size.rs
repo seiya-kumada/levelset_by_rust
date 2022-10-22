@@ -1,5 +1,5 @@
-use crate::core::space_size::SpaceSize2d;
-use crate::core::space_size::SpaceSize3d;
+use crate::core::dimension_types::{ThreeDimension, TwoDimension};
+use crate::core::space_size::SpaceSize;
 
 #[cfg(test)]
 mod tests {
@@ -7,18 +7,18 @@ mod tests {
 
     #[test]
     fn space_size_2d_new() {
-        let a = SpaceSize2d::new(1, 2);
-        assert_eq!(a.width, 1);
-        assert_eq!(a.height, 2);
-        assert_eq!(a.total, 2);
+        let a = SpaceSize::<TwoDimension>::new(1, 2);
+        assert_eq!(a.dim.width, 1);
+        assert_eq!(a.dim.height, 2);
+        assert_eq!(a.dim.total, 2);
     }
 
     #[test]
     fn space_size_3d_new() {
-        let a = SpaceSize3d::new(1, 2, 3);
-        assert_eq!(a.width, 1);
-        assert_eq!(a.height, 2);
-        assert_eq!(a.depth, 3);
-        assert_eq!(a.total, 6);
+        let a = SpaceSize::<ThreeDimension>::new(1, 2, 3);
+        assert_eq!(a.dim.width, 1);
+        assert_eq!(a.dim.height, 2);
+        assert_eq!(a.dim.depth, 3);
+        assert_eq!(a.dim.total, 6);
     }
 }
