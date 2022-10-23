@@ -1,12 +1,16 @@
+/// A trait modeling a dimension concept.
 pub trait Dimension {
-    fn dim(&self) -> i32;
+    fn dim() -> usize;
 }
 
+/// A set of parameters used for 2-dimension Level Set method.
 pub struct TwoDimension {
     pub width: i32,
     pub height: i32,
     pub total: i32,
 }
+
+/// A set of parameters used for 3-dimension Level Set method.
 pub struct ThreeDimension {
     pub width: i32,
     pub height: i32,
@@ -15,6 +19,7 @@ pub struct ThreeDimension {
 }
 
 impl TwoDimension {
+    /// Constructs an instance of TwoDimension struct.
     pub fn new(width: i32, height: i32) -> Self {
         TwoDimension {
             width,
@@ -25,6 +30,7 @@ impl TwoDimension {
 }
 
 impl ThreeDimension {
+    /// Constructs an instance of ThreeDimension struct.
     pub fn new(width: i32, height: i32, depth: i32) -> Self {
         ThreeDimension {
             width,
@@ -35,14 +41,21 @@ impl ThreeDimension {
     }
 }
 
+/// TwoDimension trait
 impl Dimension for TwoDimension {
-    fn dim(&self) -> i32 {
+    fn dim() -> usize {
         2
     }
 }
 
+/// ThreeDimension trait
 impl Dimension for ThreeDimension {
-    fn dim(&self) -> i32 {
+    fn dim() -> usize {
         3
     }
+}
+
+pub mod dimension_ {
+    pub const TWO: usize = 2;
+    pub const THREE: usize = 3;
 }

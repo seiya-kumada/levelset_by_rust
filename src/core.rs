@@ -1,4 +1,5 @@
 pub mod dimension_types;
+pub mod indexer;
 pub mod initial_front;
 pub mod level_set_method;
 pub mod parameters;

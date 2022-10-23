@@ -1,5 +1,5 @@
-use crate::core::dimension_types::TwoDimension;
-use crate::core::initial_front::InitialFront2d;
+use crate::core::dimension_types::dimension_ as dim;
+use crate::core::initial_front::InitialFront_;
 use crate::core::parameters::Parameters;
 use crate::core::space_size;
 use crate::core::space_size::SpaceSize;
@@ -91,7 +91,10 @@ fn execute_level_set_method_in_2d(args: &CommandlineArguments, params: &Paramete
     let top = args.top;
     let right = args.right;
     let bottom = args.bottom;
-    let inital_front = InitialFront2d::new(left, top, right, bottom);
+
+    let lt = [left, top];
+    let rb = [right, bottom];
+    let inital_front = InitialFront_::<{ dim::TWO }> { vertices: [lt, rb] };
 
     // load an input image
     let (space_size, image) = load_input_image(&args.input_path).unwrap();
