@@ -1,4 +1,4 @@
-use crate::core::dimension_types::{Dimension, ThreeDimension, TwoDimension};
+use crate::core::dimension_types as dim;
 
 #[cfg(test)]
 mod tests {
@@ -6,19 +6,10 @@ mod tests {
     use super::*;
     #[test]
     fn test_two_dimension() {
-        let td = TwoDimension::new(1, 2);
-        assert_eq!(TwoDimension::dim(), 2);
-        assert_eq!(td.width, 1);
-        assert_eq!(td.height, 2);
-        assert_eq!(td.total, 2);
+        assert_eq!(2, dim::TWO);
     }
 
     fn test_three_dimension() {
-        let td = ThreeDimension::new(1, 2, 3);
-        assert_eq!(ThreeDimension::dim(), 3);
-        assert_eq!(td.width, 1);
-        assert_eq!(td.height, 2);
-        assert_eq!(td.depth, 3);
-        assert_eq!(td.total, 6);
+        assert_eq!(3, dim::THREE);
     }
 }

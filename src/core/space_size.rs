@@ -1,20 +1,33 @@
-use crate::core::dimension_types::{Dimension, ThreeDimension, TwoDimension};
-pub struct SpaceSize<D: Dimension> {
-    pub dim: D,
+use crate::core::dimension_types as dim;
+pub struct SpaceSize2d {
+    pub width: i32,
+    pub height: i32,
+    pub total: i32,
 }
 
-impl SpaceSize<TwoDimension> {
+impl SpaceSize2d {
     pub fn new(w: i32, h: i32) -> Self {
         Self {
-            dim: TwoDimension::new(w, h),
+            width: w,
+            height: h,
+            total: w * h,
         }
     }
 }
+pub struct SpaceSize3d {
+    pub width: i32,
+    pub height: i32,
+    pub depth: i32,
+    pub total: i32,
+}
 
-impl SpaceSize<ThreeDimension> {
+impl SpaceSize3d {
     pub fn new(w: i32, h: i32, d: i32) -> Self {
         Self {
-            dim: ThreeDimension::new(w, h, d),
+            width: w,
+            height: h,
+            depth: d,
+            total: w * h * d,
         }
     }
 }
