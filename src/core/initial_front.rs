@@ -1,5 +1,5 @@
 use crate::core::dimension_types as dim;
-use crate::core::point::IntPoint;
-pub struct InitialFront<const D: usize> {
-    pub vertices: [IntPoint<D>; 2],
+use crate::core::point::{NumDim, Point};
+pub struct InitialFront<T, const D: usize> {
+    pub vertices: [Point<NumDim<T, D>>; 2],
 }

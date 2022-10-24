@@ -31,3 +31,20 @@ impl SpaceSize3d {
         }
     }
 }
+
+pub struct Dim<const N: usize>;
+pub trait DataType {
+    type Data;
+}
+
+impl DataType for Dim<2> {
+    type Data = SpaceSize2d;
+}
+
+impl DataType for Dim<3> {
+    type Data = SpaceSize3d;
+}
+
+pub struct SpaceSize<Z>(pub Z::Data)
+where
+    Z: DataType;
