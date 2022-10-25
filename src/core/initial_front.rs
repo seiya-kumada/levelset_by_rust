@@ -1,4 +1,4 @@
-use crate::core::point::{NumDim, Point};
-pub struct InitialFront<T, const D: usize> {
-    pub vertices: [Point<NumDim<T, D>>; 2],
+use crate::core::types::{IntPoint, Type};
+pub struct InitialFront<D: Type> {
+    pub vertices: [IntPoint<D>; 2],
 }

@@ -1,7 +1,9 @@
 //use crate::core::dimension_types as dim;
 //use crate::core::initial_front::InitialFront_;
+use crate::core::initial_front::InitialFront;
 use crate::core::parameters::Parameters;
-use crate::core::space_size;
+use crate::core::types::{IntPoint, SpaceSize, TwoDim};
+//use crate::core::space_size;
 //use crate::core::space_size::SpaceSize;
 use clap::Parser;
 use image::GenericImageView;
@@ -57,22 +59,20 @@ pub struct CommandlineArguments {
     back: Option<i32>,
 }
 
-//pub fn load_input_image(
-//    input_path: &std::path::PathBuf,
-//) -> Option<(SpaceSize<TwoDimension>, Vec<u8>)> {
-//    let gray = cv::imgcodecs::imread(
-//        input_path.to_str().unwrap(),
-//        cv::imgcodecs::IMREAD_GRAYSCALE,
-//    )
-//    .unwrap();
-//
-//    if gray.empty() {
-//        return None;
-//    }
-//    let space_size = SpaceSize::<TwoDimension>::new(gray.cols(), gray.rows());
-//    let image: Vec<u8> = gray.data_typed::<u8>().unwrap().iter().cloned().collect();
-//    Some((space_size, image))
-//}
+pub fn load_input_image(input_path: &std::path::PathBuf) -> Option<(SpaceSize<TwoDim>, Vec<u8>)> {
+    let gray = cv::imgcodecs::imread(
+        input_path.to_str().unwrap(),
+        cv::imgcodecs::IMREAD_GRAYSCALE,
+    )
+    .unwrap();
+
+    if gray.empty() {
+        return None;
+    }
+    let space_size = SpaceSize::<TwoDim>::new(gray.cols(), gray.rows());
+    let image: Vec<u8> = gray.data_typed::<u8>().unwrap().iter().cloned().collect();
+    Some((space_size, image))
+}
 
 fn make_parameters(args: &CommandlineArguments) -> Parameters {
     Parameters {
@@ -92,12 +92,12 @@ fn execute_level_set_method_in_2d(args: &CommandlineArguments, params: &Paramete
     let right = args.right;
     let bottom = args.bottom;
 
-    let lt = [left, top];
-    let rb = [right, bottom];
-    //let inital_front = InitialFront_::<{ dim::TWO }> { vertices: [lt, rb] };
+    let lt = IntPoint::<TwoDim>::new(left, top);
+    let rb = IntPoint::<TwoDim>::new(right, bottom);
+    let inital_front = InitialFront::<TwoDim> { vertices: [lt, rb] };
 
     // load an input image
-    //let (space_size, image) = load_input_image(&args.input_path).unwrap();
+    let (space_size, image) = load_input_image(&args.input_path).unwrap();
 
     // Viewer2d
 }

@@ -1,4 +1,4 @@
-use crate::core::point::IntPoint;
+use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 //
 pub struct Indexer2d {
@@ -9,8 +9,8 @@ impl Indexer2d {
     pub fn new(size: &SpaceSize2d) -> Self {
         Self { width: size.width }
     }
-    pub fn get(&self, p: &IntPoint<2>) -> i32 {
-        p[0] + self.width * p[1]
+    pub fn get(&self, p: &Point2d<i32>) -> i32 {
+        p.x + self.width * p.y
     }
 }
 //
@@ -27,7 +27,7 @@ impl Indexer3d {
         }
     }
 
-    pub fn get(&self, p: &IntPoint<3>) -> i32 {
-        p[0] + self.width * p[1] + self.area * p[2]
+    pub fn get(&self, p: &Point3d<i32>) -> i32 {
+        p.x + self.width * p.y + self.area * p.z
     }
 }

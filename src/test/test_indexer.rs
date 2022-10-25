@@ -1,5 +1,4 @@
-use crate::core::point::IntPoint;
-use crate::core::types::{Indexer, SpaceSize, ThreeDim, TwoDim};
+use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 
 #[cfg(test)]
 mod tests {
@@ -9,7 +8,7 @@ mod tests {
     fn test_indexer2d() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Indexer::<TwoDim>::new(&space_size);
-        let p: IntPoint<2> = [1, 2];
+        let p = IntPoint::<TwoDim>::new(1, 2);
         let q = indexer.get(&p);
         assert_eq!(q, 1 + 1 * 2);
     }
@@ -17,7 +16,7 @@ mod tests {
     fn test_indexer3d() {
         let space_size = SpaceSize::<ThreeDim>::new(1, 2, 3);
         let indexer = Indexer::<ThreeDim>::new(&space_size);
-        let p: IntPoint<3> = [1, 2, 3];
+        let p = IntPoint::<ThreeDim>::new(1, 2, 3);
         let q = indexer.get(&p);
         assert_eq!(q, 1 + 1 * 2 + 3 * 2);
     }
