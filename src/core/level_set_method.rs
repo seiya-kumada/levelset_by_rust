@@ -1,26 +1,23 @@
-//use crate::core::dimension_types::Dimension;
-use crate::core::parameters::Parameters;
-//use crate::core::space_size::SpaceSize;
+//use crate::core::parameters::Parameters;
+use crate::core::types;
 
-struct LevelSetMethod<SpaceSize, Indexer, Grid> {
-    /// input parameters
-    params: Parameters,
-
+pub struct LevelSetMethod<D: types::Type> {
+    ///// input parameters
+    //params: Parameters,
     /// size of the input image/3Dmodel
-    size: SpaceSize,
+    pub size: types::SpaceSize<D>,
 
     /// accessor of the array
-    indexer: Indexer,
+    pub indexer: types::Indexer<D>,
 
     /// input front(zero-levelset)
-    initial_front: Grid,
+    pub initial_front: types::Grid<D>,
+    ///// auxiliary function
+    //phi: Vec<f64>,
 
-    /// auxiliary function
-    phi: Vec<f64>,
+    ///// deviation of auxiliary function
+    //dphi: Vec<f64>,
 
-    /// deviation of auxiliary function
-    dphi: Vec<f64>,
-
-    /// velocity function
-    speed: Vec<f64>,
+    ///// velocity function
+    //speed: Vec<f64>,
 }

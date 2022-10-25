@@ -1,10 +1,10 @@
-use crate::core::dimension_types as dim;
+//use crate::core::types as dim;
 use std::marker::PhantomData;
 
 pub type Point_<T, const D: usize> = [T; D];
 //pub type Point2d<T> = [T; dim::TWO];
 //pub type Point3d<T> = [T; dim::THREE];
-//pub type IntPoint<const D: usize> = [i32; D];
+pub type IntPoint<const D: usize> = [i32; D];
 
 //https://stackoverflow.com/questions/66832882/generics-partial-specialization-in-rust
 
@@ -28,3 +28,5 @@ impl<T, const N: usize> DataType for NumDim<T, N> {
 pub struct Point<Z>(pub Z::Data)
 where
     Z: DataType;
+
+//ここを書き換える。
