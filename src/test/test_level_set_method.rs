@@ -17,14 +17,14 @@ mod tests {
 
         let a = ls::LevelSetMethod::<TwoDim> {
             size: s2,
-            initial_front: g2,
-            indexer: i2,
+            //initial_front: g2,
+            //indexer: i2,
         };
 
         let a = ls::LevelSetMethod::<ThreeDim> {
             size: s3,
-            initial_front: g3,
-            indexer: i3,
+            //initial_front: g3,
+            //indexer: i3,
         };
     }
 }
