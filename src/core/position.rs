@@ -1,6 +1,8 @@
 use crate::core::indexer::{Indexer2d, Indexer3d};
-use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim, Type};
+use crate::core::types;
+use crate::core::types::{Indexer, IntPoint, SpaceSize, Type};
 use crate::core::upwind_scheme::UpwindScheme;
+
 pub struct Position2d {
     left: i32,
     right: i32,
@@ -9,18 +11,39 @@ pub struct Position2d {
     bottom: i32,
 }
 
-trait PositionTrait<D: Type> {
-    fn new(p: &IntPoint<D>, indexer: &Indexer<D>);
+impl Position2d {
+    pub fn new(left: i32, right: i32, me: i32, top: i32, bottom: i32) -> Self {
+        Self {
+            left,
+            right,
+            me,
+            top,
+            bottom,
+        }
+    }
+
+    pub fn make(&self) {}
 }
 
-impl<D: Type> PositionTrait<D> for Position2d {
-    fn new(p: &IntPoint<D>, indexer: &Indexer<D>) {}
-}
-impl Position2d {
-    pub fn new(p: &IntPoint<TwoDim>, indexer: &Indexer<TwoDim>) {
-        let q = indexer.get(&p);
-    }
-}
+//pub trait PositionTrait {
+//    fn make<D: Type>(&self, p: &types::IntPoint<D>);
+//}
+//
+//impl PositionTrait for Position2d {
+//    fn make<D: Type>(&self, p: &types::IntPoint<D>) {}
+//}
+//
+//impl PositionTrait for Position3d {
+//    fn make<D: Type>(&self, p: &types::IntPoint<D>) {}
+//}
+//impl PositionTrait for TwoDim {
+//    fn create<types::TwoDim>(p: &IntPoint<types::TwoDim>) {}
+//}
+
+//impl PositionTrait for ThreeDim {
+//    fn create<D: Type>(p: &IntPoint<D>) {}
+//}
+
 pub struct Position3d {
     left: i32,
     right: i32,
@@ -32,7 +55,25 @@ pub struct Position3d {
 }
 
 impl Position3d {
-    pub fn new(p: &IntPoint<ThreeDim>, indexer: &Indexer<ThreeDim>) {
-        let q = indexer.get(&p);
+    pub fn new(
+        left: i32,
+        right: i32,
+        me: i32,
+        top: i32,
+        bottom: i32,
+        front: i32,
+        back: i32,
+    ) -> Self {
+        Self {
+            left,
+            right,
+            me,
+            top,
+            bottom,
+            front,
+            back,
+        }
     }
+
+    pub fn make(&self) {}
 }
