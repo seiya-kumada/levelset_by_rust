@@ -5,37 +5,38 @@ use crate::core::types::{DoublePoint, Grid, Indexer, IntPoint, SpaceSize, Type};
 
 pub struct LevelSetMethod<D: Type> {
     /// input parameters
-    //params: Parameters,
+    params: Parameters,
 
     /// size of the input image/3Dmodel
     pub size: SpaceSize<D>,
-    ///// accessor of the array
-    //pub indexer: Indexer<D>,
 
-    ///// input front(zero-levelset)
-    //pub initial_front: Grid<D>,
+    /// accessor of the array
+    pub indexer: Indexer<D>,
 
-    ///// auxiliary function
-    //phi: Vec<f64>,
+    /// input front(zero-levelset)
+    pub initial_front: Grid<D>,
 
-    ///// deviation of auxiliary function
-    //dphi: Vec<f64>,
+    /// auxiliary function
+    phi: Vec<f64>,
 
-    ///// velocity function
-    //speed: Vec<f64>,
+    /// deviation of auxiliary function
+    dphi: Vec<f64>,
 
-    ///// current statuses
-    //statuses: Vec<Status>,
+    /// velocity function
+    speed: Vec<f64>,
 
-    ///// front
-    //front: Front<D>,
+    /// current statuses
+    statuses: Vec<Status>,
 
-    ///// normals
-    //normals: Vec<DoublePoint<D>>,
+    /// front
+    front: Front<D>,
 
-    ///// narrow band
-    //narrow_bands: Vec<IntPoint<D>>,
+    /// normals
+    normals: Vec<DoublePoint<D>>,
 
-    ///// input image(gray image)
-    //input_object: Vec<u8>,
+    /// narrow band
+    narrow_bands: Vec<IntPoint<D>>,
+
+    /// input image(gray image)
+    input_object: Vec<u8>,
 }

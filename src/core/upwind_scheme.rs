@@ -1,24 +1,18 @@
 use super::types::IntPoint;
+use super::upwind;
 use crate::core::indexer;
 use crate::core::position as po;
 use crate::core::speed;
 use crate::core::speed as sp;
-use std::marker::PhantomData;
-//use crate::core::position::PositionTrait;
 use crate::core::types;
 use crate::core::types::{Indexer, Position, Type, Upwind};
+use std::marker::PhantomData;
+
 pub struct UpwindScheme<D: Type> {
     pub position: Position<D>,
 
     /// upwind shceme
     pub upwind: Upwind<D>,
-    ///// central difference
-    //dx: f64,
-    //dy: f64,
-    //dz: f64,
-
-    //central_difference: f64,
-    //upwind_scheme_difference: f64,
 }
 
 impl<D: Type> UpwindScheme<D> {
@@ -28,7 +22,6 @@ impl<D: Type> UpwindScheme<D> {
             sp::Speed::Positive => D::make_upwind_with_positive_speed(&position, phi),
             sp::Speed::Negative => D::make_upwind_with_negative_speed(&position, phi),
         };
-
         Self { position, upwind }
     }
 }

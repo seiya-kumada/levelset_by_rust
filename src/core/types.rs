@@ -10,7 +10,6 @@ use crate::core::position as ps;
 use crate::core::space_size as ss;
 use crate::core::upwind as uw;
 use crate::core::util;
-
 pub trait Type {
     type SpaceSize_; //
     type Grid_; //

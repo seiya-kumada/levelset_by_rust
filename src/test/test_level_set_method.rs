@@ -15,16 +15,16 @@ mod tests {
         let i2 = Indexer::<TwoDim>::new(&s2);
         let i3 = Indexer::<ThreeDim>::new(&s3);
 
-        let a = ls::LevelSetMethod::<TwoDim> {
-            size: s2,
-            //initial_front: g2,
-            //indexer: i2,
-        };
+        //let a = ls::LevelSetMethod::<TwoDim> {
+        //    size: s2,
+        //    //initial_front: g2,
+        //    //indexer: i2,
+        //};
 
-        let a = ls::LevelSetMethod::<ThreeDim> {
-            size: s3,
-            //initial_front: g3,
-            //indexer: i3,
-        };
+        //let a = ls::LevelSetMethod::<ThreeDim> {
+        //    size: s3,
+        //    //initial_front: g3,
+        //    //indexer: i3,
+        //};
     }
 }
