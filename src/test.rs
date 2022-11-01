@@ -10,4 +10,6 @@ pub mod test_point;
 pub mod test_position;
 pub mod test_space_size;
 pub mod test_types;
+pub mod test_upwind;
 pub mod test_upwind_scheme;
+pub mod test_util;

@@ -17,11 +17,11 @@ pub trait Type {
     type IntPoint_; //
     type DoublePoint_; //
     type Position_; //
-    type Upwind_;
+    type Upwind_; //
 
-    fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_;
-    fn make_upwind_with_positive_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_;
-    fn make_upwind_with_negative_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_;
+    fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_; //
+    fn make_upwind_with_positive_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
+    fn make_upwind_with_negative_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
 }
 
 pub struct TwoDim;
