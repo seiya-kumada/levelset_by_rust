@@ -24,24 +24,35 @@ impl<'a> Differential2d<'a> {
         }
     }
 
-    fn value(&self, p: &IntPoint<TwoDim>) -> &'a i32 {
-        &self.buffer[self.indexer.get(p) as usize]
+    fn value(&self, p: &IntPoint<TwoDim>) -> i32 {
+        self.buffer[self.indexer.get(p) as usize]
     }
 
     fn index(&self, i: i32, j: i32) -> usize {
         ((i + 1) + 3 * (j + 1)) as usize
     }
 
-    fn v(&self, x: i32, y: i32) -> &i32 {
-        &self.values[self.index(x, y)]
+    fn set_v(&mut self, x: i32, y: i32, v: i32) {
+        let i = self.index(x, y);
+        self.values[i] = v;
     }
 
-    fn set_v(&mut self, x: i32, y: i32, v: i32) {
-        //self.values[self.index(x, y)] = v;
+    fn set_value(&mut self, p: &IntPoint<TwoDim>, x: i32, y: i32) {
+        let a = self.value(&(p + NEIGHBORING_POINTS2D.get(x, y)));
+        self.set_v(x, y, a);
     }
 
     fn make_point(&mut self, p: &IntPoint<TwoDim>) {
-        //let a = self.value(&(p + NEIGHBORING_POINTS2D.get(-1, -1)));
-        //self.set_v(-1, -1, *a);
+        self.set_value(p, -1, -1);
+        self.set_value(p, 0, -1);
+        self.set_value(p, 1, -1);
+
+        self.set_value(p, -1, 0);
+        self.set_value(p, 0, 0);
+        self.set_value(p, 1, 0);
+
+        self.set_value(p, -1, 1);
+        self.set_value(p, 0, 1);
+        self.set_value(p, 1, 1);
     }
 }
