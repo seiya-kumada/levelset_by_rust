@@ -18,6 +18,7 @@ pub trait Type {
     type DoublePoint_; //
     type Position_; //
     type Upwind_; //
+    const NUM: i32;
 
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_; //
     fn make_upwind_with_positive_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
@@ -35,6 +36,7 @@ impl Type for TwoDim {
     type DoublePoint_ = po::Point2d<f64>;
     type Position_ = ps::Position2d;
     type Upwind_ = uw::Upwind2d;
+    const NUM: i32 = 2;
 
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS2D.get(-1, 0);
@@ -86,6 +88,7 @@ impl Type for ThreeDim {
     type Position_ = ps::Position3d;
     type Upwind_ = uw::Upwind3d;
 
+    const NUM: i32 = 3;
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
         let b = p + np::NEIGHBORING_POINTS3D.get(1, 0, 0);

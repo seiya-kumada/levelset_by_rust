@@ -1,3 +1,4 @@
+pub mod differential;
 pub mod front;
 pub mod grid;
 pub mod indexer;

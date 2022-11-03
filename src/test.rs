@@ -1,4 +1,5 @@
 pub mod test_commandline_interface;
+pub mod test_differential;
 pub mod test_front;
 pub mod test_grid;
 pub mod test_indexer;
