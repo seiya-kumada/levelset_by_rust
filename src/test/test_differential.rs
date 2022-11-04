@@ -5,7 +5,7 @@ use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 mod tests {
     use super::*;
     #[test]
-    fn differential2d() {
+    fn differential2d_new() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Indexer::<TwoDim>::new(&space_size);
         let buffer = vec![1, 2, 3];
@@ -20,6 +20,37 @@ mod tests {
         assert_eq!(bu[0], 1);
         assert_eq!(bu[1], 2);
         assert_eq!(bu[2], 3);
+    }
+
+    #[test]
+    fn differential2d_index() {
+        let space_size = SpaceSize::<TwoDim>::new(1, 2);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let buffer = vec![1, 2, 3];
+        let f = df::Differential2d::new(&indexer, &buffer);
+
+        let a = f.index(1, 2);
+        assert_eq!(2 + 9, a);
+    }
+
+    #[test]
+    fn differential2d_value() {
+        let space_size = SpaceSize::<TwoDim>::new(1, 2);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let buffer = vec![1, 2, 3, 4];
+        let f = df::Differential2d::new(&indexer, &buffer);
+        let p = IntPoint::<TwoDim>::new(1, 2);
+        assert_eq!(4, f.value(&p));
+    }
+
+    #[test]
+    fn differential2d_set_v() {
+        //let space_size = SpaceSize::<TwoDim>::new(1, 2);
+        //let indexer = Indexer::<TwoDim>::new(&space_size);
+        //let buffer = vec![1, 2, 3, 4];
+        //let f = df::Differential2d::new(&indexer, &buffer);
+        //let p = IntPoint::<TwoDim>::new(1, 2);
+        //assert_eq!(4, f.value(&p));
     }
 
     fn differential3d() {

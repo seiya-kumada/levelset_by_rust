@@ -24,11 +24,11 @@ impl<'a> Differential2d<'a> {
         }
     }
 
-    fn value(&self, p: &IntPoint<TwoDim>) -> i32 {
+    pub fn value(&self, p: &IntPoint<TwoDim>) -> i32 {
         self.buffer[self.indexer.get(p) as usize]
     }
 
-    fn index(&self, i: i32, j: i32) -> usize {
+    pub fn index(&self, i: i32, j: i32) -> usize {
         ((i + 1) + 3 * (j + 1)) as usize
     }
 
