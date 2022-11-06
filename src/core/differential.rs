@@ -4,6 +4,7 @@ use crate::core::types::{Indexer, IntPoint, ThreeDim, TwoDim, Type};
 pub struct DifferentialTool;
 
 impl DifferentialTool {
+    // test ok
     pub const H0D: [f64; 3] = [1.0, 2.0, 1.0];
     pub const H1D: [f64; 3] = [-1.0, 0.0, 1.0];
     pub const H2D: [f64; 3] = [1.0, -2.0, 1.0];
@@ -11,22 +12,27 @@ impl DifferentialTool {
 
     pub const H0D_TOTAL: i32 = 1 + 2 + 1;
 
+    // test ok
     pub fn index(x: i32) -> usize {
         (x + 1) as usize
     }
 
+    // test ok
     pub fn h(x: i32) -> f64 {
         Self::H0D[Self::index(x)]
     }
 
+    // test ok
     pub fn h1d(x: i32) -> f64 {
         Self::H1D[Self::index(x)]
     }
 
+    // test ok
     pub fn h2d(x: i32) -> f64 {
         Self::H2D[Self::index(x)]
     }
 
+    // test ok
     pub fn h3d(x: i32) -> f64 {
         Self::H3D[Self::index(x)]
     }
@@ -39,6 +45,7 @@ pub struct Differential2d<'a> {
 }
 
 impl<'a> Differential2d<'a> {
+    // test ok
     pub fn new(indexer: &'a Indexer<TwoDim>, buffer: &'a Vec<i32>) -> Self {
         let s = 3i32.pow(2);
         let values = vec![0; s as usize];
@@ -49,26 +56,32 @@ impl<'a> Differential2d<'a> {
         }
     }
 
+    // test ok
     pub fn h1dx(x: i32, y: i32) -> f64 {
         DifferentialTool::h1d(x) * DifferentialTool::h(y)
     }
 
+    // test ok
     pub fn h1dy(x: i32, y: i32) -> f64 {
         DifferentialTool::h1d(y) * DifferentialTool::h(x)
     }
 
+    // test ok
     pub fn h2dx(x: i32, y: i32) -> f64 {
         DifferentialTool::h2d(x) * DifferentialTool::h(y)
     }
 
+    // test ok
     pub fn h2dy(x: i32, y: i32) -> f64 {
         DifferentialTool::h2d(y) * DifferentialTool::h(x)
     }
 
+    // test ok
     pub fn h3dxy(x: i32, y: i32) -> f64 {
         DifferentialTool::h3d(x) * DifferentialTool::h3d(y)
     }
 
+    // test ok
     pub fn v(&self, x: i32, y: i32) -> i32 {
         self.values[Self::index(x, y)]
     }

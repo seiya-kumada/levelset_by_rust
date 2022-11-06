@@ -66,7 +66,7 @@ mod tests {
     }
 
     #[test]
-    fn make_point() {
+    fn differential2d_make_point() {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Indexer::<TwoDim>::new(&space_size);
@@ -84,24 +84,52 @@ mod tests {
         assert_eq!(f.values[8], 5);
     }
 
-    fn differential3d() {
-        //let space_size = SpaceSize::<ThreeDim>::new(1, 2, 3);
-        //let indexer = Indexer::<ThreeDim>::new(&space_size);
-        //let buffer = vec![1, 2, 3];
-        //let f = df::Differential::<ThreeDim, i32>::new(&indexer, &buffer);
-
-        //let id = f.indexer;
-        //let p = IntPoint::<ThreeDim>::new(1, 2, 3);
-        //let q = id.get(&p);
-        //assert_eq!(q, 1 + 1 * 2 + 3 * 2);
-
-        //let bu = f.buffer;
-        //assert_eq!(bu[0], 1);
-        //assert_eq!(bu[1], 2);
-        //assert_eq!(bu[2], 3);
+    fn differential2_h1dx() {
+        let a = df::Differential2d::h1dx(1, 1);
+        assert_eq!(a, 1.0);
     }
 
-    fn hnd() {
+    fn differential2_h1dy() {
+        let a = df::Differential2d::h1dy(1, 1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential2_h2dx() {
+        let a = df::Differential2d::h2dx(1, 1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential2_h2dy() {
+        let a = df::Differential2d::h2dy(1, 1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential2_h3dxy() {
+        let a = df::Differential2d::h3dxy(1, 1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential2_v() {
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        let space_size = SpaceSize::<TwoDim>::new(1, 2);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let buffer = vec![1, 2, 3, 4, 5];
+        let mut f = df::Differential2d::new(&indexer, &buffer);
+        f.make_point(&p);
+        assert_eq!(f.values[0], 1);
+        assert_eq!(f.values[1], 2);
+        assert_eq!(f.values[2], 3);
+        assert_eq!(f.values[3], 2);
+        assert_eq!(f.values[4], 3);
+        assert_eq!(f.values[5], 4);
+        assert_eq!(f.values[6], 3);
+        assert_eq!(f.values[7], 4);
+        assert_eq!(f.values[8], 5);
+        let a = f.v(1, 0);
+        assert_eq!(a, 4);
+    }
+
+    fn differential_tool_hnd() {
         let h0d = &df::DifferentialTool::H0D;
         assert_eq!(h0d[0], 1.0);
         assert_eq!(h0d[1], 2.0);
@@ -121,5 +149,30 @@ mod tests {
         assert_eq!(h2d[0], 1.0);
         assert_eq!(h2d[1], 0.0);
         assert_eq!(h2d[2], -1.0);
+    }
+
+    fn differential_tool_index() {
+        let a = df::DifferentialTool::index(1);
+        assert_eq!(a, 2);
+    }
+
+    fn differential_tool_h() {
+        let a = df::DifferentialTool::h(1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential_tool_h1d() {
+        let a = df::DifferentialTool::h1d(1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential_tool_h2d() {
+        let a = df::DifferentialTool::h2d(1);
+        assert_eq!(a, 1.0);
+    }
+
+    fn differential_tool_h3d() {
+        let a = df::DifferentialTool::h3d(1);
+        assert_eq!(a, -1.0);
     }
 }
