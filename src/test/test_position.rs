@@ -14,6 +14,7 @@ mod tests {
         assert_eq!(5, a.bottom);
     }
 
+    #[test]
     fn position_3d() {
         let a = po::Position3d::new(1, 2, 3, 4, 5, 6, 7);
         assert_eq!(1, a.left);

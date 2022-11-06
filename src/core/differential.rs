@@ -86,22 +86,27 @@ impl<'a> Differential2d<'a> {
         self.values[Self::index(x, y)]
     }
 
+    // test ok
     pub fn vx(&self, x: i32, y: i32) -> f64 {
         self.v(x, y) as f64 * Self::h1dx(x, y)
     }
 
+    // test ok
     pub fn vy(&self, x: i32, y: i32) -> f64 {
         self.v(x, y) as f64 * Self::h1dy(x, y)
     }
 
+    // test ok
     pub fn vxx(&self, x: i32, y: i32) -> f64 {
         self.v(x, y) as f64 * Self::h2dx(x, y)
     }
 
+    // test ok
     pub fn vyy(&self, x: i32, y: i32) -> f64 {
         self.v(x, y) as f64 * Self::h2dy(x, y)
     }
 
+    // test ok
     pub fn vxy(&self, x: i32, y: i32) -> f64 {
         self.v(x, y) as f64 * Self::h3dxy(x, y)
     }

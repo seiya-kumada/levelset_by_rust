@@ -4,6 +4,7 @@ use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 mod tests {
 
     use super::*;
+
     #[test]
     fn test_indexer2d() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
@@ -13,6 +14,7 @@ mod tests {
         assert_eq!(q, 1 + 1 * 2);
     }
 
+    #[test]
     fn test_indexer3d() {
         let space_size = SpaceSize::<ThreeDim>::new(1, 2, 3);
         let indexer = Indexer::<ThreeDim>::new(&space_size);
