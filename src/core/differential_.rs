@@ -1,6 +1,7 @@
 use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
 use crate::core::types::{Indexer, IntPoint, ThreeDim, TwoDim, Type};
 use num_traits::cast::ToPrimitive;
+use num_traits::Zero;
 
 pub struct DifferentialTool;
 
@@ -39,16 +40,16 @@ impl DifferentialTool {
     }
 }
 
-pub struct Differential2d_<'a, T: ToPrimitive + Clone + Copy + std::ops::Mul<Output = f64>> {
+pub struct Differential2d<'a, T: ToPrimitive + Zero + Clone + Copy> {
     pub indexer: &'a Indexer<TwoDim>,
     pub buffer: &'a Vec<T>,
     pub values: Vec<T>,
 }
 
-impl<'a, T: ToPrimitive + Clone + Copy + std::ops::Mul<Output = f64>> Differential2d_<'a, T> {
+impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
     pub fn new(indexer: &'a Indexer<TwoDim>, buffer: &'a Vec<T>) -> Self {
-        let s = 3i32.pow(2);
-        let values = Vec::<T>::with_capacity(s as usize);
+        let s = 3usize.pow(2);
+        let values = vec![T::zero(); s];
         Self {
             indexer,
             buffer,
