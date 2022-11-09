@@ -1,4 +1,4 @@
-use crate::core::differential_ as df;
+use crate::core::differential as df;
 use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 
 #[cfg(test)]
@@ -296,16 +296,19 @@ mod tests {
         assert_eq!(a, 0.0);
     }
 
+    fn sobel_x_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.sobel_x());
+    }
+
     #[test]
-    fn differential2d_sobel_x() {
-        //let p = IntPoint::<TwoDim>::new(1, 1);
-        //let space_size = SpaceSize::<TwoDim>::new(3, 3);
-        //let indexer = Indexer::<TwoDim>::new(&space_size);
-        //let buffer = vec![1, 2, 3, 4, 5];
-        //let mut f = df::Differential2d::new(&indexer, &buffer);
-        //f.make_point(&p);
-        //let a = f.vx(1, 0);
-        //assert_eq!(a, 8.0);
-        //let a = f.sobel_x();
+    fn sobel_x_2d() {
+        let v = vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0];
+        let e = 8.0;
+        sobel_x_2d_core(&v, e);
     }
 }

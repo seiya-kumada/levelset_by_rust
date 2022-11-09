@@ -204,3 +204,5 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
         self.set_value(p, 1, 1);
     }
 }
+
+pub type DifferentialDouble2d<'a> = Differential2d<'a, f64>;
