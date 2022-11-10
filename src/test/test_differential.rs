@@ -59,6 +59,11 @@ mod tests {
     }
 
     #[test]
+    fn differential_tool_h0d_total() {
+        assert_eq!(df::DifferentialTool::H0D_TOTAL, 4);
+    }
+
+    #[test]
     fn differential2d_new() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Indexer::<TwoDim>::new(&space_size);
@@ -310,5 +315,101 @@ mod tests {
         let v = vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0];
         let e = 8.0;
         sobel_x_2d_core(&v, e);
+    }
+
+    fn fx_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fx());
+    }
+
+    #[test]
+    fn fx_2d() {
+        let v = vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0];
+        let e = 1.0;
+        fx_2d_core(&v, e);
+    }
+
+    fn sobel_y_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.sobel_y());
+    }
+
+    #[test]
+    fn sobel_y_2d() {
+        let v = vec![1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0];
+        let e = 8.0;
+        sobel_y_2d_core(&v, e);
+    }
+
+    fn fy_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fy());
+    }
+
+    #[test]
+    fn fy_2d() {
+        let v = vec![1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0];
+        let e = 1.0;
+        fy_2d_core(&v, e);
+    }
+
+    fn fxy_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fxy());
+    }
+
+    #[test]
+    fn fxy_2d() {
+        let v = vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 3.0];
+        let e = 0.25;
+        fxy_2d_core(&v, e);
+    }
+
+    fn fxx_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fxx());
+    }
+
+    #[test]
+    fn fxx_2d() {
+        let v = vec![1.0, 0.0, 3.0, 4.0, 0.0, 6.0, 7.0, 0.0, 9.0];
+        let e = 10.0;
+        fxx_2d_core(&v, e);
+    }
+
+    fn fyy_2d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble2d::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fyy());
+    }
+
+    #[test]
+    fn fyy_2d() {
+        let v = vec![1.0, 0.0, 3.0, 2.0, 2.0, 2.0, 1.0, 0.0, 3.0];
+        let e = -2.0;
+        fyy_2d_core(&v, e);
     }
 }
