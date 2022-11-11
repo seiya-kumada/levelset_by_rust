@@ -82,6 +82,24 @@ mod tests {
     }
 
     #[test]
+    fn differential3d_new() {
+        let space_size = SpaceSize::<ThreeDim>::new(1, 2, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let buffer = vec![1, 2, 3];
+        let f = df::Differential3d::<i32>::new(&indexer, &buffer);
+
+        let id = f.indexer;
+        let p = IntPoint::<ThreeDim>::new(1, 2, 3);
+        let q = indexer.get(&p);
+        assert_eq!(q, 1 + 1 * 2 + 2 * (3));
+
+        let bu = f.buffer;
+        assert_eq!(bu[0], 1);
+        assert_eq!(bu[1], 2);
+        assert_eq!(bu[2], 3);
+    }
+
+    #[test]
     fn differential2d_index() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Indexer::<TwoDim>::new(&space_size);

@@ -49,7 +49,7 @@ pub struct Differential2d<'a, T: ToPrimitive + Zero + Clone + Copy> {
 impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
     // test ok
     pub fn new(indexer: &'a Indexer<TwoDim>, buffer: &'a Vec<T>) -> Self {
-        let s = 3usize.pow(2);
+        let s = 3usize.pow(TwoDim::NUM as u32);
         let values = vec![T::zero(); s];
         Self {
             indexer,
@@ -228,5 +228,60 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
         self.set_value(p, 1, 1);
     }
 }
+pub struct Differential3d<'a, T: ToPrimitive + Zero + Clone + Copy> {
+    pub indexer: &'a Indexer<ThreeDim>,
+    pub buffer: &'a Vec<T>,
+    pub values: Vec<T>,
+}
+
+impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
+    // test ok
+    pub fn new(indexer: &'a Indexer<ThreeDim>, buffer: &'a Vec<T>) -> Self {
+        let s = 3usize.pow(ThreeDim::NUM as u32);
+        let values = vec![T::zero(); s];
+        Self {
+            indexer,
+            buffer,
+            values,
+        }
+    }
+
+    pub fn h1dx(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h1d(x) * DifferentialTool::h(y) * DifferentialTool::h(z)
+    }
+
+    pub fn h1dy(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h(x) * DifferentialTool::h1d(y) * DifferentialTool::h(z)
+    }
+
+    pub fn h2dx(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h2d(x) * DifferentialTool::h(y) * DifferentialTool::h(z)
+    }
+
+    pub fn h2dy(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h(x) * DifferentialTool::h2d(y) * DifferentialTool::h(z)
+    }
+
+    pub fn h3dxy(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h3d(x) * DifferentialTool::h3d(y) * DifferentialTool::h(z)
+    }
+
+    pub fn hdz(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h(x) * DifferentialTool::h(y) * DifferentialTool::h1d(z)
+    }
+
+    pub fn h2dz(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h(x) * DifferentialTool::h(y) * DifferentialTool::h2d(z)
+    }
+
+    pub fn h3dxz(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h3d(x) * DifferentialTool::h(y) * DifferentialTool::h3d(z)
+    }
+
+    pub fn h3dyz(x: i32, y: i32, z: i32) -> f64 {
+        DifferentialTool::h(x) * DifferentialTool::h3d(y) * DifferentialTool::h3d(z)
+    }
+}
 
 pub type DifferentialDouble2d<'a> = Differential2d<'a, f64>;
+pub type DifferentialDouble3d<'a> = Differential3d<'a, f64>;
