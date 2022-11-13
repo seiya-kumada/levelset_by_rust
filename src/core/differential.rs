@@ -215,6 +215,7 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
         }
     }
 
+    // test ok
     pub fn h1dx(x: i32, y: i32, z: i32) -> f64 {
         DifferentialTool::h1d(x) * DifferentialTool::h(y) * DifferentialTool::h(z)
     }
@@ -325,10 +326,12 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
             + f(&self, 1, 1, 1)
     }
 
+    // test ok
     pub fn sobel_x(&self) -> f64 {
         self.sobel(Self::vx)
     }
 
+    // test ok
     pub fn sobel_y(&self) -> f64 {
         self.sobel(Self::vy)
     }

@@ -437,4 +437,227 @@ mod tests {
         let e = -2.0;
         fyy_2d_core(&v, e);
     }
+
+    #[test]
+    fn differential3d_h1dx() {
+        assert_eq!(-1.0, df::Differential3d::<i32>::h1dx(-1, -1, -1));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, -1, -1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h1dx(1, -1, -1));
+        assert_eq!(-2.0, df::Differential3d::<i32>::h1dx(-1, 0, -1));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 0, -1));
+        assert_eq!(2.0, df::Differential3d::<i32>::h1dx(1, 0, -1));
+        assert_eq!(-1.0, df::Differential3d::<i32>::h1dx(-1, 1, -1));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 1, -1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h1dx(1, 1, -1));
+
+        assert_eq!(-2.0, df::Differential3d::<i32>::h1dx(-1, -1, 0));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, -1, 0));
+        assert_eq!(2.0, df::Differential3d::<i32>::h1dx(1, -1, 0));
+        assert_eq!(-4.0, df::Differential3d::<i32>::h1dx(-1, 0, 0));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 0, 0));
+        assert_eq!(4.0, df::Differential3d::<i32>::h1dx(1, 0, 0));
+        assert_eq!(-2.0, df::Differential3d::<i32>::h1dx(-1, 1, 0));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 1, 0));
+        assert_eq!(2.0, df::Differential3d::<i32>::h1dx(1, 1, 0));
+
+        assert_eq!(-1.0, df::Differential3d::<i32>::h1dx(-1, -1, 1));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, -1, 1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h1dx(1, -1, 1));
+        assert_eq!(-2.0, df::Differential3d::<i32>::h1dx(-1, 0, 1));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 0, 1));
+        assert_eq!(2.0, df::Differential3d::<i32>::h1dx(1, 0, 1));
+        assert_eq!(-1.0, df::Differential3d::<i32>::h1dx(-1, 1, 1));
+        assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 1, 1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h1dx(1, 1, 1));
+    }
+
+    fn sobel_x_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.sobel_x());
+    }
+
+    #[test]
+    fn sobel_x_3d() {
+        let v = vec![
+            -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0,
+            1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+        ];
+        let e = 32.0;
+        sobel_x_3d_core(&v, e);
+    }
+
+    fn sobel_y_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.sobel_y());
+    }
+
+    #[test]
+    fn sobel_y_3d() {
+        let v = vec![
+            -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        ];
+        let e = 32.0;
+        sobel_y_3d_core(&v, e);
+    }
+
+    fn sobel_z_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.sobel_z());
+    }
+
+    #[test]
+    fn sobel_z_3d() {
+        let v = vec![
+            -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        ];
+        let e = 32.0;
+        sobel_z_3d_core(&v, e);
+    }
+
+    fn fx_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fx());
+    }
+
+    #[test]
+    fn fx_3d() {
+        let v = vec![
+            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+        ];
+        let e = 0.5;
+        fx_3d_core(&v, e);
+    }
+
+    fn fy_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fy());
+    }
+
+    #[test]
+    fn fy_3d() {
+        let v = vec![
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0,
+            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+        ];
+        let e = 0.5;
+        fy_3d_core(&v, e);
+    }
+
+    fn fz_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fz());
+    }
+
+    #[test]
+    fn fz_3d() {
+        let v = vec![
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        ];
+        let e = 0.5;
+        fz_3d_core(&v, e);
+    }
+
+    fn fxy_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fxy());
+    }
+
+    #[test]
+    fn fxy_3d() {
+        let v = vec![
+            5.0, 0.0, 7.0, 0.0, 0.0, 0.0, 4.0, 0.0, 3.0, 6.0, 0.0, 8.0, 0.0, 0.0, 0.0, 5.0, 0.0,
+            4.0, 7.0, 0.0, 9.0, 0.0, 0.0, 0.0, 6.0, 0.0, 5.0,
+        ];
+        let e = -12.0 / 16.0;
+        fxy_3d_core(&v, e);
+    }
+
+    fn fxz_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fxz());
+    }
+
+    #[test]
+    fn fxz_3d() {
+        let v = vec![
+            5.0, 0.0, 7.0, 6.0, 0.0, 8.0, 7.0, 0.0, 9.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 4.0, 0.0, 3.0, 5.0, 0.0, 4.0, 6.0, 0.0, 5.0,
+        ];
+        let e = -12.0 / 16.0;
+        fxz_3d_core(&v, e);
+    }
+
+    fn fyz_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fyz());
+    }
+
+    #[test]
+    fn fyz_3d() {
+        let v = vec![
+            5.0, 6.0, 7.0, 0.0, 0.0, 0.0, 4.0, 5.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 7.0, 8.0, 9.0, 0.0, 0.0, 0.0, 3.0, 4.0, 5.0,
+        ];
+        let e = -12.0 / 16.0;
+        fyz_3d_core(&v, e);
+    }
+
+    fn fxx_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fxx());
+    }
+
+    #[test]
+    fn fxx_3d() {
+        let v = vec![
+            1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+            -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0,
+        ];
+        let e = 4.0;
+        fxx_3d_core(&v, e);
+    }
 }
