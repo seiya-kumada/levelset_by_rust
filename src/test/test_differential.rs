@@ -177,8 +177,15 @@ mod tests {
 
     #[test]
     fn differential2d_h2dx() {
-        let a = df::Differential2d::<i32>::h2dx(1, 1);
-        assert_eq!(a, 1.0);
+        assert_eq!(1.0, df::Differential2d::<i32>::h2dx(-1, -1));
+        assert_eq!(-2.0, df::Differential2d::<i32>::h2dx(0, -1));
+        assert_eq!(1.0, df::Differential2d::<i32>::h2dx(1, -1));
+        assert_eq!(2.0, df::Differential2d::<i32>::h2dx(-1, 0));
+        assert_eq!(-4.0, df::Differential2d::<i32>::h2dx(0, 0));
+        assert_eq!(2.0, df::Differential2d::<i32>::h2dx(1, 0));
+        assert_eq!(1.0, df::Differential2d::<i32>::h2dx(-1, 1));
+        assert_eq!(-2.0, df::Differential2d::<i32>::h2dx(0, 1));
+        assert_eq!(1.0, df::Differential2d::<i32>::h2dx(1, 1));
     }
 
     #[test]

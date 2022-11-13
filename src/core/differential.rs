@@ -118,30 +118,26 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
         self.v(x, y).to_f64().unwrap() * Self::h3dxy(x, y)
     }
 
+    fn sobel(&self, f: fn(&Self, x: i32, y: i32) -> f64) -> f64 {
+        f(&self, -1, -1)
+            + f(&self, 0, -1)
+            + f(&self, 1, -1)
+            + f(&self, -1, 0)
+            + f(&self, 0, 0)
+            + f(&self, 1, 0)
+            + f(&self, -1, 1)
+            + f(&self, 0, 1)
+            + f(&self, 1, 1)
+    }
+
     // test ok
     pub fn sobel_x(&self) -> f64 {
-        self.vx(-1, -1)
-            + self.vx(0, -1)
-            + self.vx(1, -1)
-            + self.vx(-1, 0)
-            + self.vx(0, 0)
-            + self.vx(1, 0)
-            + self.vx(-1, 1)
-            + self.vx(0, 1)
-            + self.vx(1, 1)
+        self.sobel(Self::vx)
     }
 
     // test ok
     pub fn sobel_y(&self) -> f64 {
-        self.vy(-1, -1)
-            + self.vy(0, -1)
-            + self.vy(1, -1)
-            + self.vy(-1, 0)
-            + self.vy(0, 0)
-            + self.vy(1, 0)
-            + self.vy(-1, 1)
-            + self.vy(0, 1)
-            + self.vy(1, 1)
+        self.sobel(Self::vy)
     }
 
     // test ok
@@ -156,44 +152,17 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
 
     // test ok
     pub fn fxx(&self) -> f64 {
-        (self.vxx(-1, -1)
-            + self.vxx(0, -1)
-            + self.vxx(1, -1)
-            + self.vxx(-1, 0)
-            + self.vxx(0, 0)
-            + self.vxx(1, 0)
-            + self.vxx(-1, 1)
-            + self.vxx(0, 1)
-            + self.vxx(1, 1))
-            / DifferentialTool::H0D_TOTAL as f64
+        self.sobel(Self::vxx) / 4.0
     }
 
     // test ok
     pub fn fyy(&self) -> f64 {
-        (self.vyy(-1, -1)
-            + self.vyy(0, -1)
-            + self.vyy(1, -1)
-            + self.vyy(-1, 0)
-            + self.vyy(0, 0)
-            + self.vyy(1, 0)
-            + self.vyy(-1, 1)
-            + self.vyy(0, 1)
-            + self.vyy(1, 1))
-            / DifferentialTool::H0D_TOTAL as f64
+        self.sobel(Self::vyy) / 4.0
     }
 
     // test ok
     pub fn fxy(&self) -> f64 {
-        (self.vxx(-1, -1)
-            + self.vxy(0, -1)
-            + self.vxy(1, -1)
-            + self.vxy(-1, 0)
-            + self.vxy(0, 0)
-            + self.vxy(1, 0)
-            + self.vxy(-1, 1)
-            + self.vxy(0, 1)
-            + self.vxy(1, 1))
-            / DifferentialTool::H0D_TOTAL as f64
+        self.sobel(Self::vxy) / 4.0
     }
 
     // test ok
@@ -280,6 +249,180 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
 
     pub fn h3dyz(x: i32, y: i32, z: i32) -> f64 {
         DifferentialTool::h(x) * DifferentialTool::h3d(y) * DifferentialTool::h3d(z)
+    }
+
+    pub fn index(i: i32, j: i32, k: i32) -> usize {
+        ((i + 1) + 3 * (j + 1) + 9 * (k + 1)) as usize
+    }
+
+    pub fn v(&self, x: i32, y: i32, z: i32) -> T {
+        self.values[Self::index(x, y, z)]
+    }
+
+    pub fn vx(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h1dx(x, y, z)
+    }
+
+    pub fn vy(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h1dy(x, y, z)
+    }
+
+    pub fn vz(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::hdz(x, y, z)
+    }
+
+    pub fn vxx(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h2dx(x, y, z)
+    }
+
+    pub fn vyy(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h2dy(x, y, z)
+    }
+
+    pub fn vzz(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h2dz(x, y, z)
+    }
+
+    pub fn vxy(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h3dxy(x, y, z)
+    }
+
+    pub fn vxz(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h3dxz(x, y, z)
+    }
+
+    pub fn vyz(&self, x: i32, y: i32, z: i32) -> f64 {
+        self.v(x, y, z).to_f64().unwrap() * Self::h3dyz(x, y, z)
+    }
+
+    fn sobel(&self, f: fn(&Self, x: i32, y: i32, z: i32) -> f64) -> f64 {
+        f(&self, -1, -1, -1)
+            + f(&self, 0, -1, -1)
+            + f(&self, 1, -1, -1)
+            + f(&self, -1, 0, -1)
+            + f(&self, 0, 0, -1)
+            + f(&self, 1, 0, -1)
+            + f(&self, -1, 1, -1)
+            + f(&self, 0, 1, -1)
+            + f(&self, 1, 1, -1)
+            + f(&self, -1, -1, 0)
+            + f(&self, 0, -1, 0)
+            + f(&self, 1, -1, 0)
+            + f(&self, -1, 0, 0)
+            + f(&self, 0, 0, 0)
+            + f(&self, 1, 0, 0)
+            + f(&self, -1, 1, 0)
+            + f(&self, 0, 1, 0)
+            + f(&self, 1, 1, 0)
+            + f(&self, -1, -1, 1)
+            + f(&self, 0, -1, 1)
+            + f(&self, 1, -1, 1)
+            + f(&self, -1, 0, 1)
+            + f(&self, 0, 0, 1)
+            + f(&self, 1, 0, 1)
+            + f(&self, -1, 1, 1)
+            + f(&self, 0, 1, 1)
+            + f(&self, 1, 1, 1)
+    }
+
+    pub fn sobel_x(&self) -> f64 {
+        self.sobel(Self::vx)
+    }
+
+    pub fn sobel_y(&self) -> f64 {
+        self.sobel(Self::vy)
+    }
+
+    pub fn sobel_z(&self) -> f64 {
+        self.sobel(Self::vz)
+    }
+
+    pub fn fx(&self) -> f64 {
+        self.sobel_x() / 32.0
+    }
+
+    pub fn fy(&self) -> f64 {
+        self.sobel_y() / 32.0
+    }
+
+    pub fn fz(&self) -> f64 {
+        self.sobel_z() / 32.0
+    }
+
+    pub fn fxx(&self) -> f64 {
+        self.sobel(Self::vxx) / 16.0
+    }
+
+    pub fn fyy(&self) -> f64 {
+        self.sobel(Self::vyy) / 16.0
+    }
+
+    pub fn fzz(&self) -> f64 {
+        self.sobel(Self::vzz) / 16.0
+    }
+
+    pub fn fxy(&self) -> f64 {
+        self.sobel(Self::vxy) / 16.0
+    }
+
+    pub fn fxz(&self) -> f64 {
+        self.sobel(Self::vxz) / 16.0
+    }
+
+    pub fn fyz(&self) -> f64 {
+        self.sobel(Self::vyz) / 16.0
+    }
+
+    pub fn value(&self, p: &IntPoint<ThreeDim>) -> T {
+        self.buffer[self.indexer.get(p) as usize]
+    }
+
+    pub fn set_v(&mut self, x: i32, y: i32, z: i32, v: T) {
+        let i = Self::index(x, y, z);
+        self.values[i] = v;
+    }
+
+    pub fn set_value(&mut self, p: &IntPoint<ThreeDim>, x: i32, y: i32, z: i32) {
+        let a = self.value(&(p + NEIGHBORING_POINTS3D.get(x, y, z)));
+        self.set_v(x, y, z, a);
+    }
+
+    pub fn make_point(&mut self, p: &IntPoint<ThreeDim>) {
+        self.set_value(p, -1, -1, -1);
+        self.set_value(p, 0, -1, -1);
+        self.set_value(p, 1, -1, -1);
+
+        self.set_value(p, -1, 0, -1);
+        self.set_value(p, 0, 0, -1);
+        self.set_value(p, 1, 0, -1);
+
+        self.set_value(p, -1, 1, -1);
+        self.set_value(p, 0, 1, -1);
+        self.set_value(p, 1, 1, -1);
+
+        self.set_value(p, -1, -1, 0);
+        self.set_value(p, 0, -1, 0);
+        self.set_value(p, 1, -1, 0);
+
+        self.set_value(p, -1, 0, 0);
+        self.set_value(p, 0, 0, 0);
+        self.set_value(p, 1, 0, 0);
+
+        self.set_value(p, -1, 1, 0);
+        self.set_value(p, 0, 1, 0);
+        self.set_value(p, 1, 1, 0);
+
+        self.set_value(p, -1, -1, 1);
+        self.set_value(p, 0, -1, 1);
+        self.set_value(p, 1, -1, 1);
+
+        self.set_value(p, -1, 0, 1);
+        self.set_value(p, 0, 0, 1);
+        self.set_value(p, 1, 0, 1);
+
+        self.set_value(p, -1, 1, 1);
+        self.set_value(p, 0, 1, 1);
+        self.set_value(p, 1, 1, 1);
     }
 }
 
