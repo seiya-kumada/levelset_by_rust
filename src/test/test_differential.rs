@@ -438,6 +438,24 @@ mod tests {
         fyy_2d_core(&v, e);
     }
 
+    fn fx_fy_with_u8_2d_core(input: &Vec<u8>, expected_fx: f64, expected_fy: f64) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Indexer::<TwoDim>::new(&space_size);
+        let mut cg = df::Differential2d::<u8>::new(&indexer, &input);
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_fx, cg.fx());
+        assert_eq!(expected_fy, cg.fy());
+    }
+
+    #[test]
+    fn fx_fy_with_u8_2d() {
+        let v = vec![50, 100, 20, 100, 0, 200, 70, 100, 30];
+        let fx_e = 65.0 / 4.0;
+        let fy_e = 15.0 / 4.0;
+        fx_fy_with_u8_2d_core(&v, fx_e, fy_e);
+    }
+
     #[test]
     fn differential3d_h1dx() {
         assert_eq!(-1.0, df::Differential3d::<i32>::h1dx(-1, -1, -1));
@@ -469,6 +487,29 @@ mod tests {
         assert_eq!(-1.0, df::Differential3d::<i32>::h1dx(-1, 1, 1));
         assert_eq!(0.0, df::Differential3d::<i32>::h1dx(0, 1, 1));
         assert_eq!(1.0, df::Differential3d::<i32>::h1dx(1, 1, 1));
+    }
+
+    #[test]
+    fn differential3d_h2dx() {
+        assert_eq!(1.0, df::Differential3d::<i32>::h2dx(-1, -1, -1));
+        assert_eq!(-2.0, df::Differential3d::<i32>::h2dx(0, -1, -1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h2dx(1, -1, -1));
+        assert_eq!(2.0, df::Differential3d::<i32>::h2dx(-1, 0, -1));
+        assert_eq!(-4.0, df::Differential3d::<i32>::h2dx(0, 0, -1));
+        assert_eq!(2.0, df::Differential3d::<i32>::h2dx(1, 0, -1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h2dx(-1, 1, -1));
+        assert_eq!(-2.0, df::Differential3d::<i32>::h2dx(0, 1, -1));
+        assert_eq!(1.0, df::Differential3d::<i32>::h2dx(1, 1, -1));
+
+        assert_eq!(2.0, df::Differential3d::<i32>::h2dx(-1, -1, 0));
+        assert_eq!(-4.0, df::Differential3d::<i32>::h2dx(0, -1, 0));
+        assert_eq!(2.0, df::Differential3d::<i32>::h2dx(1, -1, 0));
+        assert_eq!(4.0, df::Differential3d::<i32>::h2dx(-1, 0, 0));
+        assert_eq!(-8.0, df::Differential3d::<i32>::h2dx(0, 0, 0));
+        assert_eq!(4.0, df::Differential3d::<i32>::h2dx(1, 0, 0));
+        assert_eq!(2.0, df::Differential3d::<i32>::h2dx(-1, 1, 0));
+        assert_eq!(-4.0, df::Differential3d::<i32>::h2dx(0, 1, 0));
+        assert_eq!(2.0, df::Differential3d::<i32>::h2dx(1, 1, 0));
     }
 
     fn sobel_x_3d_core(input: &Vec<f64>, expected_output: f64) {
@@ -659,5 +700,71 @@ mod tests {
         ];
         let e = 4.0;
         fxx_3d_core(&v, e);
+    }
+
+    fn fyy_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fyy());
+    }
+
+    #[test]
+    fn fyy_3d() {
+        let v = vec![
+            1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0,
+        ];
+        let e = 4.0;
+        fyy_3d_core(&v, e);
+    }
+
+    fn fzz_3d_core(input: &Vec<f64>, expected_output: f64) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::DifferentialDouble3d::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, cg.fzz());
+    }
+
+    #[test]
+    fn fzz_3d() {
+        let v = vec![
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+            -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        ];
+        let e = 4.0;
+        fzz_3d_core(&v, e);
+    }
+
+    fn fx_fy_fz_3d_with_u8_core(
+        input: &Vec<u8>,
+        expected_fx: f64,
+        expected_fy: f64,
+        expected_fz: f64,
+    ) {
+        let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
+        let indexer = Indexer::<ThreeDim>::new(&space_size);
+        let mut cg = df::Differential3d::<u8>::new(&indexer, &input);
+        let p = IntPoint::<ThreeDim>::new(1, 1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_fx, cg.fx());
+        assert_eq!(expected_fy, cg.fy());
+        assert_eq!(expected_fz, cg.fz());
+    }
+
+    #[test]
+    fn fx_fy_fz_3d_with_u8() {
+        let v = vec![
+            50, 100, 20, 100, 0, 200, 70, 100, 30, 50, 100, 20, 100, 0, 200, 70, 100, 30, 50, 100,
+            20, 100, 0, 200, 70, 100, 30,
+        ];
+        let fx_e = 65.0 / 4.0;
+        let fy_e = 15.0 / 4.0;
+        let fz_e = 0.0;
+        fx_fy_fz_3d_with_u8_core(&v, fx_e, fy_e, fz_e);
     }
 }

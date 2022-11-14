@@ -10,6 +10,7 @@ pub mod point;
 pub mod position;
 pub mod space_size;
 pub mod speed;
+pub mod speed_factor;
 pub mod status;
 pub mod types;
 pub mod upwind;

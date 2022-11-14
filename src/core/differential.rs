@@ -220,10 +220,12 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
         DifferentialTool::h1d(x) * DifferentialTool::h(y) * DifferentialTool::h(z)
     }
 
+    // test ok
     pub fn h1dy(x: i32, y: i32, z: i32) -> f64 {
         DifferentialTool::h(x) * DifferentialTool::h1d(y) * DifferentialTool::h(z)
     }
 
+    // test ok
     pub fn h2dx(x: i32, y: i32, z: i32) -> f64 {
         DifferentialTool::h2d(x) * DifferentialTool::h(y) * DifferentialTool::h(z)
     }
@@ -336,42 +338,52 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
         self.sobel(Self::vy)
     }
 
+    // test ok
     pub fn sobel_z(&self) -> f64 {
         self.sobel(Self::vz)
     }
 
+    // test ok
     pub fn fx(&self) -> f64 {
         self.sobel_x() / 32.0
     }
 
+    // test ok
     pub fn fy(&self) -> f64 {
         self.sobel_y() / 32.0
     }
 
+    // test ok
     pub fn fz(&self) -> f64 {
         self.sobel_z() / 32.0
     }
 
+    // test ok
     pub fn fxx(&self) -> f64 {
         self.sobel(Self::vxx) / 16.0
     }
 
+    // test ok
     pub fn fyy(&self) -> f64 {
         self.sobel(Self::vyy) / 16.0
     }
 
+    // test ok
     pub fn fzz(&self) -> f64 {
         self.sobel(Self::vzz) / 16.0
     }
 
+    // test ok
     pub fn fxy(&self) -> f64 {
         self.sobel(Self::vxy) / 16.0
     }
 
+    // test ok
     pub fn fxz(&self) -> f64 {
         self.sobel(Self::vxz) / 16.0
     }
 
+    // test ok
     pub fn fyz(&self) -> f64 {
         self.sobel(Self::vyz) / 16.0
     }

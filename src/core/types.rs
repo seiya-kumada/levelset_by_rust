@@ -1,6 +1,7 @@
 use std::ops::Add;
 
 use super::neighboring_point::NEIGHBORING_POINTS2D;
+use crate::core::differential as df;
 use crate::core::grid as gr;
 use crate::core::indexer as id;
 use crate::core::neighboring_point as np;
@@ -10,6 +11,7 @@ use crate::core::position as ps;
 use crate::core::space_size as ss;
 use crate::core::upwind as uw;
 use crate::core::util;
+
 pub trait Type {
     type SpaceSize_; //
     type Grid_; //
@@ -18,6 +20,9 @@ pub trait Type {
     type DoublePoint_; //
     type Position_; //
     type Upwind_; //
+                  //type DifferentialF64;
+                  //type DifferentialU8;
+
     const NUM: i32;
 
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_; //
@@ -36,6 +41,8 @@ impl Type for TwoDim {
     type DoublePoint_ = po::Point2d<f64>;
     type Position_ = ps::Position2d;
     type Upwind_ = uw::Upwind2d;
+    //type DifferentialF64 = df::DifferentialDouble2d<'a>;
+    //type DifferentialU8 = df::Differential2d<'a, u8>;
     const NUM: i32 = 2;
 
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
@@ -87,7 +94,8 @@ impl Type for ThreeDim {
     type DoublePoint_ = po::Point3d<f64>;
     type Position_ = ps::Position3d;
     type Upwind_ = uw::Upwind3d;
-
+    //type DifferentialF64 = df::DifferentialDouble3d<'a>;
+    //type DifferentialU8 = df::Differential3d<'a, u8>;
     const NUM: i32 = 3;
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
