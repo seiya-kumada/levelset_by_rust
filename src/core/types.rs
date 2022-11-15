@@ -169,12 +169,6 @@ impl Type for ThreeDim {
     }
 }
 
-//impl<'a> TypeRef<'a> for ThreeDim {
-//    type DifferentialF64 = df::Differential3d<'a, f64>;
-//    type DifferentialU8 = df::Differential3d<'a, u8>;
-//    //type Ind = Indexer<ThreeDim>;
-//    //fn new(indexer: &Self::Ind, gray: &Vec<u8>) {}
-//}
 pub type Grid<D> = <D as Type>::Grid_;
 pub type SpaceSize<D> = <D as Type>::SpaceSize_;
 pub type Indexer<D> = <D as Type>::Indexer_;
