@@ -2,6 +2,7 @@ use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D}
 use crate::core::types::{Indexer, IntPoint, ThreeDim, TwoDim, Type};
 use num_traits::cast::ToPrimitive;
 use num_traits::Zero;
+use std::rc::Rc;
 
 pub struct DifferentialTool;
 
@@ -40,15 +41,14 @@ impl DifferentialTool {
     }
 }
 
-pub struct Differential2d<'a, T: ToPrimitive + Zero + Clone + Copy> {
-    pub indexer: &'a Indexer<TwoDim>,
-    pub buffer: &'a Vec<T>,
+pub struct Differential2d<T: ToPrimitive + Zero + Clone + Copy> {
+    pub indexer: Rc<Indexer<TwoDim>>,
+    pub buffer: Rc<Vec<T>>,
     pub values: Vec<T>,
 }
 
-impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
-    // test ok
-    pub fn new(indexer: &'a Indexer<TwoDim>, buffer: &'a Vec<T>) -> Self {
+impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
+    pub fn new(indexer: Rc<Indexer<TwoDim>>, buffer: Rc<Vec<T>>) -> Self {
         let s = 3usize.pow(TwoDim::NUM as u32);
         let values = vec![T::zero(); s];
         Self {
@@ -197,15 +197,15 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential2d<'a, T> {
         self.set_value(p, 1, 1);
     }
 }
-pub struct Differential3d<'a, T: ToPrimitive + Zero + Clone + Copy> {
-    pub indexer: &'a Indexer<ThreeDim>,
-    pub buffer: &'a Vec<T>,
+pub struct Differential3d<T: ToPrimitive + Zero + Clone + Copy> {
+    pub indexer: Rc<Indexer<ThreeDim>>,
+    pub buffer: Rc<Vec<T>>,
     pub values: Vec<T>,
 }
 
-impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
+impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
     // test ok
-    pub fn new(indexer: &'a Indexer<ThreeDim>, buffer: &'a Vec<T>) -> Self {
+    pub fn new(indexer: Rc<Indexer<ThreeDim>>, buffer: Rc<Vec<T>>) -> Self {
         let s = 3usize.pow(ThreeDim::NUM as u32);
         let values = vec![T::zero(); s];
         Self {
@@ -441,5 +441,5 @@ impl<'a, T: ToPrimitive + Zero + Clone + Copy> Differential3d<'a, T> {
     }
 }
 
-pub type DifferentialDouble2d<'a> = Differential2d<'a, f64>;
-pub type DifferentialDouble3d<'a> = Differential3d<'a, f64>;
+pub type DifferentialDouble2d = Differential2d<f64>;
+pub type DifferentialDouble3d = Differential3d<f64>;

@@ -1,5 +1,8 @@
+use num_traits::ToPrimitive;
 use std::ops::Add;
+use std::rc::Rc;
 
+use super::differential::Differential2d;
 use super::neighboring_point::NEIGHBORING_POINTS2D;
 use crate::core::differential as df;
 use crate::core::grid as gr;
@@ -11,6 +14,7 @@ use crate::core::position as ps;
 use crate::core::space_size as ss;
 use crate::core::upwind as uw;
 use crate::core::util;
+use num_traits::Zero;
 
 pub trait Type {
     type SpaceSize_; //
@@ -20,11 +24,13 @@ pub trait Type {
     type DoublePoint_; //
     type Position_; //
     type Upwind_; //
-                  //type DifferentialF64;
-                  //type DifferentialU8;
-
+    type DifferentialU8_;
     const NUM: i32;
 
+    fn make_differential_u8(
+        indexer: Rc<Self::Indexer_>,
+        buffer: Rc<Vec<u8>>,
+    ) -> Self::DifferentialU8_;
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_; //
     fn make_upwind_with_positive_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
     fn make_upwind_with_negative_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
@@ -42,8 +48,15 @@ impl Type for TwoDim {
     type Position_ = ps::Position2d;
     type Upwind_ = uw::Upwind2d;
     //type DifferentialF64 = df::DifferentialDouble2d<'a>;
-    //type DifferentialU8 = df::Differential2d<'a, u8>;
+    type DifferentialU8_ = df::Differential2d<u8>;
     const NUM: i32 = 2;
+
+    fn make_differential_u8(
+        indexer: Rc<Self::Indexer_>,
+        buffer: Rc<Vec<u8>>,
+    ) -> Self::DifferentialU8_ {
+        df::Differential2d::<u8>::new(indexer, buffer)
+    }
 
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS2D.get(-1, 0);
@@ -95,8 +108,14 @@ impl Type for ThreeDim {
     type Position_ = ps::Position3d;
     type Upwind_ = uw::Upwind3d;
     //type DifferentialF64 = df::DifferentialDouble3d<'a>;
-    //type DifferentialU8 = df::Differential3d<'a, u8>;
+    type DifferentialU8_ = df::Differential3d<u8>;
     const NUM: i32 = 3;
+    fn make_differential_u8(
+        indexer: Rc<Self::Indexer_>,
+        buffer: Rc<Vec<u8>>,
+    ) -> Self::DifferentialU8_ {
+        df::Differential3d::<u8>::new(indexer, buffer)
+    }
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
         let b = p + np::NEIGHBORING_POINTS3D.get(1, 0, 0);
@@ -150,6 +169,12 @@ impl Type for ThreeDim {
     }
 }
 
+//impl<'a> TypeRef<'a> for ThreeDim {
+//    type DifferentialF64 = df::Differential3d<'a, f64>;
+//    type DifferentialU8 = df::Differential3d<'a, u8>;
+//    //type Ind = Indexer<ThreeDim>;
+//    //fn new(indexer: &Self::Ind, gray: &Vec<u8>) {}
+//}
 pub type Grid<D> = <D as Type>::Grid_;
 pub type SpaceSize<D> = <D as Type>::SpaceSize_;
 pub type Indexer<D> = <D as Type>::Indexer_;
@@ -157,3 +182,5 @@ pub type IntPoint<D> = <D as Type>::IntPoint_;
 pub type DoublePoint<D> = <D as Type>::DoublePoint_;
 pub type Position<D> = <D as Type>::Position_;
 pub type Upwind<D> = <D as Type>::Upwind_;
+//pub type DifferentialF64<'a, D> = <D as TypeRef<'a>>::DifferentialF64;
+pub type DifferentialU8<D> = <D as Type>::DifferentialU8_;
