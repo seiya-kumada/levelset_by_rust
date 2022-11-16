@@ -443,3 +443,43 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
 
 pub type DifferentialDouble2d = Differential2d<f64>;
 pub type DifferentialDouble3d = Differential3d<f64>;
+
+//pub trait DifferentialT<D {
+//    type Differential;
+//    //type IntPoint;
+//    //type Indexer;
+//    fn set_point<D: Type>(o: &mut Self::Differential, p: &IntPoint<D>);
+//    //fn make_differential_u8<D: Type>(
+//    //    indexer: Rc<Indexer<D>>,
+//    //    buffer: Rc<Vec<u8>>,
+//    //) -> Self::Differential;
+//}
+
+//impl DifferentialT for TwoDim {
+//    type Differential = Differential2d<u8>;
+//type IntPoint = IntPoint<TwoDim>;
+//type Indexer = Indexer<TwoDim>;
+//fn set_point(o: &mut Self::Differential, p: &IntPoint<TwoDim>) {
+//    o.make_point(p);
+//}
+//fn make_differential_u8<D: Type>(
+//    indexer: Rc<Indexer<D>>,
+//    buffer: Rc<Vec<u8>>,
+//) -> Self::Differential {
+//    Self::Differential::new(indexer, buffer)
+//}
+//}
+//
+//impl DifferentialT for ThreeDim {
+//    type Differential = Differential3d<u8>;
+//    type IntPoint = IntPoint<ThreeDim>;
+//    type Indexer = Indexer<ThreeDim>;
+//    fn set_point(o: &mut Self::Differential, p: &Self::IntPoint) {
+//        o.make_point(p);
+//    }
+//    fn make_differential_u8(indexer: Rc<Self::Indexer>, buffer: Rc<Vec<u8>>) -> Self::Differential {
+//        Self::Differential::new(indexer, buffer)
+//    }
+//}
+
+//pub type DifferentialU8HH<D> = <D as DifferentialT>::Differential;

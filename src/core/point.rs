@@ -1,3 +1,5 @@
+use crate::core::dim;
+use num_traits::Num;
 use std::ops::Add;
 
 impl<T: Copy> Clone for Point2d<T> {
@@ -63,3 +65,17 @@ impl<'a, T: std::ops::Add<Output = T> + Copy> Add for &'a Point3d<T> {
         )
     }
 }
+
+pub trait PointT<T: Num> {
+    type Type;
+}
+
+impl<T: Num> PointT<T> for dim::Two {
+    type Type = Point2d<T>;
+}
+
+impl<T: Num> PointT<T> for dim::Three {
+    type Type = Point3d<T>;
+}
+
+pub type Point<D, T> = <D as PointT<T>>::Type;

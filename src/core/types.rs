@@ -27,13 +27,15 @@ pub trait Type {
     type DifferentialU8_;
     const NUM: i32;
 
-    fn make_differential_u8(
-        indexer: Rc<Self::Indexer_>,
-        buffer: Rc<Vec<u8>>,
-    ) -> Self::DifferentialU8_;
+    //fn make_differential_u8(
+    //    indexer: Rc<Self::Indexer_>,
+    //    buffer: Rc<Vec<u8>>,
+    //) -> Self::DifferentialU8_;
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_; //
     fn make_upwind_with_positive_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
     fn make_upwind_with_negative_speed(p: &Self::Position_, phi: &Vec<f64>) -> Self::Upwind_; //
+    fn get_index(o: &Self::Indexer_, p: &Self::IntPoint_) -> i32;
+    //fn set_point(d: &mut Self::DifferentialU8_, p: &Self::IntPoint_);
 }
 
 pub struct TwoDim;
@@ -51,12 +53,19 @@ impl Type for TwoDim {
     type DifferentialU8_ = df::Differential2d<u8>;
     const NUM: i32 = 2;
 
-    fn make_differential_u8(
-        indexer: Rc<Self::Indexer_>,
-        buffer: Rc<Vec<u8>>,
-    ) -> Self::DifferentialU8_ {
-        df::Differential2d::<u8>::new(indexer, buffer)
+    //fn set_point(d: &mut Self::DifferentialU8_, p: &Self::IntPoint_) {
+    //    d.make_point(p);
+    //}
+
+    fn get_index(o: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
+        o.get(p)
     }
+    //fn make_differential_u8(
+    //    indexer: Rc<Self::Indexer_>,
+    //    buffer: Rc<Vec<u8>>,
+    //) -> Self::DifferentialU8_ {
+    //    df::Differential2d::<u8>::new(indexer, buffer)
+    //}
 
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS2D.get(-1, 0);
@@ -110,12 +119,21 @@ impl Type for ThreeDim {
     //type DifferentialF64 = df::DifferentialDouble3d<'a>;
     type DifferentialU8_ = df::Differential3d<u8>;
     const NUM: i32 = 3;
-    fn make_differential_u8(
-        indexer: Rc<Self::Indexer_>,
-        buffer: Rc<Vec<u8>>,
-    ) -> Self::DifferentialU8_ {
-        df::Differential3d::<u8>::new(indexer, buffer)
+
+    //fn set_point(d: &mut Self::DifferentialU8_, p: &Self::IntPoint_) {
+    //    d.make_point(p);
+    //}
+
+    fn get_index(o: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
+        o.get(p)
     }
+
+    //fn make_differential_u8(
+    //    indexer: Rc<Self::Indexer_>,
+    //    buffer: Rc<Vec<u8>>,
+    //) -> Self::DifferentialU8_ {
+    //    df::Differential3d::<u8>::new(indexer, buffer)
+    //}
     fn make_position(p: &Self::IntPoint_, indexer: &Self::Indexer_) -> Self::Position_ {
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
         let b = p + np::NEIGHBORING_POINTS3D.get(1, 0, 0);

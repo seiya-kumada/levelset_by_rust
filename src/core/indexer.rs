@@ -1,5 +1,9 @@
+use crate::core::dim;
+use crate::core::point;
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
+use num_traits::Num;
+
 //
 pub struct Indexer2d {
     width: i32,
@@ -31,3 +35,27 @@ impl Indexer3d {
         p.x + self.width * p.y + self.area * p.z
     }
 }
+
+pub trait IndexerT {
+    type Type;
+    type Point;
+
+    fn get(&self, p: &Self::Point) -> i32;
+}
+
+//impl IndexerT for dim::Two {
+//    type Type = Indexer2d;
+//    type Point = point::Point2d<u8>;
+//    fn get(&self, p: &Self::Point) -> i32 {
+//        1
+//    }
+//}
+//
+//impl IndexerT for dim::Three {
+//    type Type = Indexer3d;
+//    fn get<T: Num, D: point::PointT<T>>(&self, p: &point::Point<D, T>) -> i32 {
+//        1
+//    }
+//}
+//
+//pub type Indexer<D> = <D as IndexerT>::Type;
