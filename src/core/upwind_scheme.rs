@@ -6,7 +6,6 @@ use crate::core::speed;
 use crate::core::speed as sp;
 use crate::core::types;
 use crate::core::types::{Indexer, Position, Type, Upwind};
-use std::marker::PhantomData;
 
 pub struct UpwindScheme<D: Type> {
     pub position: Position<D>,
