@@ -2,7 +2,7 @@ use crate::core::front::Front;
 use crate::core::parameters::Parameters;
 use crate::core::status::Status;
 use crate::core::types::{DoublePoint, Grid, Indexer, IntPoint, SpaceSize, Type};
-use crate::core::upwind_scheme::UpwindScheme;
+//use crate::core::upwind_scheme::UpwindScheme;
 
 pub struct LevelSetMethod<D: Type> {
     /// input parameters
@@ -40,6 +40,5 @@ pub struct LevelSetMethod<D: Type> {
 
     /// input image(gray image)
     input_object: Vec<u8>,
-
-    upwind_scheme: UpwindScheme<D>,
+    //upwind_scheme: UpwindScheme<D>,
 }

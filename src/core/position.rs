@@ -1,7 +1,7 @@
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::neighboring_point as np;
 use crate::core::point::{Point2d, Point3d};
-
+use std::rc::Rc;
 pub struct Position2d {
     pub left: i32,
     pub right: i32,
@@ -11,28 +11,27 @@ pub struct Position2d {
 }
 
 impl Position2d {
-    pub fn new(left: i32, right: i32, me: i32, top: i32, bottom: i32) -> Self {
+    pub fn new() -> Self {
         Self {
-            left,
-            right,
-            me,
-            top,
-            bottom,
+            left: 0,
+            right: 0,
+            me: 0,
+            top: 0,
+            bottom: 0,
         }
     }
 
-    fn make_position(p: &Point2d<i32>, indexer: &Indexer2d) -> Self {
+    // test ok
+    pub fn set_position(&mut self, p: &Point2d<i32>, indexer: Rc<Indexer2d>) {
         let a = p + np::NEIGHBORING_POINTS2D.get(-1, 0);
         let b = p + np::NEIGHBORING_POINTS2D.get(1, 0);
         let c = p + np::NEIGHBORING_POINTS2D.get(0, -1);
         let d = p + np::NEIGHBORING_POINTS2D.get(0, 1);
-        Self {
-            left: indexer.get(&a),
-            right: indexer.get(&b),
-            me: indexer.get(p),
-            top: indexer.get(&c),
-            bottom: indexer.get(&d),
-        }
+        self.left = indexer.get(&a);
+        self.right = indexer.get(&b);
+        self.me = indexer.get(p);
+        self.top = indexer.get(&c);
+        self.bottom = indexer.get(&d);
     }
 }
 
@@ -47,41 +46,31 @@ pub struct Position3d {
 }
 
 impl Position3d {
-    pub fn new(
-        left: i32,
-        right: i32,
-        me: i32,
-        top: i32,
-        bottom: i32,
-        front: i32,
-        back: i32,
-    ) -> Self {
+    pub fn new() -> Self {
         Self {
-            left,
-            right,
-            me,
-            top,
-            bottom,
-            front,
-            back,
+            left: 0,
+            right: 0,
+            me: 0,
+            top: 0,
+            bottom: 0,
+            front: 0,
+            back: 0,
         }
     }
 
-    fn set_position(p: &Point3d<i32>, indexer: &Indexer3d) -> Self {
+    pub fn set_position(&mut self, p: &Point3d<i32>, indexer: Rc<Indexer3d>) {
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
         let b = p + np::NEIGHBORING_POINTS3D.get(1, 0, 0);
         let c = p + np::NEIGHBORING_POINTS3D.get(0, -1, 0);
         let d = p + np::NEIGHBORING_POINTS3D.get(0, 1, 0);
         let e = p + np::NEIGHBORING_POINTS3D.get(0, 0, -1);
         let f = p + np::NEIGHBORING_POINTS3D.get(0, 0, 1);
-        Self {
-            left: indexer.get(&a),
-            right: indexer.get(&b),
-            me: indexer.get(p),
-            top: indexer.get(&c),
-            bottom: indexer.get(&d),
-            front: indexer.get(&e),
-            back: indexer.get(&f),
-        }
+        self.left = indexer.get(&a);
+        self.right = indexer.get(&b);
+        self.me = indexer.get(p);
+        self.top = indexer.get(&c);
+        self.bottom = indexer.get(&d);
+        self.front = indexer.get(&e);
+        self.back = indexer.get(&f);
     }
 }
