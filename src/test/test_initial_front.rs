@@ -1,5 +1,4 @@
-use crate::core::initial_front::InitialFront;
-use crate::core::types::{IntPoint, TwoDim};
+use crate::core::types::{InitialFront, IntPoint, TwoDim};
 #[cfg(test)]
 mod tests {
     use super::*;

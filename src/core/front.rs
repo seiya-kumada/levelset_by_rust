@@ -1,5 +1,4 @@
-use crate::core::types::{IntPoint, ThreeDim, TwoDim, Type};
+use crate::core::point::{Point2d, Point3d};
 
-pub type Front<D> = Vec<IntPoint<D>>;
-pub type Front2d = Front<TwoDim>;
-pub type Front3d = Front<ThreeDim>;
+pub type Front2d = Vec<Point2d<i32>>;
+pub type Front3d = Vec<Point3d<i32>>;

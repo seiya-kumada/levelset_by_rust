@@ -1,5 +1,7 @@
+use crate::core::dim;
+use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
-use crate::core::types::{Indexer, IntPoint, ThreeDim, TwoDim, Type};
+use crate::core::point::{Point2d, Point3d};
 use num_traits::cast::ToPrimitive;
 use num_traits::Zero;
 use std::rc::Rc;
@@ -42,14 +44,14 @@ impl DifferentialTool {
 }
 
 pub struct Differential2d<T: ToPrimitive + Zero + Clone + Copy> {
-    pub indexer: Rc<Indexer<TwoDim>>,
+    pub indexer: Rc<Indexer2d>,
     pub buffer: Rc<Vec<T>>,
     pub values: Vec<T>,
 }
 
 impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
-    pub fn new(indexer: Rc<Indexer<TwoDim>>, buffer: Rc<Vec<T>>) -> Self {
-        let s = 3usize.pow(TwoDim::NUM as u32);
+    pub fn new(indexer: Rc<Indexer2d>, buffer: Rc<Vec<T>>) -> Self {
+        let s = 3usize.pow(dim::TWO as u32);
         let values = vec![T::zero(); s];
         Self {
             indexer,
@@ -166,7 +168,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
     }
 
     // test ok
-    pub fn value(&self, p: &IntPoint<TwoDim>) -> T {
+    pub fn value(&self, p: &Point2d<i32>) -> T {
         self.buffer[self.indexer.get(p) as usize]
     }
 
@@ -177,13 +179,13 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
     }
 
     // test ok
-    pub fn set_value(&mut self, p: &IntPoint<TwoDim>, x: i32, y: i32) {
+    pub fn set_value(&mut self, p: &Point2d<i32>, x: i32, y: i32) {
         let a = self.value(&(p + NEIGHBORING_POINTS2D.get(x, y)));
         self.set_v(x, y, a);
     }
 
     // test ok
-    pub fn make_point(&mut self, p: &IntPoint<TwoDim>) {
+    pub fn make_point(&mut self, p: &Point2d<i32>) {
         self.set_value(p, -1, -1);
         self.set_value(p, 0, -1);
         self.set_value(p, 1, -1);
@@ -198,15 +200,15 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
     }
 }
 pub struct Differential3d<T: ToPrimitive + Zero + Clone + Copy> {
-    pub indexer: Rc<Indexer<ThreeDim>>,
+    pub indexer: Rc<Indexer3d>,
     pub buffer: Rc<Vec<T>>,
     pub values: Vec<T>,
 }
 
 impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
     // test ok
-    pub fn new(indexer: Rc<Indexer<ThreeDim>>, buffer: Rc<Vec<T>>) -> Self {
-        let s = 3usize.pow(ThreeDim::NUM as u32);
+    pub fn new(indexer: Rc<Indexer3d>, buffer: Rc<Vec<T>>) -> Self {
+        let s = 3usize.pow(dim::THREE as u32);
         let values = vec![T::zero(); s];
         Self {
             indexer,
@@ -388,7 +390,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
         self.sobel(Self::vyz) / 16.0
     }
 
-    pub fn value(&self, p: &IntPoint<ThreeDim>) -> T {
+    pub fn value(&self, p: &Point3d<i32>) -> T {
         self.buffer[self.indexer.get(p) as usize]
     }
 
@@ -397,12 +399,12 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
         self.values[i] = v;
     }
 
-    pub fn set_value(&mut self, p: &IntPoint<ThreeDim>, x: i32, y: i32, z: i32) {
+    pub fn set_value(&mut self, p: &Point3d<i32>, x: i32, y: i32, z: i32) {
         let a = self.value(&(p + NEIGHBORING_POINTS3D.get(x, y, z)));
         self.set_v(x, y, z, a);
     }
 
-    pub fn make_point(&mut self, p: &IntPoint<ThreeDim>) {
+    pub fn make_point(&mut self, p: &Point3d<i32>) {
         self.set_value(p, -1, -1, -1);
         self.set_value(p, 0, -1, -1);
         self.set_value(p, 1, -1, -1);
@@ -443,43 +445,3 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
 
 pub type DifferentialDouble2d = Differential2d<f64>;
 pub type DifferentialDouble3d = Differential3d<f64>;
-
-//pub trait DifferentialT<D {
-//    type Differential;
-//    //type IntPoint;
-//    //type Indexer;
-//    fn set_point<D: Type>(o: &mut Self::Differential, p: &IntPoint<D>);
-//    //fn make_differential_u8<D: Type>(
-//    //    indexer: Rc<Indexer<D>>,
-//    //    buffer: Rc<Vec<u8>>,
-//    //) -> Self::Differential;
-//}
-
-//impl DifferentialT for TwoDim {
-//    type Differential = Differential2d<u8>;
-//type IntPoint = IntPoint<TwoDim>;
-//type Indexer = Indexer<TwoDim>;
-//fn set_point(o: &mut Self::Differential, p: &IntPoint<TwoDim>) {
-//    o.make_point(p);
-//}
-//fn make_differential_u8<D: Type>(
-//    indexer: Rc<Indexer<D>>,
-//    buffer: Rc<Vec<u8>>,
-//) -> Self::Differential {
-//    Self::Differential::new(indexer, buffer)
-//}
-//}
-//
-//impl DifferentialT for ThreeDim {
-//    type Differential = Differential3d<u8>;
-//    type IntPoint = IntPoint<ThreeDim>;
-//    type Indexer = Indexer<ThreeDim>;
-//    fn set_point(o: &mut Self::Differential, p: &Self::IntPoint) {
-//        o.make_point(p);
-//    }
-//    fn make_differential_u8(indexer: Rc<Self::Indexer>, buffer: Rc<Vec<u8>>) -> Self::Differential {
-//        Self::Differential::new(indexer, buffer)
-//    }
-//}
-
-//pub type DifferentialU8HH<D> = <D as DifferentialT>::Differential;

@@ -1,21 +1,24 @@
-use crate::core::front::Front;
+use crate::core::front::{Front2d, Front3d};
+use crate::core::grid::{Grid2d, Grid3d};
+use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::parameters::Parameters;
+use crate::core::point::{Point2d, Point3d};
+use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 use crate::core::status::Status;
-use crate::core::types::{DoublePoint, Grid, Indexer, IntPoint, SpaceSize, Type};
-//use crate::core::upwind_scheme::UpwindScheme;
+use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d};
 
-pub struct LevelSetMethod<D: Type> {
+pub struct LevelSetMethod2d {
     /// input parameters
     params: Parameters,
 
     /// size of the input image/3Dmodel
-    pub size: SpaceSize<D>,
+    pub size: SpaceSize2d,
 
     /// accessor of the array
-    pub indexer: Indexer<D>,
+    pub indexer: Indexer2d,
 
     /// input front(zero-levelset)
-    pub initial_front: Grid<D>,
+    pub initial_front: Grid2d,
 
     /// auxiliary function
     phi: Vec<f64>,
@@ -30,15 +33,16 @@ pub struct LevelSetMethod<D: Type> {
     statuses: Vec<Status>,
 
     /// front
-    front: Front<D>,
+    front: Front2d,
 
     /// normals
-    normals: Vec<DoublePoint<D>>,
+    normals: Vec<Point2d<f64>>,
 
     /// narrow band
-    narrow_bands: Vec<IntPoint<D>>,
+    narrow_bands: Vec<Point2d<i32>>,
 
     /// input image(gray image)
     input_object: Vec<u8>,
-    //upwind_scheme: UpwindScheme<D>,
+
+    upwind_scheme: UpwindScheme2d,
 }

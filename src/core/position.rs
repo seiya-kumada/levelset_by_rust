@@ -58,6 +58,7 @@ impl Position3d {
         }
     }
 
+    // test ok
     pub fn set_position(&mut self, p: &Point3d<i32>, indexer: Rc<Indexer3d>) {
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
         let b = p + np::NEIGHBORING_POINTS3D.get(1, 0, 0);

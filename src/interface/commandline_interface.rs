@@ -1,6 +1,5 @@
-use crate::core::initial_front::InitialFront;
 use crate::core::parameters::Parameters;
-use crate::core::types::{IntPoint, SpaceSize, TwoDim};
+use crate::core::types::{InitialFront, IntPoint, SpaceSize, TwoDim};
 use clap::Parser;
 use image::GenericImageView;
 use image::ImageFormat;

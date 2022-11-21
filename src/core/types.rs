@@ -3,6 +3,7 @@ use super::neighboring_point::NEIGHBORING_POINTS2D;
 use crate::core::differential as df;
 use crate::core::grid as gr;
 use crate::core::indexer as id;
+use crate::core::initial_front::{InitialFront2d, InitialFront3d};
 use crate::core::neighboring_point as np;
 use crate::core::point as po;
 use crate::core::point::{Point2d, Point3d};
@@ -26,6 +27,7 @@ pub trait Type {
     type Upwind_; //
     type DifferentialU8_;
     type SpeedFactor_;
+    type InitialFront_;
     const NUM: i32;
 }
 
@@ -42,6 +44,8 @@ impl Type for TwoDim {
     type Upwind_ = uw::Upwind2d;
     type DifferentialU8_ = df::Differential2d<u8>;
     type SpeedFactor_ = sf::SpeedFactor2d;
+    type InitialFront_ = InitialFront2d;
+
     const NUM: i32 = 2;
 }
 
@@ -55,6 +59,7 @@ impl Type for ThreeDim {
     type Upwind_ = uw::Upwind3d;
     type SpeedFactor_ = sf::SpeedFactor3d;
     type DifferentialU8_ = df::Differential3d<u8>;
+    type InitialFront_ = InitialFront3d;
     const NUM: i32 = 3;
 }
 
@@ -62,6 +67,7 @@ pub type Grid<D> = <D as Type>::Grid_;
 pub type SpaceSize<D> = <D as Type>::SpaceSize_;
 pub type Indexer<D> = <D as Type>::Indexer_;
 pub type IntPoint<D> = <D as Type>::IntPoint_;
+pub type InitialFront<D> = <D as Type>::InitialFront_;
 pub type DoublePoint<D> = <D as Type>::DoublePoint_;
 pub type Position<D> = <D as Type>::Position_;
 pub type Upwind<D> = <D as Type>::Upwind_;
