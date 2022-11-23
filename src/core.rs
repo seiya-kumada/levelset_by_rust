@@ -2,6 +2,7 @@ pub mod differential;
 pub mod dim;
 pub mod front;
 pub mod grid;
+pub mod grid_range;
 pub mod indexer;
 pub mod initial_front;
 pub mod level_set_method;

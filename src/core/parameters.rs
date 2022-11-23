@@ -1,4 +1,5 @@
-use crate::interface::commandline_interface as cli;
+//use crate::interface::commandline_interface as cli;
+#[derive(Clone)]
 pub struct Parameters {
     pub wband: i32,
     pub wreset: i32,
