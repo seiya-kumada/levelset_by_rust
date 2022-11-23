@@ -5,6 +5,7 @@ pub mod grid;
 pub mod grid_range;
 pub mod indexer;
 pub mod initial_front;
+pub mod inside_estimator;
 pub mod level_set_method;
 pub mod neighboring_point;
 pub mod parameters;

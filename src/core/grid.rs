@@ -1,5 +1,9 @@
-use super::space_size::{SpaceSize2d, SpaceSize3d};
+use super::{
+    initial_front::{InitialFront2d, InitialFront3d},
+    space_size::{SpaceSize2d, SpaceSize3d},
+};
 
+#[derive(Clone)]
 pub struct Grid2d {
     pub left: i32,
     pub top: i32,
@@ -8,12 +12,12 @@ pub struct Grid2d {
 }
 
 impl Grid2d {
-    pub fn new(left: i32, top: i32, right: i32, bottom: i32) -> Self {
+    pub fn new() -> Self {
         Self {
-            left,
-            top,
-            right,
-            bottom,
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
         }
     }
 
@@ -23,8 +27,16 @@ impl Grid2d {
         self.top = -1;
         self.bottom = space_size.height;
     }
+
+    pub fn create_initial_front(&mut self, front: &InitialFront2d) {
+        self.left = front.vertices[0].x;
+        self.top = front.vertices[0].y;
+        self.right = front.vertices[1].x;
+        self.bottom = front.vertices[1].y;
+    }
 }
 
+#[derive(Clone)]
 pub struct Grid3d {
     pub left: i32,
     pub top: i32,
@@ -35,14 +47,14 @@ pub struct Grid3d {
 }
 
 impl Grid3d {
-    pub fn new(left: i32, top: i32, right: i32, bottom: i32, front: i32, back: i32) -> Self {
+    pub fn new() -> Self {
         Self {
-            left,
-            top,
-            right,
-            bottom,
-            front,
-            back,
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            front: 0,
+            back: 0,
         }
     }
 
@@ -53,5 +65,14 @@ impl Grid3d {
         self.bottom = space_size.height;
         self.front = -1;
         self.back = space_size.depth;
+    }
+
+    pub fn create_initial_front(&mut self, front: &InitialFront3d) {
+        self.left = front.vertices[0].x;
+        self.top = front.vertices[0].y;
+        self.right = front.vertices[1].x;
+        self.bottom = front.vertices[1].y;
+        self.front = front.vertices[0].z;
+        self.back = front.vertices[1].z;
     }
 }

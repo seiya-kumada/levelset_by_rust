@@ -5,6 +5,7 @@ use crate::core::grid::{Grid2d, Grid3d};
 use crate::core::grid_range::{GridRange2d, GridRange3d};
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::initial_front::{InitialFront2d, InitialFront3d};
+use crate::core::inside_estimator::{InsideEstimator2d, InsideEstimator3d};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::position::{Position2d, Position3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
@@ -34,6 +35,7 @@ pub trait Type {
     type GridRange_;
     type UpwindScheme_;
     type Front_;
+    type InsideEstimator_;
 
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_;
     fn make_upwind_scheme(indexer: Rc<Self::Indexer_>, phi: Rc<Vec<f64>>) -> Self::UpwindScheme_;
@@ -42,6 +44,9 @@ pub trait Type {
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_;
     fn make_int_point_vec() -> Vec<Self::IntPoint_>;
     fn make_double_point_vec() -> Vec<Self::DoublePoint_>;
+    fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_);
+    fn initialize_inside_estimator() -> Self::InsideEstimator_;
+    fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_);
 }
 
 pub struct TwoDim;
@@ -63,6 +68,7 @@ impl Type for TwoDim {
     type GridRange_ = GridRange2d;
     type UpwindScheme_ = UpwindScheme2d;
     type Front_ = Front2d;
+    type InsideEstimator_ = InsideEstimator2d;
 
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
         Self::Indexer_::new(space_size)
@@ -90,6 +96,18 @@ impl Type for TwoDim {
 
     fn make_double_point_vec() -> Vec<Self::DoublePoint_> {
         Vec::<Self::DoublePoint_>::new()
+    }
+
+    fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_) {
+        grid.create_initial_front(front);
+    }
+
+    fn initialize_inside_estimator() -> Self::InsideEstimator_ {
+        Self::InsideEstimator_::new()
+    }
+
+    fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_) {
+        inside.set_grid(front.clone());
     }
 }
 
@@ -109,6 +127,7 @@ impl Type for ThreeDim {
     type GridRange_ = GridRange3d;
     type UpwindScheme_ = UpwindScheme3d;
     type Front_ = Front3d;
+    type InsideEstimator_ = InsideEstimator3d;
 
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
         Self::Indexer_::new(space_size)
@@ -137,6 +156,18 @@ impl Type for ThreeDim {
     fn make_double_point_vec() -> Vec<Self::DoublePoint_> {
         Vec::<Self::DoublePoint_>::new()
     }
+
+    fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_) {
+        grid.create_initial_front(front);
+    }
+
+    fn initialize_inside_estimator() -> Self::InsideEstimator_ {
+        Self::InsideEstimator_::new()
+    }
+
+    fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_) {
+        inside.set_grid(front.clone());
+    }
 }
 
 pub type Grid<D> = <D as Type>::Grid_;
@@ -152,3 +183,4 @@ pub type SpeedFactor<D> = <D as Type>::SpeedFactor_;
 pub type GridRange<D> = <D as Type>::GridRange_;
 pub type UpwindScheme<D> = <D as Type>::UpwindScheme_;
 pub type Front<D> = <D as Type>::Front_;
+pub type InsideEstimator<D> = <D as Type>::InsideEstimator_;

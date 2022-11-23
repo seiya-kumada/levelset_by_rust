@@ -6,14 +6,14 @@ mod tests {
     use super::*;
     #[test]
     fn level_set_method() {
-        let g2 = Grid::<TwoDim>::new(1, 2, 3, 4);
-        let g3 = Grid::<ThreeDim>::new(1, 2, 3, 4, 5, 6);
+        //let g2 = Grid::<TwoDim>::new(1, 2, 3, 4);
+        //let g3 = Grid::<ThreeDim>::new(1, 2, 3, 4, 5, 6);
 
-        let s2 = SpaceSize::<TwoDim>::new(1, 2);
-        let s3 = SpaceSize::<ThreeDim>::new(1, 2, 3);
+        //let s2 = SpaceSize::<TwoDim>::new(1, 2);
+        //let s3 = SpaceSize::<ThreeDim>::new(1, 2, 3);
 
-        let i2 = Indexer::<TwoDim>::new(&s2);
-        let i3 = Indexer::<ThreeDim>::new(&s3);
+        //let i2 = Indexer::<TwoDim>::new(&s2);
+        //let i3 = Indexer::<ThreeDim>::new(&s3);
 
         //let a = ls::LevelSetMethod::<TwoDim> {
         //    size: s2,
