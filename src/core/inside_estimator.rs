@@ -11,6 +11,10 @@ impl InsideEstimator2d {
         }
     }
 
+    pub fn from_grid(grid: Grid2d) -> Self {
+        Self { grid }
+    }
+
     pub fn is_inside(&self, p: &Point2d<i32>) -> bool {
         (self.grid.left < p.x)
             && (p.x < self.grid.right)
@@ -19,7 +23,7 @@ impl InsideEstimator2d {
     }
 
     pub fn set_grid(&mut self, grid: Grid2d) {
-        self.grid = grid; //.clone();
+        self.grid = grid;
     }
 }
 
@@ -34,6 +38,10 @@ impl InsideEstimator3d {
         }
     }
 
+    pub fn from_grid(grid: Grid3d) -> Self {
+        Self { grid }
+    }
+
     pub fn is_inside(&self, p: &Point3d<i32>) -> bool {
         (self.grid.left < p.x)
             && (p.x < self.grid.right)
@@ -44,6 +52,6 @@ impl InsideEstimator3d {
     }
 
     pub fn set_grid(&mut self, grid: Grid3d) {
-        self.grid = grid; //.clone();
+        self.grid = grid;
     }
 }

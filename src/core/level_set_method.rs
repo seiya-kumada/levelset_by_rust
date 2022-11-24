@@ -48,6 +48,9 @@ pub struct LevelSetMethod<D: Type> {
     upwind_scheme: UpwindScheme<D>,
     speed_factor: SpeedFactor<D>,
     grid_range: GridRange<D>,
+
+    is_inside_space_without_edge: InsideEstimator<D>,
+    is_inside_space_with_edge: InsideEstimator<D>,
     is_inside_initial_front: InsideEstimator<D>,
 }
 
@@ -76,8 +79,14 @@ impl<D: Type> LevelSetMethod<D> {
             front: D::make_int_point_vec(),
             narrow_bands: D::make_int_point_vec(),
             normals: D::make_double_point_vec(),
+            is_inside_space_without_edge: D::create_space_without_edge(Rc::clone(&size)),
+            is_inside_space_with_edge: D::create_space_with_edge(Rc::clone(&size)),
             is_inside_initial_front: D::initialize_inside_estimator(),
         }
+    }
+
+    pub fn initialize_narrow_band(&mut self) {
+        self.narrow_bands.clear();
     }
 
     pub fn initialize_along_front(&mut self, initial_front: &InitialFront<D>) {

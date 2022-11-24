@@ -2,6 +2,7 @@ use super::{
     initial_front::{InitialFront2d, InitialFront3d},
     space_size::{SpaceSize2d, SpaceSize3d},
 };
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct Grid2d {
@@ -21,13 +22,23 @@ impl Grid2d {
         }
     }
 
-    pub fn create_space_with_edge(&mut self, space_size: &SpaceSize2d) {
-        self.left = -1;
-        self.right = space_size.width;
-        self.top = -1;
-        self.bottom = space_size.height;
+    pub fn create_space_with_edge(space_size: Rc<SpaceSize2d>) -> Self {
+        Self {
+            left: -1,
+            right: space_size.width,
+            top: -1,
+            bottom: space_size.height,
+        }
     }
 
+    pub fn create_space_without_edge(space_size: Rc<SpaceSize2d>) -> Self {
+        Self {
+            left: 0,
+            right: space_size.width - 1,
+            top: 0,
+            bottom: space_size.height - 1,
+        }
+    }
     pub fn create_initial_front(&mut self, front: &InitialFront2d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
@@ -58,13 +69,26 @@ impl Grid3d {
         }
     }
 
-    pub fn create_space_with_edge(&mut self, space_size: &SpaceSize3d) {
-        self.left = -1;
-        self.right = space_size.width;
-        self.top = -1;
-        self.bottom = space_size.height;
-        self.front = -1;
-        self.back = space_size.depth;
+    pub fn create_space_with_edge(space_size: Rc<SpaceSize3d>) -> Self {
+        Self {
+            left: -1,
+            right: space_size.width,
+            top: -1,
+            bottom: space_size.height,
+            front: -1,
+            back: space_size.depth,
+        }
+    }
+
+    pub fn create_space_without_edge(space_size: Rc<SpaceSize3d>) -> Self {
+        Self {
+            left: 0,
+            right: space_size.width - 1,
+            top: 0,
+            bottom: space_size.height - 1,
+            front: 0,
+            back: space_size.depth - 1,
+        }
     }
 
     pub fn create_initial_front(&mut self, front: &InitialFront3d) {

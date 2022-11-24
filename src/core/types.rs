@@ -47,6 +47,8 @@ pub trait Type {
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_);
     fn initialize_inside_estimator() -> Self::InsideEstimator_;
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_);
+    fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
+    fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
 }
 
 pub struct TwoDim;
@@ -109,6 +111,14 @@ impl Type for TwoDim {
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_) {
         inside.set_grid(front.clone());
     }
+
+    fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        Self::InsideEstimator_::from_grid(Self::Grid_::create_space_with_edge(space_size))
+    }
+
+    fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        Self::InsideEstimator_::from_grid(Self::Grid_::create_space_without_edge(space_size))
+    }
 }
 
 impl Type for ThreeDim {
@@ -167,6 +177,14 @@ impl Type for ThreeDim {
 
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_) {
         inside.set_grid(front.clone());
+    }
+
+    fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        Self::InsideEstimator_::from_grid(Self::Grid_::create_space_with_edge(space_size))
+    }
+
+    fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        Self::InsideEstimator_::from_grid(Self::Grid_::create_space_without_edge(space_size))
     }
 }
 
