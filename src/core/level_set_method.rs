@@ -2,6 +2,7 @@ use super::types::InitialFront;
 use super::{types::SpeedFactor, upwind_scheme};
 use crate::core::parameters::Parameters;
 use crate::core::status::Status;
+use crate::core::stopping_condition::StoppingCondition;
 use crate::core::types::{
     DoublePoint, Front, Grid, GridRange, Indexer, InsideEstimator, IntPoint, SpaceSize, Type,
     UpwindScheme,
@@ -49,9 +50,14 @@ pub struct LevelSetMethod<D: Type> {
     speed_factor: SpeedFactor<D>,
     grid_range: GridRange<D>,
 
-    is_inside_space_without_edge: InsideEstimator<D>,
-    is_inside_space_with_edge: InsideEstimator<D>,
-    is_inside_initial_front: InsideEstimator<D>,
+    inside_estimator_of_space_without_edge: InsideEstimator<D>,
+    inside_estimator_of_space_with_edge: InsideEstimator<D>,
+    inside_estimator_of_initial_front: InsideEstimator<D>,
+
+    total_speed: f64,
+
+    stopping_condition: StoppingCondition,
+    zero_count: i32,
 }
 
 impl<D: Type> LevelSetMethod<D> {
@@ -79,20 +85,74 @@ impl<D: Type> LevelSetMethod<D> {
             front: D::make_int_point_vec(),
             narrow_bands: D::make_int_point_vec(),
             normals: D::make_double_point_vec(),
-            is_inside_space_without_edge: D::create_space_without_edge(Rc::clone(&size)),
-            is_inside_space_with_edge: D::create_space_with_edge(Rc::clone(&size)),
-            is_inside_initial_front: D::initialize_inside_estimator(),
+            inside_estimator_of_space_without_edge: D::create_space_without_edge(Rc::clone(&size)),
+            inside_estimator_of_space_with_edge: D::create_space_with_edge(Rc::clone(&size)),
+            inside_estimator_of_initial_front: D::initialize_inside_estimator(),
+            total_speed: 0.0,
+            stopping_condition: StoppingCondition::new(),
+            zero_count: 0,
         }
+    }
+
+    fn clear_speed_within_narrow_band(&self, reset: bool) {}
+
+    fn set_speed_on_front(&mut self) -> f64 {
+        let fs = 0.0;
+        for p in &self.front {
+            if D::is_inside(&self.inside_estimator_of_space_without_edge, p) {
+                let i = D::get_index(&self.indexer, p) as usize;
+                let speed_factor = D::get_speed_factor(&self.speed_factor, p);
+                self.speed[i] = speed_factor.clone();
+            }
+        }
+        0.0
+    }
+
+    fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {}
+
+    fn register_to_narrow_band(
+        indexer: &Indexer<D>,
+        statuses: &Vec<Status>,
+        band: &mut Vec<IntPoint<D>>,
+        p: IntPoint<D>,
+    ) {
+        let index = D::get_index(indexer, &p);
+        match statuses[index as usize] {
+            Status::Farway => band.push(p),
+            _ => (),
+        }
+    }
+
+    fn set_speed_function(&mut self, resets: bool) -> bool {
+        self.clear_speed_within_narrow_band(resets);
+        self.total_speed = self.set_speed_on_front();
+        self.copy_nearest_speed_to_narrow_band(resets);
+        if resets {
+            self.narrow_bands.clear();
+            D::loop_in_grid_range(
+                &self.grid_range,
+                &self.indexer,
+                &self.statuses,
+                &mut self.narrow_bands,
+                Self::register_to_narrow_band,
+            );
+        }
+        self.stopping_condition.add_total_speed(self.total_speed);
+        self.stopping_condition.is_satisfied()
     }
 
     pub fn initialize_narrow_band(&mut self) {
         self.narrow_bands.clear();
+        self.set_speed_function(true);
     }
 
     pub fn initialize_along_front(&mut self, initial_front: &InitialFront<D>) {
         self.front.clear();
         self.normals.clear();
         D::create_initial_front(initial_front, &mut self.initial_front);
-        D::set_grid(&self.initial_front, &mut self.is_inside_initial_front);
+        D::set_grid(
+            &self.initial_front,
+            &mut self.inside_estimator_of_initial_front,
+        );
     }
 }

@@ -1,6 +1,7 @@
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
+use crate::core::status::Status;
 use std::ops::Range;
 use std::rc::Rc;
 pub struct GridRange2d {
@@ -16,10 +17,16 @@ impl GridRange2d {
         }
     }
 
-    pub fn foreach(&self, fun: fn(Point2d<i32>), w: i32) {
+    pub fn foreach(
+        &self,
+        indexer: &Indexer2d,
+        statuses: &Vec<Status>,
+        band: &mut Vec<Point2d<i32>>,
+        fun: fn(&Indexer2d, &Vec<Status>, &mut Vec<Point2d<i32>>, Point2d<i32>),
+    ) {
         for j in self.y_range.0..self.y_range.1 {
             for i in self.x_range.0..self.x_range.1 {
-                fun(Point2d::<i32>::new(i, j));
+                fun(indexer, statuses, band, Point2d::<i32>::new(i, j));
             }
         }
     }
@@ -40,11 +47,17 @@ impl GridRange3d {
         }
     }
 
-    pub fn foreach(&self, fun: fn(Point3d<i32>)) {
+    pub fn foreach(
+        &self,
+        indexer: &Indexer3d,
+        statuses: &Vec<Status>,
+        band: &mut Vec<Point3d<i32>>,
+        fun: fn(&Indexer3d, &Vec<Status>, &mut Vec<Point3d<i32>>, Point3d<i32>),
+    ) {
         for k in self.z_range.0..self.z_range.1 {
             for j in self.y_range.0..self.y_range.1 {
                 for i in self.x_range.0..self.x_range.1 {
-                    fun(Point3d::<i32>::new(i, j, k));
+                    fun(indexer, statuses, band, Point3d::<i32>::new(i, j, k));
                 }
             }
         }

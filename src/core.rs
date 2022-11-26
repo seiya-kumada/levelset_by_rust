@@ -15,6 +15,7 @@ pub mod space_size;
 pub mod speed;
 pub mod speed_factor;
 pub mod status;
+pub mod stopping_condition;
 pub mod types;
 pub mod upwind;
 pub mod upwind_scheme;

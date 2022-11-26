@@ -10,9 +10,9 @@ use crate::core::point::{Point2d, Point3d};
 use crate::core::position::{Position2d, Position3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 use crate::core::speed_factor::{SpeedFactor2d, SpeedFactor3d};
+use crate::core::status::Status;
 use crate::core::upwind::{Upwind2d, Upwind3d};
 use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d};
-
 use crate::core::util;
 use num_traits::ToPrimitive;
 use num_traits::Zero;
@@ -49,6 +49,16 @@ pub trait Type {
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_);
     fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
+    fn loop_in_grid_range(
+        grid_range: &Self::GridRange_,
+        indexer: &Self::Indexer_,
+        statuses: &Vec<Status>,
+        band: &mut Vec<Self::IntPoint_>,
+        fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
+    );
+    fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32;
+    fn is_inside(estimator: &Self::InsideEstimator_, p: &Self::IntPoint_) -> bool;
+    fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64;
 }
 
 pub struct TwoDim;
@@ -119,6 +129,28 @@ impl Type for TwoDim {
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
         Self::InsideEstimator_::from_grid(Self::Grid_::create_space_without_edge(space_size))
     }
+
+    fn loop_in_grid_range(
+        grid_range: &Self::GridRange_,
+        indexer: &Self::Indexer_,
+        statuses: &Vec<Status>,
+        band: &mut Vec<Self::IntPoint_>,
+        fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
+    ) {
+        grid_range.foreach(indexer, statuses, band, fun);
+    }
+
+    fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
+        indexer.get(p)
+    }
+
+    fn is_inside(estimator: &Self::InsideEstimator_, p: &Self::IntPoint_) -> bool {
+        estimator.is_inside(p)
+    }
+
+    fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64 {
+        factor.get_value(p)
+    }
 }
 
 impl Type for ThreeDim {
@@ -185,6 +217,28 @@ impl Type for ThreeDim {
 
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
         Self::InsideEstimator_::from_grid(Self::Grid_::create_space_without_edge(space_size))
+    }
+
+    fn loop_in_grid_range(
+        grid_range: &Self::GridRange_,
+        indexer: &Self::Indexer_,
+        statuses: &Vec<Status>,
+        band: &mut Vec<Self::IntPoint_>,
+        fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
+    ) {
+        grid_range.foreach(indexer, statuses, band, fun);
+    }
+
+    fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
+        indexer.get(p)
+    }
+
+    fn is_inside(estimator: &Self::InsideEstimator_, p: &Self::IntPoint_) -> bool {
+        estimator.is_inside(p)
+    }
+
+    fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64 {
+        factor.get_value(p)
     }
 }
 
