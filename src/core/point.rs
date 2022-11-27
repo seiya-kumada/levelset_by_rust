@@ -1,4 +1,6 @@
 use num_traits::Num;
+use std::cmp::Eq;
+use std::cmp::PartialEq;
 use std::ops::Add;
 
 impl<T: Copy> Clone for Point2d<T> {
@@ -10,7 +12,7 @@ impl<T: Copy> Clone for Point2d<T> {
     }
 }
 
-#[derive(Copy)]
+#[derive(Copy, Hash, PartialEq, Eq)]
 pub struct Point2d<T> {
     pub x: T,
     pub y: T,
@@ -31,6 +33,8 @@ impl<T: Copy> Clone for Point3d<T> {
         }
     }
 }
+
+#[derive(Copy, Hash, PartialEq, Eq)]
 pub struct Point3d<T> {
     pub x: T,
     pub y: T,

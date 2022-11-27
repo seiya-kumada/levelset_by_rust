@@ -59,6 +59,7 @@ pub trait Type {
     fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32;
     fn is_inside(estimator: &Self::InsideEstimator_, p: &Self::IntPoint_) -> bool;
     fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64;
+    fn calculate_all(factor: &mut Self::SpeedFactor_, size: &Self::SpaceSize_);
 }
 
 pub struct TwoDim;
@@ -151,6 +152,10 @@ impl Type for TwoDim {
     fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64 {
         factor.get_value(p)
     }
+
+    fn calculate_all(factor: &mut Self::SpeedFactor_, size: &Self::SpaceSize_) {
+        factor.calculate_all(size);
+    }
 }
 
 impl Type for ThreeDim {
@@ -239,6 +244,10 @@ impl Type for ThreeDim {
 
     fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64 {
         factor.get_value(p)
+    }
+
+    fn calculate_all(factor: &mut Self::SpeedFactor_, size: &Self::SpaceSize_) {
+        factor.calculate_all(size);
     }
 }
 

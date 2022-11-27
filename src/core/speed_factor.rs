@@ -32,7 +32,7 @@ impl SpeedFactor2d {
         1.0 / (1.0 + (dx * dx + dy * dy).sqrt())
     }
 
-    fn calculate_all(&mut self, space_size: &SpaceSize2d) {
+    pub fn calculate_all(&mut self, space_size: &SpaceSize2d) {
         let w = space_size.width as usize;
         let h = space_size.height as usize;
         self.factors.resize(w * h, 0.0);
@@ -76,7 +76,7 @@ impl SpeedFactor3d {
         1.0 / (1.0 + (dx * dx + dy * dy + dz * dz).sqrt())
     }
 
-    fn calculate_all(&mut self, space_size: &SpaceSize3d) {
+    pub fn calculate_all(&mut self, space_size: &SpaceSize3d) {
         let w = space_size.width as usize;
         let h = space_size.height as usize;
         let a = w * h;

@@ -94,6 +94,17 @@ impl<D: Type> LevelSetMethod<D> {
         }
     }
 
+    pub fn initialize_narrow_band(&mut self) {
+        self.narrow_bands.clear();
+        self.set_speed_function(true);
+    }
+
+    fn calculate_speed_factors(&mut self) {
+        D::calculate_all(&mut self.speed_factor, &self.size);
+    }
+
+    fn initailze_distance_map() {}
+
     fn clear_speed_within_narrow_band(&self, reset: bool) {}
 
     fn set_speed_on_front(&mut self) -> f64 {
@@ -139,11 +150,6 @@ impl<D: Type> LevelSetMethod<D> {
         }
         self.stopping_condition.add_total_speed(self.total_speed);
         self.stopping_condition.is_satisfied()
-    }
-
-    pub fn initialize_narrow_band(&mut self) {
-        self.narrow_bands.clear();
-        self.set_speed_function(true);
     }
 
     pub fn initialize_along_front(&mut self, initial_front: &InitialFront<D>) {

@@ -1,5 +1,6 @@
 pub mod differential;
 pub mod dim;
+pub mod distance_map_generator;
 pub mod front;
 pub mod grid;
 pub mod grid_range;
