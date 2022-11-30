@@ -20,7 +20,7 @@ use std::ops::Add;
 use std::rc::Rc;
 
 pub trait Type {
-    const NUM: i32;
+    const NUM: usize;
 
     type SpaceSize_;
     type Grid_;
@@ -66,7 +66,7 @@ pub struct TwoDim;
 pub struct ThreeDim;
 
 impl Type for TwoDim {
-    const NUM: i32 = 2;
+    const NUM: usize = 2;
 
     type Grid_ = Grid2d;
     type SpaceSize_ = SpaceSize2d;
@@ -159,7 +159,7 @@ impl Type for TwoDim {
 }
 
 impl Type for ThreeDim {
-    const NUM: i32 = 3;
+    const NUM: usize = 3;
 
     type Grid_ = Grid3d;
     type SpaceSize_ = SpaceSize3d;

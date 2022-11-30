@@ -1,6 +1,11 @@
+use crate::core::dim::{THREE, TWO};
 use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
 use crate::core::point::{Point2d, Point3d};
+use crate::core::status::Status;
+use crate::core::types::{Indexer, IntPoint, ThreeDim, TwoDim, Type};
 use bimap::BiMap;
+use multimap::MultiMap;
+use std::rc::Rc;
 
 #[inline]
 fn is_zero(x: i32) -> bool {
@@ -25,6 +30,36 @@ fn to_symbol(x: i32) -> i32 {
     }
 }
 
+//pub const POWER_OF_3: [usize; 4] = [0, 0, 3usize.pow(2), 3usize.pow(3)];
+//struct Table<D: Type, const N: usize> {
+//    indices: BiMap<IntPoint<D>, usize>,
+//    points: [IntPoint<D>; N],
+//}
+//
+//trait TableTrait {
+//    type IntPoint;
+//    fn initialize(&mut self);
+//    fn new() -> Self;
+//    //fn to_symbols(p: &Self::IntPoint) -> Self::IntPoint;
+//    //fn index(&self, p: &Self::IntPoint) -> usize;
+//}
+
+//impl TableTrait for Table<TwoDim, { POWER_OF_3[TwoDim::NUM] }> {
+//    type IntPoint = IntPoint<TwoDim>;
+//
+//    fn initialize(&mut self) {}
+//    fn new() -> Self {
+//        let mut obj = Self {
+//            indices: BiMap::<Point2d<i32>, usize>::new(),
+//            points: [Point2d::<i32>::new(0, 0); 9],
+//        };
+//        obj.initialize();
+//        for i in 0..obj.points.len() {
+//            obj.points[i] = obj.indices.get_by_right(&i).unwrap().clone();
+//        }
+//        obj
+//    }
+//}
 struct Table2d {
     indices: BiMap<Point2d<i32>, usize>,
     points: [Point2d<i32>; 9],
@@ -73,6 +108,10 @@ impl Table2d {
             .insert(NEIGHBORING_POINTS2D.get(1, -1).clone(), 7);
         self.indices
             .insert(NEIGHBORING_POINTS2D.get(1, 1).clone(), 8);
+    }
+
+    pub fn point(&self, index: i32) -> &Point2d<i32> {
+        &self.points[index as usize]
     }
 }
 
@@ -168,5 +207,75 @@ impl Table3d {
             .insert(NEIGHBORING_POINTS3D.get(1, -1, 1).clone(), 25);
         self.indices
             .insert(NEIGHBORING_POINTS3D.get(1, 1, 1).clone(), 26);
+    }
+
+    pub fn point(&self, index: i32) -> &Point3d<i32> {
+        &self.points[index as usize]
+    }
+}
+
+struct PointInfo<D: Type> {
+    point: IntPoint<D>,
+    label: i32,
+}
+
+type DistanceMap<D> = MultiMap<i32, PointInfo<D>>;
+
+struct DistanceMapGenerator2d {
+    distance_map: DistanceMap<TwoDim>,
+    table: Table2d,
+    wband: i32,
+    squared_wband: i32,
+    indexer: Rc<Indexer<TwoDim>>,
+    statuses: Rc<Vec<Status>>,
+}
+
+impl DistanceMapGenerator2d {
+    pub fn new(wband: i32, indexer: Rc<Indexer<TwoDim>>, statuses: Rc<Vec<Status>>) -> Self {
+        Self {
+            wband,
+            indexer: Rc::clone(&indexer),
+            statuses: Rc::clone(&statuses),
+            table: Table2d::new(),
+            distance_map: DistanceMap::<TwoDim>::new(),
+            squared_wband: 0,
+        }
+    }
+
+    pub fn get_distance_map(&self) -> &DistanceMap<TwoDim> {
+        &self.distance_map
+    }
+
+    fn remove(
+        &self,
+        p: &IntPoint<TwoDim>,
+        a: i32,
+        indices: &[i32; 3],
+        labels: &mut Vec<bool>,
+    ) -> bool {
+        let q = p + self.table.point(a);
+        let r = self.indexer.get(&q);
+        match self.statuses[r as usize] {
+            Status::Front => {
+                labels[indices[0] as usize] = false;
+                labels[indices[1] as usize] = false;
+                labels[indices[2] as usize] = false;
+                return true;
+            }
+            _ => {
+                return false;
+            }
+        }
+    }
+
+    fn remove_(&self, p: &IntPoint<TwoDim>, a: i32, labels: &mut Vec<bool>) {
+        let q = p + self.table.point(a);
+        let r = self.indexer.get(&q);
+        match self.statuses[r as usize] {
+            Status::Front => {
+                labels[a as usize] = false;
+            }
+            _ => (),
+        }
     }
 }
