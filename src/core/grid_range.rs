@@ -16,13 +16,12 @@ impl GridRange2d {
             y_range: (0, space_size.height),
         }
     }
-
-    pub fn foreach(
+    pub fn foreach<T>(
         &self,
         indexer: &Indexer2d,
         statuses: &Vec<Status>,
-        band: &mut Vec<Point2d<i32>>,
-        fun: fn(&Indexer2d, &Vec<Status>, &mut Vec<Point2d<i32>>, Point2d<i32>),
+        band: &mut T,
+        fun: fn(&Indexer2d, &Vec<Status>, &mut T, Point2d<i32>),
     ) {
         for j in self.y_range.0..self.y_range.1 {
             for i in self.x_range.0..self.x_range.1 {
@@ -30,6 +29,19 @@ impl GridRange2d {
             }
         }
     }
+    //pub fn foreach(
+    //    &self,
+    //    indexer: &Indexer2d,
+    //    statuses: &Vec<Status>,
+    //    band: &mut Vec<Point2d<i32>>,
+    //    fun: fn(&Indexer2d, &Vec<Status>, &mut Vec<Point2d<i32>>, Point2d<i32>),
+    //) {
+    //    for j in self.y_range.0..self.y_range.1 {
+    //        for i in self.x_range.0..self.x_range.1 {
+    //            fun(indexer, statuses, band, Point2d::<i32>::new(i, j));
+    //        }
+    //    }
+    //}
 }
 
 pub struct GridRange3d {
@@ -47,12 +59,12 @@ impl GridRange3d {
         }
     }
 
-    pub fn foreach(
+    pub fn foreach<T>(
         &self,
         indexer: &Indexer3d,
         statuses: &Vec<Status>,
-        band: &mut Vec<Point3d<i32>>,
-        fun: fn(&Indexer3d, &Vec<Status>, &mut Vec<Point3d<i32>>, Point3d<i32>),
+        band: &mut T,
+        fun: fn(&Indexer3d, &Vec<Status>, &mut T, Point3d<i32>),
     ) {
         for k in self.z_range.0..self.z_range.1 {
             for j in self.y_range.0..self.y_range.1 {
@@ -62,4 +74,20 @@ impl GridRange3d {
             }
         }
     }
+
+    //pub fn foreach(
+    //    &self,
+    //    indexer: &Indexer3d,
+    //    statuses: &Vec<Status>,
+    //    band: &mut Vec<Point3d<i32>>,
+    //    fun: fn(&Indexer3d, &Vec<Status>, &mut Vec<Point3d<i32>>, Point3d<i32>),
+    //) {
+    //    for k in self.z_range.0..self.z_range.1 {
+    //        for j in self.y_range.0..self.y_range.1 {
+    //            for i in self.x_range.0..self.x_range.1 {
+    //                fun(indexer, statuses, band, Point3d::<i32>::new(i, j, k));
+    //            }
+    //        }
+    //    }
+    //}
 }

@@ -1,5 +1,7 @@
 use super::differential::{Differential2d, Differential3d};
+use super::distance_map_generator;
 use super::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
+use crate::core::distance_map_generator::{DistanceMapGenerator2d, DistanceMapGenerator3d};
 use crate::core::front::{Front2d, Front3d};
 use crate::core::grid::{Grid2d, Grid3d};
 use crate::core::grid_range::{GridRange2d, GridRange3d};
@@ -36,6 +38,7 @@ pub trait Type {
     type UpwindScheme_;
     type Front_;
     type InsideEstimator_;
+    type DistanceMapGenerator_;
 
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_;
     fn make_upwind_scheme(indexer: Rc<Self::Indexer_>, phi: Rc<Vec<f64>>) -> Self::UpwindScheme_;
@@ -44,6 +47,11 @@ pub trait Type {
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_;
     fn make_int_point_vec() -> Vec<Self::IntPoint_>;
     fn make_double_point_vec() -> Vec<Self::DoublePoint_>;
+    fn make_distance_map_generator(
+        wband: i32,
+        indexer: Rc<Self::Indexer_>,
+        statuses: Rc<Vec<Status>>,
+    ) -> Self::DistanceMapGenerator_;
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_);
     fn initialize_inside_estimator() -> Self::InsideEstimator_;
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_);
@@ -56,10 +64,19 @@ pub trait Type {
         band: &mut Vec<Self::IntPoint_>,
         fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
     );
+    fn loop_in_grid_range_with_phi(
+        grid_range: &Self::GridRange_,
+        indexer: &Self::Indexer_,
+        statuses: &Vec<Status>,
+        phi: &mut Rc<Vec<f64>>,
+        fun: fn(&Self::Indexer_, &Vec<Status>, &mut Rc<Vec<f64>>, Self::IntPoint_),
+    );
+
     fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32;
     fn is_inside(estimator: &Self::InsideEstimator_, p: &Self::IntPoint_) -> bool;
     fn get_speed_factor(factor: &Self::SpeedFactor_, p: &Self::IntPoint_) -> f64;
     fn calculate_all(factor: &mut Self::SpeedFactor_, size: &Self::SpaceSize_);
+    fn create_distance_map(distance_map_generator: &mut Self::DistanceMapGenerator_);
 }
 
 pub struct TwoDim;
@@ -82,7 +99,7 @@ impl Type for TwoDim {
     type UpwindScheme_ = UpwindScheme2d;
     type Front_ = Front2d;
     type InsideEstimator_ = InsideEstimator2d;
-
+    type DistanceMapGenerator_ = DistanceMapGenerator2d;
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
         Self::Indexer_::new(space_size)
     }
@@ -109,6 +126,14 @@ impl Type for TwoDim {
 
     fn make_double_point_vec() -> Vec<Self::DoublePoint_> {
         Vec::<Self::DoublePoint_>::new()
+    }
+
+    fn make_distance_map_generator(
+        wband: i32,
+        indexer: Rc<Self::Indexer_>,
+        statuses: Rc<Vec<Status>>,
+    ) -> Self::DistanceMapGenerator_ {
+        Self::DistanceMapGenerator_::new(wband, Rc::clone(&indexer), Rc::clone(&statuses))
     }
 
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_) {
@@ -141,6 +166,16 @@ impl Type for TwoDim {
         grid_range.foreach(indexer, statuses, band, fun);
     }
 
+    fn loop_in_grid_range_with_phi(
+        grid_range: &Self::GridRange_,
+        indexer: &Self::Indexer_,
+        statuses: &Vec<Status>,
+        phi: &mut Rc<Vec<f64>>,
+        fun: fn(&Self::Indexer_, &Vec<Status>, &mut Rc<Vec<f64>>, Self::IntPoint_),
+    ) {
+        grid_range.foreach(indexer, statuses, phi, fun);
+    }
+
     fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
         indexer.get(p)
     }
@@ -155,6 +190,10 @@ impl Type for TwoDim {
 
     fn calculate_all(factor: &mut Self::SpeedFactor_, size: &Self::SpaceSize_) {
         factor.calculate_all(size);
+    }
+
+    fn create_distance_map(distance_map_generator: &mut Self::DistanceMapGenerator_) {
+        distance_map_generator.create_distance_map();
     }
 }
 
@@ -175,7 +214,7 @@ impl Type for ThreeDim {
     type UpwindScheme_ = UpwindScheme3d;
     type Front_ = Front3d;
     type InsideEstimator_ = InsideEstimator3d;
-
+    type DistanceMapGenerator_ = DistanceMapGenerator3d;
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
         Self::Indexer_::new(space_size)
     }
@@ -202,6 +241,14 @@ impl Type for ThreeDim {
 
     fn make_double_point_vec() -> Vec<Self::DoublePoint_> {
         Vec::<Self::DoublePoint_>::new()
+    }
+
+    fn make_distance_map_generator(
+        wband: i32,
+        indexer: Rc<Self::Indexer_>,
+        statuses: Rc<Vec<Status>>,
+    ) -> Self::DistanceMapGenerator_ {
+        Self::DistanceMapGenerator_::new(wband, Rc::clone(&indexer), Rc::clone(&statuses))
     }
 
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_) {
@@ -234,6 +281,16 @@ impl Type for ThreeDim {
         grid_range.foreach(indexer, statuses, band, fun);
     }
 
+    fn loop_in_grid_range_with_phi(
+        grid_range: &Self::GridRange_,
+        indexer: &Self::Indexer_,
+        statuses: &Vec<Status>,
+        phi: &mut Rc<Vec<f64>>,
+        fun: fn(&Self::Indexer_, &Vec<Status>, &mut Rc<Vec<f64>>, Self::IntPoint_),
+    ) {
+        grid_range.foreach(indexer, statuses, phi, fun);
+    }
+
     fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
         indexer.get(p)
     }
@@ -248,6 +305,10 @@ impl Type for ThreeDim {
 
     fn calculate_all(factor: &mut Self::SpeedFactor_, size: &Self::SpaceSize_) {
         factor.calculate_all(size);
+    }
+
+    fn create_distance_map(distance_map_generator: &mut Self::DistanceMapGenerator_) {
+        distance_map_generator.create_distance_map();
     }
 }
 
@@ -265,3 +326,4 @@ pub type GridRange<D> = <D as Type>::GridRange_;
 pub type UpwindScheme<D> = <D as Type>::UpwindScheme_;
 pub type Front<D> = <D as Type>::Front_;
 pub type InsideEstimator<D> = <D as Type>::InsideEstimator_;
+pub type DistanceMapGenerator<D> = <D as Type>::DistanceMapGenerator_;

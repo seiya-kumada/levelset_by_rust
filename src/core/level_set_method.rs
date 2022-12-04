@@ -1,11 +1,9 @@
-use super::types::InitialFront;
-use super::{types::SpeedFactor, upwind_scheme};
 use crate::core::parameters::Parameters;
 use crate::core::status::Status;
 use crate::core::stopping_condition::StoppingCondition;
 use crate::core::types::{
-    DoublePoint, Front, Grid, GridRange, Indexer, InsideEstimator, IntPoint, SpaceSize, Type,
-    UpwindScheme,
+    DistanceMapGenerator, DoublePoint, Front, Grid, GridRange, Indexer, InitialFront,
+    InsideEstimator, IntPoint, SpaceSize, SpeedFactor, Type, UpwindScheme,
 };
 use std::rc::Rc;
 
@@ -32,7 +30,7 @@ pub struct LevelSetMethod<D: Type> {
     speed: Vec<f64>,
 
     /// current statuses
-    statuses: Vec<Status>,
+    statuses: Rc<Vec<Status>>,
 
     /// front
     front: Vec<IntPoint<D>>,
@@ -58,6 +56,8 @@ pub struct LevelSetMethod<D: Type> {
 
     stopping_condition: StoppingCondition,
     zero_count: i32,
+
+    distance_map_generator: DistanceMapGenerator<D>,
 }
 
 impl<D: Type> LevelSetMethod<D> {
@@ -67,17 +67,18 @@ impl<D: Type> LevelSetMethod<D> {
         gray: Rc<Vec<u8>>,
         initial_front: Grid<D>,
     ) -> Self {
+        let statuses = Rc::new(vec![Status::Farway; D::get_total(&size)]);
         let indexer = Rc::new(D::make_indexer(&size));
         let phi = Rc::new(vec![0.0; D::get_total(&size)]);
         Self {
-            parameters,
+            parameters: parameters.clone(),
             size: Rc::clone(&size),
             indexer: Rc::clone(&indexer),
             initial_front,
             phi: Rc::clone(&phi),
             dphi: Rc::new(vec![0.0; D::get_total(&size)]),
             speed: vec![0.0; D::get_total(&size)],
-            statuses: vec![Status::Farway; D::get_total(&size)],
+            statuses: Rc::clone(&statuses),
             upwind_scheme: D::make_upwind_scheme(Rc::clone(&indexer), Rc::clone(&phi)),
             speed_factor: D::make_speed_factor(Rc::clone(&indexer), Rc::clone(&gray)),
             grid_range: D::make_grid_range(&size),
@@ -91,6 +92,11 @@ impl<D: Type> LevelSetMethod<D> {
             total_speed: 0.0,
             stopping_condition: StoppingCondition::new(),
             zero_count: 0,
+            distance_map_generator: D::make_distance_map_generator(
+                parameters.wband,
+                Rc::clone(&indexer),
+                Rc::clone(&statuses),
+            ),
         }
     }
 
@@ -103,7 +109,47 @@ impl<D: Type> LevelSetMethod<D> {
         D::calculate_all(&mut self.speed_factor, &self.size);
     }
 
-    fn initailze_distance_map() {}
+    fn initailze_distance_map(&mut self) {
+        D::create_distance_map(&mut self.distance_map_generator);
+    }
+
+    fn get_size(&self) -> Rc<SpaceSize<D>> {
+        Rc::clone(&self.size)
+    }
+
+    pub fn initialize_along_front(&mut self, initial_front: &InitialFront<D>) {
+        self.front.clear();
+        self.normals.clear();
+        D::create_initial_front(initial_front, &mut self.initial_front);
+        D::set_grid(
+            &self.initial_front,
+            &mut self.inside_estimator_of_initial_front,
+        );
+    }
+
+    fn initailze_over_all(&self, initial_front: &InitialFront<D>) {
+        D::loop_in_grid_range_with_phi(
+            &self.grid_range,
+            &self.indexer,
+            &self.statuses,
+            &mut Rc::clone(&self.phi),
+            Self::register_to_phi,
+        );
+    }
+    fn register_to_phi(
+        indexer: &Indexer<D>,
+        statuses: &Vec<Status>,
+        phi: &mut Rc<Vec<f64>>,
+        p: IntPoint<D>,
+    ) {
+        let index = D::get_index(indexer, &p);
+        match statuses[index as usize] {
+            Status::Front => {
+                //phi[index as usize] = 1.0;
+            }
+            _ => (),
+        }
+    }
 
     fn clear_speed_within_narrow_band(&self, reset: bool) {}
 
@@ -150,15 +196,5 @@ impl<D: Type> LevelSetMethod<D> {
         }
         self.stopping_condition.add_total_speed(self.total_speed);
         self.stopping_condition.is_satisfied()
-    }
-
-    pub fn initialize_along_front(&mut self, initial_front: &InitialFront<D>) {
-        self.front.clear();
-        self.normals.clear();
-        D::create_initial_front(initial_front, &mut self.initial_front);
-        D::set_grid(
-            &self.initial_front,
-            &mut self.inside_estimator_of_initial_front,
-        );
     }
 }
