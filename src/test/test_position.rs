@@ -1,4 +1,4 @@
-use crate::core::indexer::{Indexer2d, Indexer3d};
+use crate::core::indexer::{Indexer2d, Indexer3d, New};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::position::{Position2d, Position3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};

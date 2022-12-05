@@ -5,7 +5,7 @@ use crate::core::distance_map_generator::{DistanceMapGenerator2d, DistanceMapGen
 use crate::core::front::{Front2d, Front3d};
 use crate::core::grid::{Grid2d, Grid3d};
 use crate::core::grid_range::{GridRange2d, GridRange3d};
-use crate::core::indexer::{Indexer2d, Indexer3d};
+use crate::core::indexer::{Indexer2d, Indexer3d, New};
 use crate::core::initial_front::{InitialFront2d, InitialFront3d};
 use crate::core::inside_estimator::{InsideEstimator2d, InsideEstimator3d};
 use crate::core::point::{Point2d, Point3d};
@@ -20,6 +20,15 @@ use num_traits::ToPrimitive;
 use num_traits::Zero;
 use std::ops::Add;
 use std::rc::Rc;
+
+pub trait Type_<SpaceSize, Indexer: New<SpaceSize>> {
+    fn make_indexer(space_size: &SpaceSize) -> Indexer {
+        Indexer::new(space_size)
+    }
+}
+
+impl Type_<SpaceSize2d, Indexer2d> for TwoDim {}
+impl Type_<SpaceSize3d, Indexer3d> for ThreeDim {}
 
 pub trait Type {
     const NUM: usize;

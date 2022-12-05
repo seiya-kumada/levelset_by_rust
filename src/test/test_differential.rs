@@ -1,4 +1,5 @@
 use crate::core::differential as df;
+use crate::core::indexer::{Indexer2d, Indexer3d, New};
 use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 use std::rc::Rc;
 
@@ -329,7 +330,7 @@ mod tests {
 
     fn sobel_x_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
-        let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
+        let indexer = Rc::new(Indexer2d::new(&space_size));
         let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);

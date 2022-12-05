@@ -1,5 +1,5 @@
 //use crate::core::speed as sp;
-use crate::core::indexer::{Indexer2d, Indexer3d};
+use crate::core::indexer::{Indexer2d, Indexer3d, New};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d};
