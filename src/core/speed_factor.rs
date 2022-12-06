@@ -6,20 +6,35 @@ use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 
 use std::rc::Rc;
 
+use super::speed::Speed;
+pub trait New<T> {
+    fn new(indexer: Rc<T>, gray: Rc<Vec<u8>>) -> Self;
+}
+
 pub struct SpeedFactor2d {
     indexer: Rc<Indexer2d>,
     differential: Differential2d<u8>,
     factors: Vec<f64>,
 }
 
-impl SpeedFactor2d {
-    pub fn new(indexer: Rc<Indexer2d>, gray: Rc<Vec<u8>>) -> Self {
+impl New<Indexer2d> for SpeedFactor2d {
+    fn new(indexer: Rc<Indexer2d>, gray: Rc<Vec<u8>>) -> Self {
         Self {
             indexer: Rc::clone(&indexer),
             differential: Differential2d::<u8>::new(Rc::clone(&indexer), Rc::clone(&gray)),
             factors: Vec::<f64>::new(),
         }
     }
+}
+
+impl SpeedFactor2d {
+    //pub fn new(indexer: Rc<Indexer2d>, gray: Rc<Vec<u8>>) -> Self {
+    //    Self {
+    //        indexer: Rc::clone(&indexer),
+    //        differential: Differential2d::<u8>::new(Rc::clone(&indexer), Rc::clone(&gray)),
+    //        factors: Vec::<f64>::new(),
+    //    }
+    //}
 
     pub fn get_value(&self, p: &Point2d<i32>) -> f64 {
         self.factors[self.indexer.get(p) as usize]
@@ -51,14 +66,24 @@ pub struct SpeedFactor3d {
     factors: Vec<f64>,
 }
 
-impl SpeedFactor3d {
-    pub fn new(indexer: Rc<Indexer3d>, gray: Rc<Vec<u8>>) -> Self {
+impl New<Indexer3d> for SpeedFactor3d {
+    fn new(indexer: Rc<Indexer3d>, gray: Rc<Vec<u8>>) -> Self {
         Self {
             indexer: Rc::clone(&indexer),
             differential: Differential3d::<u8>::new(Rc::clone(&indexer), Rc::clone(&gray)),
             factors: Vec::<f64>::new(),
         }
     }
+}
+
+impl SpeedFactor3d {
+    //pub fn new(indexer: Rc<Indexer3d>, gray: Rc<Vec<u8>>) -> Self {
+    //    Self {
+    //        indexer: Rc::clone(&indexer),
+    //        differential: Differential3d::<u8>::new(Rc::clone(&indexer), Rc::clone(&gray)),
+    //        factors: Vec::<f64>::new(),
+    //    }
+    //}
 
     pub fn get_factors(&mut self) -> &mut Vec<f64> {
         &mut self.factors

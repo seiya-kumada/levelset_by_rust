@@ -4,6 +4,10 @@ use super::{
 };
 use std::rc::Rc;
 
+pub trait GridMethod<T> {
+    fn create_initial_front(&mut self, front: &T);
+}
+
 #[derive(Clone)]
 pub struct Grid2d {
     pub left: i32,
@@ -39,7 +43,16 @@ impl Grid2d {
             bottom: space_size.height - 1,
         }
     }
-    pub fn create_initial_front(&mut self, front: &InitialFront2d) {
+    //pub fn create_initial_front(&mut self, front: &InitialFront2d) {
+    //    self.left = front.vertices[0].x;
+    //    self.top = front.vertices[0].y;
+    //    self.right = front.vertices[1].x;
+    //    self.bottom = front.vertices[1].y;
+    //}
+}
+
+impl GridMethod<InitialFront2d> for Grid2d {
+    fn create_initial_front(&mut self, front: &InitialFront2d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
         self.right = front.vertices[1].x;
@@ -91,7 +104,18 @@ impl Grid3d {
         }
     }
 
-    pub fn create_initial_front(&mut self, front: &InitialFront3d) {
+    //pub fn create_initial_front(&mut self, front: &InitialFront3d) {
+    //    self.left = front.vertices[0].x;
+    //    self.top = front.vertices[0].y;
+    //    self.right = front.vertices[1].x;
+    //    self.bottom = front.vertices[1].y;
+    //    self.front = front.vertices[0].z;
+    //    self.back = front.vertices[1].z;
+    //}
+}
+
+impl GridMethod<InitialFront3d> for Grid3d {
+    fn create_initial_front(&mut self, front: &InitialFront3d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
         self.right = front.vertices[1].x;

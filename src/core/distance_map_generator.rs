@@ -183,6 +183,9 @@ impl Table3d {
         &self.points[index as usize]
     }
 }
+pub trait New<T> {
+    fn new(wband: i32, indexer: Rc<T>, statuses: Rc<Vec<Status>>) -> Self;
+}
 
 #[derive(Eq, PartialEq, Hash)]
 pub struct PointInfo2d {
@@ -207,8 +210,8 @@ pub struct DistanceMapGenerator2d {
     statuses: Rc<Vec<Status>>,
 }
 
-impl DistanceMapGenerator2d {
-    pub fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: Rc<Vec<Status>>) -> Self {
+impl New<Indexer2d> for DistanceMapGenerator2d {
+    fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: Rc<Vec<Status>>) -> Self {
         Self {
             wband,
             indexer: Rc::clone(&indexer),
@@ -218,6 +221,18 @@ impl DistanceMapGenerator2d {
             squared_wband: 0,
         }
     }
+}
+impl DistanceMapGenerator2d {
+    //pub fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: Rc<Vec<Status>>) -> Self {
+    //    Self {
+    //        wband,
+    //        indexer: Rc::clone(&indexer),
+    //        statuses: Rc::clone(&statuses),
+    //        table: Table2d::new(),
+    //        distance_map: DistanceMap2d::new(),
+    //        squared_wband: 0,
+    //    }
+    //}
 
     pub fn get_distance_map(&self) -> &DistanceMap2d {
         &self.distance_map
@@ -293,8 +308,8 @@ pub struct DistanceMapGenerator3d {
     statuses: Rc<Vec<Status>>,
 }
 
-impl DistanceMapGenerator3d {
-    pub fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: Rc<Vec<Status>>) -> Self {
+impl New<Indexer3d> for DistanceMapGenerator3d {
+    fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: Rc<Vec<Status>>) -> Self {
         Self {
             wband,
             indexer: Rc::clone(&indexer),
@@ -304,6 +319,19 @@ impl DistanceMapGenerator3d {
             squared_wband: 0,
         }
     }
+}
+
+impl DistanceMapGenerator3d {
+    //pub fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: Rc<Vec<Status>>) -> Self {
+    //    Self {
+    //        wband,
+    //        indexer: Rc::clone(&indexer),
+    //        statuses: Rc::clone(&statuses),
+    //        table: Table3d::new(),
+    //        distance_map: DistanceMap3d::new(),
+    //        squared_wband: 0,
+    //    }
+    //}
 
     pub fn get_distance_map(&self) -> &DistanceMap3d {
         &self.distance_map

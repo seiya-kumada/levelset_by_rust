@@ -1,19 +1,25 @@
 //use crate::core::speed as sp;
-use crate::core::indexer::{Indexer2d, Indexer3d, New};
+use crate::core::indexer;
+use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d};
 use std::rc::Rc;
 #[cfg(test)]
 mod tests {
+    use crate::core::upwind_scheme;
+
     use super::*;
     #[test]
     fn position_2d() {
         let p = Point2d::<i32>::new(1, 2);
         let space_size = SpaceSize2d::new(1, 2);
-        let indexer = Rc::new(Indexer2d::new(&space_size));
+        let indexer = Rc::new(<Indexer2d as indexer::New<SpaceSize2d>>::new(&space_size));
         let phi = Rc::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
-        let mut scheme = UpwindScheme2d::new(Rc::clone(&indexer), Rc::clone(&phi));
+        let mut scheme = <UpwindScheme2d as upwind_scheme::New<Indexer2d>>::new(
+            Rc::clone(&indexer),
+            Rc::clone(&phi),
+        );
         scheme.position.set_position(&p, Rc::clone(&indexer));
         let r = &scheme.position;
         assert_eq!(r.left, 2);
@@ -34,10 +40,13 @@ mod tests {
     fn position_3d() {
         let p = Point3d::<i32>::new(1, 1, 1);
         let space_size = SpaceSize3d::new(1, 1, 1);
-        let indexer = Rc::new(Indexer3d::new(&space_size));
+        let indexer = Rc::new(<Indexer3d as indexer::New<SpaceSize3d>>::new(&space_size));
         let phi = Rc::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
 
-        let mut scheme = UpwindScheme3d::new(Rc::clone(&indexer), Rc::clone(&phi));
+        let mut scheme = <UpwindScheme3d as upwind_scheme::New<Indexer3d>>::new(
+            Rc::clone(&indexer),
+            Rc::clone(&phi),
+        );
         scheme.position.set_position(&p, Rc::clone(&indexer));
 
         let r = &scheme.position;

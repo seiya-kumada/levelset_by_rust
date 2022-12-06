@@ -1,19 +1,25 @@
 use super::differential::{Differential2d, Differential3d};
-use super::distance_map_generator;
 use super::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
+use crate::core::distance_map_generator;
 use crate::core::distance_map_generator::{DistanceMapGenerator2d, DistanceMapGenerator3d};
 use crate::core::front::{Front2d, Front3d};
+use crate::core::grid;
 use crate::core::grid::{Grid2d, Grid3d};
+use crate::core::grid_range;
 use crate::core::grid_range::{GridRange2d, GridRange3d};
-use crate::core::indexer::{Indexer2d, Indexer3d, New};
+use crate::core::indexer;
+use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::initial_front::{InitialFront2d, InitialFront3d};
+use crate::core::inside_estimator;
 use crate::core::inside_estimator::{InsideEstimator2d, InsideEstimator3d};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::position::{Position2d, Position3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
+use crate::core::speed_factor;
 use crate::core::speed_factor::{SpeedFactor2d, SpeedFactor3d};
 use crate::core::status::Status;
 use crate::core::upwind::{Upwind2d, Upwind3d};
+use crate::core::upwind_scheme;
 use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d};
 use crate::core::util;
 use num_traits::ToPrimitive;
@@ -21,14 +27,127 @@ use num_traits::Zero;
 use std::ops::Add;
 use std::rc::Rc;
 
-pub trait Type_<SpaceSize, Indexer: New<SpaceSize>> {
+pub trait Method<
+    SpaceSize,
+    Indexer: indexer::New<SpaceSize>,
+    UpwindScheme: upwind_scheme::New<Indexer>,
+    SpeedFactor: speed_factor::New<Indexer>,
+    GridRange: grid_range::New<SpaceSize>,
+    IntPoint,
+    DoublePoint,
+    DistanceMapGenerator: distance_map_generator::New<Indexer>,
+    InitialFront,
+    Grid: grid::GridMethod<InitialFront>,
+    InsideEstimator: inside_estimator::InsideEstimatorMethod<Grid>,
+>
+{
     fn make_indexer(space_size: &SpaceSize) -> Indexer {
         Indexer::new(space_size)
     }
+
+    fn make_upwind_scheme(indexer: Rc<Indexer>, phi: Rc<Vec<f64>>) -> UpwindScheme {
+        UpwindScheme::new(indexer, phi)
+    }
+
+    fn get_total(space_size: &SpaceSize) -> usize;
+
+    fn make_speed_factor(indexer: Rc<Indexer>, gray: Rc<Vec<u8>>) -> SpeedFactor {
+        SpeedFactor::new(indexer, gray)
+    }
+
+    fn make_grid_range(space_size: &SpaceSize) -> GridRange {
+        GridRange::new(space_size)
+    }
+
+    fn make_int_point_vec() -> Vec<IntPoint> {
+        Vec::<IntPoint>::new()
+    }
+
+    fn make_double_point_vec() -> Vec<DoublePoint> {
+        Vec::<DoublePoint>::new()
+    }
+
+    fn make_distance_map_generator(
+        wband: i32,
+        indexer: Rc<Indexer>,
+        statuses: Rc<Vec<Status>>,
+    ) -> DistanceMapGenerator {
+        DistanceMapGenerator::new(wband, Rc::clone(&indexer), Rc::clone(&statuses))
+    }
+
+    fn create_initial_front(front: &InitialFront, grid: &mut Grid) {
+        grid.create_initial_front(front);
+    }
+
+    fn initialize_inside_estimator() -> InsideEstimator {
+        InsideEstimator::new()
+    }
+
+    fn set_grid(front: &Grid, inside: &mut InsideEstimator) {
+        inside.set_grid(front);
+    }
 }
 
-impl Type_<SpaceSize2d, Indexer2d> for TwoDim {}
-impl Type_<SpaceSize3d, Indexer3d> for ThreeDim {}
+impl
+    Method<
+        SpaceSize2d,
+        Indexer2d,
+        UpwindScheme2d,
+        SpeedFactor2d,
+        GridRange2d,
+        Point2d<i32>,
+        Point2d<f64>,
+        DistanceMapGenerator2d,
+        InitialFront2d,
+        Grid2d,
+        InsideEstimator2d,
+    > for TwoDim
+{
+    fn get_total(space_size: &SpaceSize2d) -> usize {
+        space_size.total as usize
+    }
+}
+impl
+    Method<
+        SpaceSize3d,
+        Indexer3d,
+        UpwindScheme3d,
+        SpeedFactor3d,
+        GridRange3d,
+        Point3d<i32>,
+        Point3d<f64>,
+        DistanceMapGenerator3d,
+        InitialFront3d,
+        Grid3d,
+        InsideEstimator3d,
+    > for ThreeDim
+{
+    fn get_total(space_size: &SpaceSize3d) -> usize {
+        space_size.total as usize
+    }
+}
+
+pub trait Type_ {
+    type SpaceSize_;
+    type Indexer_;
+    type UpwindScheme_;
+}
+
+impl Type_ for TwoDim {
+    type SpaceSize_ = SpaceSize2d;
+    type Indexer_ = Indexer2d;
+    type UpwindScheme_ = UpwindScheme2d;
+}
+
+impl Type_ for ThreeDim {
+    type SpaceSize_ = SpaceSize3d;
+    type Indexer_ = Indexer3d;
+    type UpwindScheme_ = UpwindScheme3d;
+}
+
+pub type SpaceSize_<D> = <D as Type_>::SpaceSize_;
+pub type Indexer_<D> = <D as Type_>::Indexer_;
+pub type UpwindScheme_<D> = <D as Type_>::UpwindScheme_;
 
 pub trait Type {
     const NUM: usize;
@@ -49,20 +168,41 @@ pub trait Type {
     type InsideEstimator_;
     type DistanceMapGenerator_;
 
+    //
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_;
+
+    //
     fn make_upwind_scheme(indexer: Rc<Self::Indexer_>, phi: Rc<Vec<f64>>) -> Self::UpwindScheme_;
+
+    //
     fn get_total(space_size: &Self::SpaceSize_) -> usize;
+
+    //
     fn make_speed_factor(indexer: Rc<Self::Indexer_>, gray: Rc<Vec<u8>>) -> Self::SpeedFactor_;
+
+    //
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_;
+
+    //
     fn make_int_point_vec() -> Vec<Self::IntPoint_>;
+
+    //
     fn make_double_point_vec() -> Vec<Self::DoublePoint_>;
+
+    //
     fn make_distance_map_generator(
         wband: i32,
         indexer: Rc<Self::Indexer_>,
         statuses: Rc<Vec<Status>>,
     ) -> Self::DistanceMapGenerator_;
+
+    //
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_);
+
+    //
     fn initialize_inside_estimator() -> Self::InsideEstimator_;
+
+    //
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_);
     fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
@@ -110,10 +250,12 @@ impl Type for TwoDim {
     type InsideEstimator_ = InsideEstimator2d;
     type DistanceMapGenerator_ = DistanceMapGenerator2d;
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
+        use crate::core::indexer::New;
         Self::Indexer_::new(space_size)
     }
 
     fn make_upwind_scheme(indexer: Rc<Self::Indexer_>, phi: Rc<Vec<f64>>) -> Self::UpwindScheme_ {
+        use crate::core::upwind_scheme::New;
         Self::UpwindScheme_::new(indexer, phi)
     }
 
@@ -122,10 +264,12 @@ impl Type for TwoDim {
     }
 
     fn make_speed_factor(indexer: Rc<Self::Indexer_>, gray: Rc<Vec<u8>>) -> Self::SpeedFactor_ {
+        use crate::core::speed_factor::New;
         Self::SpeedFactor_::new(indexer, gray)
     }
 
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_ {
+        use crate::core::grid_range::New;
         Self::GridRange_::new(space_size)
     }
 
@@ -142,19 +286,23 @@ impl Type for TwoDim {
         indexer: Rc<Self::Indexer_>,
         statuses: Rc<Vec<Status>>,
     ) -> Self::DistanceMapGenerator_ {
+        use crate::core::distance_map_generator::New;
         Self::DistanceMapGenerator_::new(wband, Rc::clone(&indexer), Rc::clone(&statuses))
     }
 
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_) {
+        use crate::core::grid::GridMethod;
         grid.create_initial_front(front);
     }
 
     fn initialize_inside_estimator() -> Self::InsideEstimator_ {
+        use crate::core::inside_estimator::InsideEstimatorMethod;
         Self::InsideEstimator_::new()
     }
 
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_) {
-        inside.set_grid(front.clone());
+        use crate::core::inside_estimator::InsideEstimatorMethod;
+        inside.set_grid(&front);
     }
 
     fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
@@ -225,10 +373,12 @@ impl Type for ThreeDim {
     type InsideEstimator_ = InsideEstimator3d;
     type DistanceMapGenerator_ = DistanceMapGenerator3d;
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
+        use crate::core::indexer::New;
         Self::Indexer_::new(space_size)
     }
 
     fn make_upwind_scheme(indexer: Rc<Self::Indexer_>, phi: Rc<Vec<f64>>) -> Self::UpwindScheme_ {
+        use crate::core::upwind_scheme::New;
         Self::UpwindScheme_::new(indexer, phi)
     }
 
@@ -237,10 +387,12 @@ impl Type for ThreeDim {
     }
 
     fn make_speed_factor(indexer: Rc<Self::Indexer_>, gray: Rc<Vec<u8>>) -> Self::SpeedFactor_ {
+        use crate::core::speed_factor::New;
         Self::SpeedFactor_::new(indexer, gray)
     }
 
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_ {
+        use crate::core::grid_range::New;
         Self::GridRange_::new(space_size)
     }
 
@@ -257,14 +409,17 @@ impl Type for ThreeDim {
         indexer: Rc<Self::Indexer_>,
         statuses: Rc<Vec<Status>>,
     ) -> Self::DistanceMapGenerator_ {
+        use crate::core::distance_map_generator::New;
         Self::DistanceMapGenerator_::new(wband, Rc::clone(&indexer), Rc::clone(&statuses))
     }
 
     fn create_initial_front(front: &Self::InitialFront_, grid: &mut Self::Grid_) {
+        use crate::core::grid::GridMethod;
         grid.create_initial_front(front);
     }
 
     fn initialize_inside_estimator() -> Self::InsideEstimator_ {
+        use crate::core::inside_estimator::InsideEstimatorMethod;
         Self::InsideEstimator_::new()
     }
 

@@ -7,6 +7,10 @@ use crate::core::util;
 use std::cmp;
 use std::rc::Rc;
 
+pub trait New<T> {
+    fn new(t: Rc<T>, phi: Rc<Vec<f64>>) -> Self;
+}
+
 pub struct UpwindScheme2d {
     pub position: Position2d,
     pub upwind: Upwind2d,
@@ -14,8 +18,8 @@ pub struct UpwindScheme2d {
     pub indexer: Rc<Indexer2d>,
 }
 
-impl UpwindScheme2d {
-    pub fn new(indexer: Rc<Indexer2d>, phi: Rc<Vec<f64>>) -> Self {
+impl New<Indexer2d> for UpwindScheme2d {
+    fn new(indexer: Rc<Indexer2d>, phi: Rc<Vec<f64>>) -> Self {
         Self {
             position: Position2d::new(),
             upwind: Upwind2d::new(),
@@ -23,6 +27,17 @@ impl UpwindScheme2d {
             indexer: Rc::clone(&indexer),
         }
     }
+}
+
+impl UpwindScheme2d {
+    //pub fn new(indexer: Rc<Indexer2d>, phi: Rc<Vec<f64>>) -> Self {
+    //    Self {
+    //        position: Position2d::new(),
+    //        upwind: Upwind2d::new(),
+    //        phi: Rc::clone(&phi),
+    //        indexer: Rc::clone(&indexer),
+    //    }
+    //}
 
     pub fn calculate(&mut self, p: &Point2d<i32>, speed: &Speed) -> f64 {
         self.position.set_position(p, Rc::clone(&self.indexer));
@@ -82,8 +97,8 @@ pub struct UpwindScheme3d {
     pub indexer: Rc<Indexer3d>,
 }
 
-impl UpwindScheme3d {
-    pub fn new(indexer: Rc<Indexer3d>, phi: Rc<Vec<f64>>) -> Self {
+impl New<Indexer3d> for UpwindScheme3d {
+    fn new(indexer: Rc<Indexer3d>, phi: Rc<Vec<f64>>) -> Self {
         Self {
             position: Position3d::new(),
             upwind: Upwind3d::new(),
@@ -91,6 +106,17 @@ impl UpwindScheme3d {
             indexer: Rc::clone(&indexer),
         }
     }
+}
+
+impl UpwindScheme3d {
+    //pub fn new(indexer: Rc<Indexer3d>, phi: Rc<Vec<f64>>) -> Self {
+    //    Self {
+    //        position: Position3d::new(),
+    //        upwind: Upwind3d::new(),
+    //        phi: Rc::clone(&phi),
+    //        indexer: Rc::clone(&indexer),
+    //    }
+    //}
 
     pub fn calculate(&mut self, p: &Point3d<i32>, speed: &Speed) -> f64 {
         self.position.set_position(p, Rc::clone(&self.indexer));

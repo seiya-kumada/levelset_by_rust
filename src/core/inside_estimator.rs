@@ -1,15 +1,33 @@
 use crate::core::grid::{Grid2d, Grid3d};
 use crate::core::point::{Point2d, Point3d};
+
+pub trait InsideEstimatorMethod<T> {
+    fn new() -> Self;
+    fn set_grid(&mut self, grid: &T);
+}
+
 pub struct InsideEstimator2d {
     grid: Grid2d,
 }
 
-impl InsideEstimator2d {
-    pub fn new() -> Self {
+impl InsideEstimatorMethod<Grid2d> for InsideEstimator2d {
+    fn new() -> Self {
         Self {
             grid: Grid2d::new(),
         }
     }
+
+    fn set_grid(&mut self, grid: &Grid2d) {
+        self.grid = grid.clone();
+    }
+}
+
+impl InsideEstimator2d {
+    //pub fn new() -> Self {
+    //    Self {
+    //        grid: Grid2d::new(),
+    //    }
+    //}
 
     pub fn from_grid(grid: Grid2d) -> Self {
         Self { grid }
@@ -22,21 +40,33 @@ impl InsideEstimator2d {
             && (p.y < self.grid.bottom)
     }
 
-    pub fn set_grid(&mut self, grid: Grid2d) {
-        self.grid = grid;
-    }
+    //pub fn set_grid(&mut self, grid: Grid2d) {
+    //    self.grid = grid;
+    //}
 }
 
 pub struct InsideEstimator3d {
     grid: Grid3d,
 }
 
-impl InsideEstimator3d {
-    pub fn new() -> Self {
+impl InsideEstimatorMethod<Grid3d> for InsideEstimator3d {
+    fn new() -> Self {
         Self {
             grid: Grid3d::new(),
         }
     }
+
+    fn set_grid(&mut self, grid: &Grid3d) {
+        self.grid = grid.clone();
+    }
+}
+
+impl InsideEstimator3d {
+    //pub fn new() -> Self {
+    //    Self {
+    //        grid: Grid3d::new(),
+    //    }
+    //}
 
     pub fn from_grid(grid: Grid3d) -> Self {
         Self { grid }
