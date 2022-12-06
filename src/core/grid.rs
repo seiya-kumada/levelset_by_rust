@@ -4,8 +4,10 @@ use super::{
 };
 use std::rc::Rc;
 
-pub trait GridMethod<T> {
+pub trait GridMethod<T, U> {
     fn create_initial_front(&mut self, front: &T);
+    fn create_space_with_edge(space_size: Rc<U>) -> Self;
+    fn create_space_without_edge(space_size: Rc<U>) -> Self;
 }
 
 #[derive(Clone)]
@@ -26,23 +28,23 @@ impl Grid2d {
         }
     }
 
-    pub fn create_space_with_edge(space_size: Rc<SpaceSize2d>) -> Self {
-        Self {
-            left: -1,
-            right: space_size.width,
-            top: -1,
-            bottom: space_size.height,
-        }
-    }
+    //pub fn create_space_with_edge(space_size: Rc<SpaceSize2d>) -> Self {
+    //    Self {
+    //        left: -1,
+    //        right: space_size.width,
+    //        top: -1,
+    //        bottom: space_size.height,
+    //    }
+    //}
 
-    pub fn create_space_without_edge(space_size: Rc<SpaceSize2d>) -> Self {
-        Self {
-            left: 0,
-            right: space_size.width - 1,
-            top: 0,
-            bottom: space_size.height - 1,
-        }
-    }
+    //pub fn create_space_without_edge(space_size: Rc<SpaceSize2d>) -> Self {
+    //    Self {
+    //        left: 0,
+    //        right: space_size.width - 1,
+    //        top: 0,
+    //        bottom: space_size.height - 1,
+    //    }
+    //}
     //pub fn create_initial_front(&mut self, front: &InitialFront2d) {
     //    self.left = front.vertices[0].x;
     //    self.top = front.vertices[0].y;
@@ -51,12 +53,30 @@ impl Grid2d {
     //}
 }
 
-impl GridMethod<InitialFront2d> for Grid2d {
+impl GridMethod<InitialFront2d, SpaceSize2d> for Grid2d {
     fn create_initial_front(&mut self, front: &InitialFront2d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
         self.right = front.vertices[1].x;
         self.bottom = front.vertices[1].y;
+    }
+
+    fn create_space_with_edge(space_size: Rc<SpaceSize2d>) -> Self {
+        Self {
+            left: -1,
+            right: space_size.width,
+            top: -1,
+            bottom: space_size.height,
+        }
+    }
+
+    fn create_space_without_edge(space_size: Rc<SpaceSize2d>) -> Self {
+        Self {
+            left: 0,
+            right: space_size.width - 1,
+            top: 0,
+            bottom: space_size.height - 1,
+        }
     }
 }
 
@@ -82,27 +102,27 @@ impl Grid3d {
         }
     }
 
-    pub fn create_space_with_edge(space_size: Rc<SpaceSize3d>) -> Self {
-        Self {
-            left: -1,
-            right: space_size.width,
-            top: -1,
-            bottom: space_size.height,
-            front: -1,
-            back: space_size.depth,
-        }
-    }
+    //pub fn create_space_with_edge(space_size: Rc<SpaceSize3d>) -> Self {
+    //    Self {
+    //        left: -1,
+    //        right: space_size.width,
+    //        top: -1,
+    //        bottom: space_size.height,
+    //        front: -1,
+    //        back: space_size.depth,
+    //    }
+    //}
 
-    pub fn create_space_without_edge(space_size: Rc<SpaceSize3d>) -> Self {
-        Self {
-            left: 0,
-            right: space_size.width - 1,
-            top: 0,
-            bottom: space_size.height - 1,
-            front: 0,
-            back: space_size.depth - 1,
-        }
-    }
+    //pub fn create_space_without_edge(space_size: Rc<SpaceSize3d>) -> Self {
+    //    Self {
+    //        left: 0,
+    //        right: space_size.width - 1,
+    //        top: 0,
+    //        bottom: space_size.height - 1,
+    //        front: 0,
+    //        back: space_size.depth - 1,
+    //    }
+    //}
 
     //pub fn create_initial_front(&mut self, front: &InitialFront3d) {
     //    self.left = front.vertices[0].x;
@@ -114,7 +134,7 @@ impl Grid3d {
     //}
 }
 
-impl GridMethod<InitialFront3d> for Grid3d {
+impl GridMethod<InitialFront3d, SpaceSize3d> for Grid3d {
     fn create_initial_front(&mut self, front: &InitialFront3d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
@@ -122,5 +142,27 @@ impl GridMethod<InitialFront3d> for Grid3d {
         self.bottom = front.vertices[1].y;
         self.front = front.vertices[0].z;
         self.back = front.vertices[1].z;
+    }
+
+    fn create_space_with_edge(space_size: Rc<SpaceSize3d>) -> Self {
+        Self {
+            left: -1,
+            right: space_size.width,
+            top: -1,
+            bottom: space_size.height,
+            front: -1,
+            back: space_size.depth,
+        }
+    }
+
+    fn create_space_without_edge(space_size: Rc<SpaceSize3d>) -> Self {
+        Self {
+            left: 0,
+            right: space_size.width - 1,
+            top: 0,
+            bottom: space_size.height - 1,
+            front: 0,
+            back: space_size.depth - 1,
+        }
     }
 }

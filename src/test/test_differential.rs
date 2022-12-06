@@ -1,5 +1,5 @@
 use crate::core::differential as df;
-use crate::core::indexer::{Indexer2d, Indexer3d, New};
+use crate::core::indexer::{Indexer2d, Indexer3d, IndexerMethod};
 use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 use std::rc::Rc;
 

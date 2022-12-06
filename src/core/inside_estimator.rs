@@ -4,6 +4,7 @@ use crate::core::point::{Point2d, Point3d};
 pub trait InsideEstimatorMethod<T> {
     fn new() -> Self;
     fn set_grid(&mut self, grid: &T);
+    fn from_grid(grid: T) -> Self;
 }
 
 pub struct InsideEstimator2d {
@@ -20,6 +21,10 @@ impl InsideEstimatorMethod<Grid2d> for InsideEstimator2d {
     fn set_grid(&mut self, grid: &Grid2d) {
         self.grid = grid.clone();
     }
+
+    fn from_grid(grid: Grid2d) -> Self {
+        Self { grid }
+    }
 }
 
 impl InsideEstimator2d {
@@ -29,9 +34,9 @@ impl InsideEstimator2d {
     //    }
     //}
 
-    pub fn from_grid(grid: Grid2d) -> Self {
-        Self { grid }
-    }
+    //pub fn from_grid(grid: Grid2d) -> Self {
+    //    Self { grid }
+    //}
 
     pub fn is_inside(&self, p: &Point2d<i32>) -> bool {
         (self.grid.left < p.x)
@@ -59,6 +64,10 @@ impl InsideEstimatorMethod<Grid3d> for InsideEstimator3d {
     fn set_grid(&mut self, grid: &Grid3d) {
         self.grid = grid.clone();
     }
+
+    fn from_grid(grid: Grid3d) -> Self {
+        Self { grid }
+    }
 }
 
 impl InsideEstimator3d {
@@ -68,9 +77,9 @@ impl InsideEstimator3d {
     //    }
     //}
 
-    pub fn from_grid(grid: Grid3d) -> Self {
-        Self { grid }
-    }
+    //pub fn from_grid(grid: Grid3d) -> Self {
+    //    Self { grid }
+    //}
 
     pub fn is_inside(&self, p: &Point3d<i32>) -> bool {
         (self.grid.left < p.x)

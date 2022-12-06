@@ -169,6 +169,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
 
     // test ok
     pub fn value(&self, p: &Point2d<i32>) -> T {
+        use crate::core::indexer::IndexerMethod;
         self.buffer[self.indexer.get(p) as usize]
     }
 

@@ -29,15 +29,15 @@ use std::rc::Rc;
 
 pub trait Method<
     SpaceSize,
-    Indexer: indexer::New<SpaceSize>,
+    Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: upwind_scheme::New<Indexer>,
     SpeedFactor: speed_factor::New<Indexer>,
-    GridRange: grid_range::New<SpaceSize>,
+    GridRange: grid_range::GridRangeMethod<SpaceSize, Indexer, IntPoint>,
     IntPoint,
     DoublePoint,
     DistanceMapGenerator: distance_map_generator::New<Indexer>,
     InitialFront,
-    Grid: grid::GridMethod<InitialFront>,
+    Grid: grid::GridMethod<InitialFront, SpaceSize>,
     InsideEstimator: inside_estimator::InsideEstimatorMethod<Grid>,
 >
 {
@@ -85,6 +85,39 @@ pub trait Method<
 
     fn set_grid(front: &Grid, inside: &mut InsideEstimator) {
         inside.set_grid(front);
+    }
+
+    fn create_space_with_edge(space_size: Rc<SpaceSize>) -> InsideEstimator {
+        InsideEstimator::from_grid(Grid::create_space_with_edge(space_size))
+    }
+
+    fn create_space_without_edge(space_size: Rc<SpaceSize>) -> InsideEstimator {
+        InsideEstimator::from_grid(Grid::create_space_without_edge(space_size))
+    }
+
+    // これと次の、一緒にできそうね。
+    fn loop_in_grid_range_with_phi(
+        grid_range: &GridRange,
+        indexer: &Indexer,
+        statuses: &Vec<Status>,
+        phi: &mut Rc<Vec<f64>>,
+        fun: fn(&Indexer, &Vec<Status>, &mut Rc<Vec<f64>>, IntPoint),
+    ) {
+        grid_range.foreach(indexer, statuses, phi, fun);
+    }
+
+    fn loop_in_grid_range(
+        grid_range: &GridRange,
+        indexer: &Indexer,
+        statuses: &Vec<Status>,
+        band: &mut Vec<IntPoint>,
+        fun: fn(&Indexer, &Vec<Status>, &mut Vec<IntPoint>, IntPoint),
+    ) {
+        grid_range.foreach(indexer, statuses, band, fun);
+    }
+
+    fn get_index(indexer: &Indexer, p: &IntPoint) -> i32 {
+        indexer.get(p)
     }
 }
 
@@ -204,8 +237,14 @@ pub trait Type {
 
     //
     fn set_grid(front: &Self::Grid_, inside: &mut Self::InsideEstimator_);
+
+    //
     fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
+
+    //
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_;
+
+    //
     fn loop_in_grid_range(
         grid_range: &Self::GridRange_,
         indexer: &Self::Indexer_,
@@ -213,6 +252,8 @@ pub trait Type {
         band: &mut Vec<Self::IntPoint_>,
         fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
     );
+
+    //
     fn loop_in_grid_range_with_phi(
         grid_range: &Self::GridRange_,
         indexer: &Self::Indexer_,
@@ -250,7 +291,7 @@ impl Type for TwoDim {
     type InsideEstimator_ = InsideEstimator2d;
     type DistanceMapGenerator_ = DistanceMapGenerator2d;
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
-        use crate::core::indexer::New;
+        use crate::core::indexer::IndexerMethod;
         Self::Indexer_::new(space_size)
     }
 
@@ -269,7 +310,7 @@ impl Type for TwoDim {
     }
 
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_ {
-        use crate::core::grid_range::New;
+        use crate::core::grid_range::GridRangeMethod;
         Self::GridRange_::new(space_size)
     }
 
@@ -306,10 +347,14 @@ impl Type for TwoDim {
     }
 
     fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        use crate::core::grid::GridMethod;
+        use crate::core::inside_estimator::InsideEstimatorMethod;
         Self::InsideEstimator_::from_grid(Self::Grid_::create_space_with_edge(space_size))
     }
 
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        use crate::core::grid::GridMethod;
+        use crate::core::inside_estimator::InsideEstimatorMethod;
         Self::InsideEstimator_::from_grid(Self::Grid_::create_space_without_edge(space_size))
     }
 
@@ -320,6 +365,7 @@ impl Type for TwoDim {
         band: &mut Vec<Self::IntPoint_>,
         fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
     ) {
+        use crate::core::grid_range::GridRangeMethod;
         grid_range.foreach(indexer, statuses, band, fun);
     }
 
@@ -330,6 +376,7 @@ impl Type for TwoDim {
         phi: &mut Rc<Vec<f64>>,
         fun: fn(&Self::Indexer_, &Vec<Status>, &mut Rc<Vec<f64>>, Self::IntPoint_),
     ) {
+        use crate::core::grid_range::GridRangeMethod;
         grid_range.foreach(indexer, statuses, phi, fun);
     }
 
@@ -373,7 +420,7 @@ impl Type for ThreeDim {
     type InsideEstimator_ = InsideEstimator3d;
     type DistanceMapGenerator_ = DistanceMapGenerator3d;
     fn make_indexer(space_size: &Self::SpaceSize_) -> Self::Indexer_ {
-        use crate::core::indexer::New;
+        use crate::core::indexer::IndexerMethod;
         Self::Indexer_::new(space_size)
     }
 
@@ -392,7 +439,7 @@ impl Type for ThreeDim {
     }
 
     fn make_grid_range(space_size: &Self::SpaceSize_) -> Self::GridRange_ {
-        use crate::core::grid_range::New;
+        use crate::core::grid_range::GridRangeMethod;
         Self::GridRange_::new(space_size)
     }
 
@@ -428,10 +475,14 @@ impl Type for ThreeDim {
     }
 
     fn create_space_with_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        use crate::core::grid::GridMethod;
+        use crate::core::inside_estimator::InsideEstimatorMethod;
         Self::InsideEstimator_::from_grid(Self::Grid_::create_space_with_edge(space_size))
     }
 
     fn create_space_without_edge(space_size: Rc<Self::SpaceSize_>) -> Self::InsideEstimator_ {
+        use crate::core::grid::GridMethod;
+        use crate::core::inside_estimator::InsideEstimatorMethod;
         Self::InsideEstimator_::from_grid(Self::Grid_::create_space_without_edge(space_size))
     }
 
@@ -442,6 +493,7 @@ impl Type for ThreeDim {
         band: &mut Vec<Self::IntPoint_>,
         fun: fn(&Self::Indexer_, &Vec<Status>, &mut Vec<Self::IntPoint_>, Self::IntPoint_),
     ) {
+        use crate::core::grid_range::GridRangeMethod;
         grid_range.foreach(indexer, statuses, band, fun);
     }
 
@@ -452,10 +504,12 @@ impl Type for ThreeDim {
         phi: &mut Rc<Vec<f64>>,
         fun: fn(&Self::Indexer_, &Vec<Status>, &mut Rc<Vec<f64>>, Self::IntPoint_),
     ) {
+        use crate::core::grid_range::GridRangeMethod;
         grid_range.foreach(indexer, statuses, phi, fun);
     }
 
     fn get_index(indexer: &Self::Indexer_, p: &Self::IntPoint_) -> i32 {
+        use crate::core::indexer::IndexerMethod;
         indexer.get(p)
     }
 

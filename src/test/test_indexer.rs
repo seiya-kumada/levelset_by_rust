@@ -1,4 +1,4 @@
-use crate::core::indexer::New;
+use crate::core::indexer::IndexerMethod;
 use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
 #[cfg(test)]
 mod tests {

@@ -14,7 +14,9 @@ mod tests {
     fn position_2d() {
         let p = Point2d::<i32>::new(1, 2);
         let space_size = SpaceSize2d::new(1, 2);
-        let indexer = Rc::new(<Indexer2d as indexer::New<SpaceSize2d>>::new(&space_size));
+        let indexer = Rc::new(<Indexer2d as indexer::IndexerMethod<SpaceSize2d>>::new(
+            &space_size,
+        ));
         let phi = Rc::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
         let mut scheme = <UpwindScheme2d as upwind_scheme::New<Indexer2d>>::new(
             Rc::clone(&indexer),
@@ -40,7 +42,9 @@ mod tests {
     fn position_3d() {
         let p = Point3d::<i32>::new(1, 1, 1);
         let space_size = SpaceSize3d::new(1, 1, 1);
-        let indexer = Rc::new(<Indexer3d as indexer::New<SpaceSize3d>>::new(&space_size));
+        let indexer = Rc::new(<Indexer3d as indexer::IndexerMethod<SpaceSize3d>>::new(
+            &space_size,
+        ));
         let phi = Rc::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
 
         let mut scheme = <UpwindScheme3d as upwind_scheme::New<Indexer3d>>::new(
