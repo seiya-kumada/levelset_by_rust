@@ -392,6 +392,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
     }
 
     pub fn value(&self, p: &Point3d<i32>) -> T {
+        use crate::core::indexer::IndexerMethod;
         self.buffer[self.indexer.get(p) as usize]
     }
 

@@ -183,8 +183,9 @@ impl Table3d {
         &self.points[index as usize]
     }
 }
-pub trait New<T> {
+pub trait DistanceMapGeneratorMethod<T> {
     fn new(wband: i32, indexer: Rc<T>, statuses: Rc<Vec<Status>>) -> Self;
+    fn create_distance_map(&mut self);
 }
 
 #[derive(Eq, PartialEq, Hash)]
@@ -210,7 +211,7 @@ pub struct DistanceMapGenerator2d {
     statuses: Rc<Vec<Status>>,
 }
 
-impl New<Indexer2d> for DistanceMapGenerator2d {
+impl DistanceMapGeneratorMethod<Indexer2d> for DistanceMapGenerator2d {
     fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: Rc<Vec<Status>>) -> Self {
         Self {
             wband,
@@ -219,6 +220,19 @@ impl New<Indexer2d> for DistanceMapGenerator2d {
             table: Table2d::new(),
             distance_map: DistanceMap2d::new(),
             squared_wband: 0,
+        }
+    }
+
+    fn create_distance_map(&mut self) {
+        for x in -self.wband..(1 + self.wband) {
+            let sx = x * x;
+            for y in -self.wband..(1 + self.wband) {
+                let d = sx + y * y;
+                if d <= self.squared_wband {
+                    let p = Point2d::<i32>::new(x, y);
+                    self.register_distance(&p, d);
+                }
+            }
         }
     }
 }
@@ -239,6 +253,7 @@ impl DistanceMapGenerator2d {
     }
 
     fn remove(&self, p: &Point2d<i32>, a: i32, indices: &[i32; 3], labels: &mut Vec<bool>) -> bool {
+        use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
         match self.statuses[r as usize] {
@@ -255,6 +270,7 @@ impl DistanceMapGenerator2d {
     }
 
     fn remove_(&self, p: &Point2d<i32>, a: i32, labels: &mut Vec<bool>) {
+        use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
         match self.statuses[r as usize] {
@@ -271,18 +287,18 @@ impl DistanceMapGenerator2d {
             .insert(d, PointInfo2d::new(p.clone(), index));
     }
 
-    pub fn create_distance_map(&mut self) {
-        for x in -self.wband..(1 + self.wband) {
-            let sx = x * x;
-            for y in -self.wband..(1 + self.wband) {
-                let d = sx + y * y;
-                if d <= self.squared_wband {
-                    let p = Point2d::<i32>::new(x, y);
-                    self.register_distance(&p, d);
-                }
-            }
-        }
-    }
+    //pub fn create_distance_map(&mut self) {
+    //    for x in -self.wband..(1 + self.wband) {
+    //        let sx = x * x;
+    //        for y in -self.wband..(1 + self.wband) {
+    //            let d = sx + y * y;
+    //            if d <= self.squared_wband {
+    //                let p = Point2d::<i32>::new(x, y);
+    //                self.register_distance(&p, d);
+    //            }
+    //        }
+    //    }
+    //}
 }
 
 #[derive(Eq, PartialEq, Hash)]
@@ -308,7 +324,7 @@ pub struct DistanceMapGenerator3d {
     statuses: Rc<Vec<Status>>,
 }
 
-impl New<Indexer3d> for DistanceMapGenerator3d {
+impl DistanceMapGeneratorMethod<Indexer3d> for DistanceMapGenerator3d {
     fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: Rc<Vec<Status>>) -> Self {
         Self {
             wband,
@@ -317,6 +333,22 @@ impl New<Indexer3d> for DistanceMapGenerator3d {
             table: Table3d::new(),
             distance_map: DistanceMap3d::new(),
             squared_wband: 0,
+        }
+    }
+
+    fn create_distance_map(&mut self) {
+        for x in -self.wband..(1 + self.wband) {
+            let sx = x * x;
+            for y in -self.wband..(1 + self.wband) {
+                let sy = y * y;
+                for z in -self.wband..(1 + self.wband) {
+                    let d = sx + sy + z * z;
+                    if d <= self.squared_wband {
+                        let p = Point3d::<i32>::new(x, y, z);
+                        self.register_distance(&p, d);
+                    }
+                }
+            }
         }
     }
 }
@@ -338,6 +370,7 @@ impl DistanceMapGenerator3d {
     }
 
     fn remove(&self, p: &Point3d<i32>, a: i32, indices: &[i32; 9], labels: &mut Vec<bool>) -> bool {
+        use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
         match self.statuses[r as usize] {
@@ -360,6 +393,7 @@ impl DistanceMapGenerator3d {
     }
 
     fn remove_(&self, p: &Point3d<i32>, a: i32, labels: &mut Vec<bool>) {
+        use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
         match self.statuses[r as usize] {
@@ -376,19 +410,19 @@ impl DistanceMapGenerator3d {
             .insert(d, PointInfo3d::new(p.clone(), index));
     }
 
-    pub fn create_distance_map(&mut self) {
-        for x in -self.wband..(1 + self.wband) {
-            let sx = x * x;
-            for y in -self.wband..(1 + self.wband) {
-                let sy = y * y;
-                for z in -self.wband..(1 + self.wband) {
-                    let d = sx + sy + z * z;
-                    if d <= self.squared_wband {
-                        let p = Point3d::<i32>::new(x, y, z);
-                        self.register_distance(&p, d);
-                    }
-                }
-            }
-        }
-    }
+    //pub fn create_distance_map(&mut self) {
+    //    for x in -self.wband..(1 + self.wband) {
+    //        let sx = x * x;
+    //        for y in -self.wband..(1 + self.wband) {
+    //            let sy = y * y;
+    //            for z in -self.wband..(1 + self.wband) {
+    //                let d = sx + sy + z * z;
+    //                if d <= self.squared_wband {
+    //                    let p = Point3d::<i32>::new(x, y, z);
+    //                    self.register_distance(&p, d);
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 }

@@ -23,6 +23,7 @@ impl Position2d {
 
     // test ok
     pub fn set_position(&mut self, p: &Point2d<i32>, indexer: Rc<Indexer2d>) {
+        use crate::core::indexer::IndexerMethod;
         let a = p + np::NEIGHBORING_POINTS2D.get(-1, 0);
         let b = p + np::NEIGHBORING_POINTS2D.get(1, 0);
         let c = p + np::NEIGHBORING_POINTS2D.get(0, -1);
@@ -60,6 +61,7 @@ impl Position3d {
 
     // test ok
     pub fn set_position(&mut self, p: &Point3d<i32>, indexer: Rc<Indexer3d>) {
+        use crate::core::indexer::IndexerMethod;
         let a = p + np::NEIGHBORING_POINTS3D.get(-1, 0, 0);
         let b = p + np::NEIGHBORING_POINTS3D.get(1, 0, 0);
         let c = p + np::NEIGHBORING_POINTS3D.get(0, -1, 0);
