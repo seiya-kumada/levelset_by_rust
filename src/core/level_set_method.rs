@@ -12,6 +12,25 @@ use crate::core::upwind_scheme::New;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
+//pub struct Hoge<D: types::Type, S, I, T: IndexerMethod<S, I>, M: types::Method_<S, I, T>> {
+pub struct Hoge<D, S, I, T, M>
+where
+    D: types::Type,
+    T: IndexerMethod<S, I>,
+    M: types::Method_<S, I, T>,
+{
+    s: PhantomData<S>,
+    i: PhantomData<I>,
+    t: PhantomData<T>,
+    m: PhantomData<M>,
+    d: PhantomData<D>,
+}
+
+impl<D: types::Type, S, I, T: IndexerMethod<S, I>, M: types::Method_<S, I, T>> Hoge<D, S, I, T, M> {
+    fn hoge(space_size: &S) -> T {
+        T::new(space_size)
+    }
+}
 pub struct LevelSetMethod<
     //SpaceSize,
     //Indexer: IndexerMethod<SpaceSize, IntPoint>,

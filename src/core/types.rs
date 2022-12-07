@@ -27,19 +27,40 @@ use num_traits::Zero;
 use std::ops::Add;
 use std::rc::Rc;
 
+pub trait Method_<SpaceSize, IntPoint, Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>> {}
+//pub trait Method<
+//    SpaceSize,
+//    Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>,
+//    UpwindScheme: upwind_scheme::New<Indexer>,
+//    SpeedFactor: speed_factor::SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
+//    GridRange: grid_range::GridRangeMethod<SpaceSize, Indexer, IntPoint>,
+//    IntPoint,
+//    DoublePoint,
+//    DistanceMapGenerator: distance_map_generator::DistanceMapGeneratorMethod<Indexer>,
+//    InitialFront,
+//    Grid: grid::GridMethod<InitialFront, SpaceSize>,
+//    InsideEstimator: inside_estimator::InsideEstimatorMethod<Grid, IntPoint>,
+//>
 pub trait Method<
     SpaceSize,
+    Indexer,
+    UpwindScheme,
+    SpeedFactor,
+    GridRange,
+    IntPoint,
+    DoublePoint,
+    DistanceMapGenerator,
+    InitialFront,
+    Grid,
+    InsideEstimator,
+> where
     Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: upwind_scheme::New<Indexer>,
     SpeedFactor: speed_factor::SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: grid_range::GridRangeMethod<SpaceSize, Indexer, IntPoint>,
-    IntPoint,
-    DoublePoint,
     DistanceMapGenerator: distance_map_generator::DistanceMapGeneratorMethod<Indexer>,
-    InitialFront,
     Grid: grid::GridMethod<InitialFront, SpaceSize>,
     InsideEstimator: inside_estimator::InsideEstimatorMethod<Grid, IntPoint>,
->
 {
     fn make_indexer(space_size: &SpaceSize) -> Indexer {
         Indexer::new(space_size)
