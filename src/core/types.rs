@@ -27,7 +27,7 @@ use num_traits::Zero;
 use std::ops::Add;
 use std::rc::Rc;
 
-pub trait Method_<SpaceSize, IntPoint, Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>> {}
+//pub trait Method_<SpaceSize, IntPoint, Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>> {}
 //pub trait Method<
 //    SpaceSize,
 //    Indexer: indexer::IndexerMethod<SpaceSize, IntPoint>,
@@ -41,7 +41,7 @@ pub trait Method_<SpaceSize, IntPoint, Indexer: indexer::IndexerMethod<SpaceSize
 //    Grid: grid::GridMethod<InitialFront, SpaceSize>,
 //    InsideEstimator: inside_estimator::InsideEstimatorMethod<Grid, IntPoint>,
 //>
-pub trait Method<
+pub trait Method_<
     SpaceSize,
     Indexer,
     UpwindScheme,
@@ -149,9 +149,9 @@ pub trait Method<
         factor.get_value(p)
     }
 
-    fn calculate_all(factor: &mut SpeedFactor, size: &SpaceSize) {
-        factor.calculate_all(size);
-    }
+    //fn calculate_all(factor: &mut SpeedFactor, size: &SpaceSize) {
+    //    factor.calculate_all(size);
+    //}
 
     fn create_distance_map(distance_map_generator: &mut DistanceMapGenerator) {
         distance_map_generator.create_distance_map();
@@ -159,7 +159,7 @@ pub trait Method<
 }
 
 impl
-    Method<
+    Method_<
         SpaceSize2d,
         Indexer2d,
         UpwindScheme2d,
@@ -178,7 +178,7 @@ impl
     }
 }
 impl
-    Method<
+    Method_<
         SpaceSize3d,
         Indexer3d,
         UpwindScheme3d,
