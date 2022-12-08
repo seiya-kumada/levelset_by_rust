@@ -1,3 +1,7 @@
+pub trait SpaceSizeMethod {
+    fn get_total(&self) -> usize;
+}
+
 #[derive(Clone)]
 pub struct SpaceSize2d {
     pub width: i32,
@@ -12,6 +16,12 @@ impl SpaceSize2d {
             height: h,
             total: w * h,
         }
+    }
+}
+
+impl SpaceSizeMethod for SpaceSize2d {
+    fn get_total(&self) -> usize {
+        self.total as usize
     }
 }
 
@@ -31,5 +41,11 @@ impl SpaceSize3d {
             depth: d,
             total: w * h * d,
         }
+    }
+}
+
+impl SpaceSizeMethod for SpaceSize3d {
+    fn get_total(&self) -> usize {
+        self.total as usize
     }
 }
