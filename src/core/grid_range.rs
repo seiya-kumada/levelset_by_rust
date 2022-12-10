@@ -44,28 +44,6 @@ impl GridRangeMethod<SpaceSize2d, Indexer2d, Point2d<i32>> for GridRange2d {
     }
 }
 
-impl GridRange2d {
-    //pub fn new(space_size: &SpaceSize2d) -> Self {
-    //    Self {
-    //        x_range: (0, space_size.width),
-    //        y_range: (0, space_size.height),
-    //    }
-    //}
-    //pub fn foreach<T>(
-    //    &self,
-    //    indexer: &Indexer2d,
-    //    statuses: &Vec<Status>,
-    //    band: &mut T,
-    //    fun: fn(&Indexer2d, &Vec<Status>, &mut T, Point2d<i32>),
-    //) {
-    //    for j in self.y_range.0..self.y_range.1 {
-    //        for i in self.x_range.0..self.x_range.1 {
-    //            fun(indexer, statuses, band, Point2d::<i32>::new(i, j));
-    //        }
-    //    }
-    //}
-}
-
 pub struct GridRange3d {
     x_range: (i32, i32),
     y_range: (i32, i32),
@@ -96,30 +74,4 @@ impl GridRangeMethod<SpaceSize3d, Indexer3d, Point3d<i32>> for GridRange3d {
             }
         }
     }
-}
-
-impl GridRange3d {
-    //pub fn new(space_size: &SpaceSize3d) -> Self {
-    //    Self {
-    //        x_range: (0, space_size.width),
-    //        y_range: (0, space_size.height),
-    //        z_range: (0, space_size.depth),
-    //    }
-    //}
-
-    //pub fn foreach<T>(
-    //    &self,
-    //    indexer: &Indexer3d,
-    //    statuses: &Vec<Status>,
-    //    band: &mut T,
-    //    fun: fn(&Indexer3d, &Vec<Status>, &mut T, Point3d<i32>),
-    //) {
-    //    for k in self.z_range.0..self.z_range.1 {
-    //        for j in self.y_range.0..self.y_range.1 {
-    //            for i in self.x_range.0..self.x_range.1 {
-    //                fun(indexer, statuses, band, Point3d::<i32>::new(i, j, k));
-    //            }
-    //        }
-    //    }
-    //}
 }

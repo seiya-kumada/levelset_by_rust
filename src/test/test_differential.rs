@@ -769,4 +769,96 @@ mod tests {
         let fz_e = 0.0;
         fx_fy_fz_3d_with_u8_core(Rc::clone(&v), fx_e, fy_e, fz_e);
     }
+
+    #[test]
+    fn hoge() {
+        trait Person {
+            fn name(&self) -> String;
+        }
+
+        trait Student: Person {
+            fn university(&self) -> String;
+        }
+
+        trait Programmer {
+            fn fav_language(&self) -> String;
+        }
+
+        trait CompSciStudent: Programmer + Student {
+            fn git_username(&self) -> String;
+        }
+
+        struct Kumada;
+        impl CompSciStudent for Kumada {
+            fn git_username(&self) -> String {
+                String::from("Kumada")
+            }
+        }
+
+        impl Programmer for Kumada {
+            fn fav_language(&self) -> String {
+                String::from("Kumada")
+            }
+        }
+
+        impl Student for Kumada {
+            fn university(&self) -> String {
+                String::from("Osaka")
+            }
+        }
+
+        impl Person for Kumada {
+            fn name(&self) -> String {
+                String::from("Kumada")
+            }
+        }
+
+        let kumada = Kumada {};
+        println!(
+            "{},{},{},{}",
+            kumada.name(),
+            kumada.university(),
+            kumada.fav_language(),
+            kumada.git_username()
+        );
+
+        fn hoge(kumada: &dyn CompSciStudent) {
+            println!(
+                "{},{},{},{}",
+                kumada.name(),
+                kumada.university(),
+                kumada.fav_language(),
+                kumada.git_username()
+            );
+        }
+        fn foo(kumada: &Kumada) {
+            println!(
+                "{},{},{},{}",
+                kumada.name(),
+                kumada.university(),
+                kumada.fav_language(),
+                kumada.git_username()
+            );
+        }
+        fn bar<K: CompSciStudent>(kumada: &K) {
+            println!(
+                "{},{},{},{}",
+                kumada.name(),
+                kumada.university(),
+                kumada.fav_language(),
+                kumada.git_username()
+            );
+        }
+
+        trait Foo {
+            fn method(&self) -> String;
+        }
+
+        fn do_something(x: &dyn Foo) {
+            x.method();
+        }
+
+        fn parse_csv_document<R: std::io::BufRead>(src: R) {}
+        fn parse_csv_document_(src: impl std::io::BufRead) {}
+    }
 }

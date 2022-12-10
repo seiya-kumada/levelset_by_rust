@@ -1,5 +1,6 @@
 use crate::core::distance_map_generator::{
-    DistanceMapGenerator2d, DistanceMapGenerator3d, DistanceMapGeneratorMethod,
+    DistanceMap2d, DistanceMap3d, DistanceMapGenerator2d, DistanceMapGenerator3d,
+    DistanceMapGeneratorMethod,
 };
 use crate::core::grid::{Grid2d, Grid3d, GridMethod};
 use crate::core::grid_range::{GridRange2d, GridRange3d, GridRangeMethod};
@@ -13,6 +14,7 @@ use crate::core::speed_factor::{SpeedFactor2d, SpeedFactor3d, SpeedFactorMethod}
 use crate::core::status::Status;
 use crate::core::stopping_condition::StoppingCondition;
 use crate::core::upwind_scheme::{New, UpwindScheme2d, UpwindScheme3d};
+use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
@@ -25,6 +27,7 @@ pub struct LevelSetMethod<
     IntPoint,
     DoublePoint,
     DistanceMapGenerator,
+    DistanceMap,
     InitialFront,
     Grid,
     InsideEstimator,
@@ -34,11 +37,12 @@ pub struct LevelSetMethod<
     UpwindScheme: New<Indexer>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint>,
-    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer>,
+    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
     Grid: GridMethod<InitialFront, SpaceSize>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
 {
     phantom_initial_front: PhantomData<InitialFront>,
+    phantom_distance_map: PhantomData<DistanceMap>,
 
     /// input parameters
     parameters: Parameters,
@@ -47,13 +51,13 @@ pub struct LevelSetMethod<
     size: Rc<SpaceSize>,
 
     /// accessor of the array
-    indexer: Indexer,
+    indexer: Rc<Indexer>,
 
     /// input front(zero-levelset)
     initial_front: Grid,
 
     /// auxiliary function
-    phi: Rc<Vec<f64>>,
+    phi: RefCell<Vec<f64>>,
 
     /// deviation of auxiliary function
     dphi: Rc<Vec<f64>>,
@@ -100,6 +104,7 @@ impl<
         IntPoint,
         DoublePoint,
         DistanceMapGenerator,
+        DistanceMap,
         InitialFront,
         Grid,
         InsideEstimator,
@@ -113,6 +118,7 @@ impl<
         IntPoint,
         DoublePoint,
         DistanceMapGenerator,
+        DistanceMap,
         InitialFront,
         Grid,
         InsideEstimator,
@@ -123,7 +129,7 @@ where
     UpwindScheme: New<Indexer>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint>,
-    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer>,
+    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
     Grid: GridMethod<InitialFront, SpaceSize>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
 {
@@ -132,38 +138,44 @@ where
         size: Rc<SpaceSize>,
         gray: Rc<Vec<u8>>,
         initial_front: Grid,
-    ) {
+    ) -> Self {
         let statuses = Rc::new(vec![Status::Farway; size.get_total()]);
         let indexer = Rc::new(Indexer::new(&size));
-        let phi = Rc::new(vec![0.0; size.get_total()]);
-        //Self {
-        //    parameters: parameters.clone(),
-        //    size: Rc::clone(&size),
-        //    indexer: Rc::clone(&indexer),
-        //    initial_front,
-        //    phi: Rc::clone(&phi),
-        //    dphi: Rc::new(vec![0.0; D::get_total(&size)]),
-        //    speed: vec![0.0; D::get_total(&size)],
-        //    statuses: Rc::clone(&statuses),
-        //    upwind_scheme: D::make_upwind_scheme(Rc::clone(&indexer), Rc::clone(&phi)),
-        //    speed_factor: D::make_speed_factor(Rc::clone(&indexer), Rc::clone(&gray)),
-        //    grid_range: D::make_grid_range(&size),
-        //    input_object: Rc::clone(&gray),
-        //    front: D::make_int_point_vec(),
-        //    narrow_bands: D::make_int_point_vec(),
-        //    normals: D::make_double_point_vec(),
-        //    inside_estimator_of_space_without_edge: D::create_space_without_edge(Rc::clone(&size)),
-        //    inside_estimator_of_space_with_edge: D::create_space_with_edge(Rc::clone(&size)),
-        //    inside_estimator_of_initial_front: D::initialize_inside_estimator(),
-        //    total_speed: 0.0,
-        //    stopping_condition: StoppingCondition::new(),
-        //    zero_count: 0,
-        //    distance_map_generator: D::make_distance_map_generator(
-        //        parameters.wband,
-        //        Rc::clone(&indexer),
-        //        Rc::clone(&statuses),
-        //    ),
-        //}
+        let phi = RefCell::new(vec![0.0; size.get_total()]);
+        Self {
+            phantom_initial_front: PhantomData,
+            phantom_distance_map: PhantomData,
+            parameters: parameters.clone(),
+            size: Rc::clone(&size),
+            indexer: Rc::clone(&indexer),
+            initial_front,
+            phi: RefCell::clone(&phi),
+            dphi: Rc::new(vec![0.0; size.get_total()]),
+            speed: vec![0.0; size.get_total()],
+            statuses: Rc::clone(&statuses),
+            upwind_scheme: UpwindScheme::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+            speed_factor: SpeedFactor::new(Rc::clone(&indexer), Rc::clone(&gray)),
+            grid_range: GridRange::new(&size),
+            input_object: Rc::clone(&gray),
+            front: Vec::<IntPoint>::new(),
+            narrow_bands: Vec::<IntPoint>::new(),
+            normals: Vec::<DoublePoint>::new(),
+            inside_estimator_of_space_without_edge: InsideEstimator::from_grid(
+                Grid::create_space_without_edge(Rc::clone(&size)),
+            ),
+            inside_estimator_of_space_with_edge: InsideEstimator::from_grid(
+                Grid::create_space_with_edge(Rc::clone(&size)),
+            ),
+            inside_estimator_of_initial_front: InsideEstimator::new(),
+            total_speed: 0.0,
+            stopping_condition: StoppingCondition::new(),
+            zero_count: 0,
+            distance_map_generator: DistanceMapGenerator::new(
+                parameters.wband,
+                Rc::clone(&indexer),
+                Rc::clone(&statuses),
+            ),
+        }
     }
 
     pub fn initialize_narrow_band(&mut self) {
@@ -195,7 +207,7 @@ where
         self.grid_range.foreach(
             &self.indexer,
             &self.statuses,
-            &mut Rc::clone(&self.phi),
+            &mut RefCell::clone(&self.phi),
             Self::register_to_phi,
         );
     }
@@ -203,16 +215,44 @@ where
     fn register_to_phi(
         indexer: &Indexer,
         statuses: &Vec<Status>,
-        phi: &mut Rc<Vec<f64>>,
+        phi: &mut RefCell<Vec<f64>>,
         p: IntPoint,
     ) {
         let index = indexer.get(&p);
         match statuses[index as usize] {
             Status::Front => {
-                //phi[index as usize] = 1.0;
+                phi.borrow_mut()[index as usize] = 1.0;
             }
             _ => (),
         }
+    }
+
+    fn get_phi(&self) -> RefCell<Vec<f64>> {
+        RefCell::clone(&self.phi)
+    }
+
+    fn get_status(&self) -> Rc<Vec<Status>> {
+        Rc::clone(&self.statuses)
+    }
+
+    fn get_front(&self) -> &Vec<IntPoint> {
+        &self.front
+    }
+
+    fn get_grid(&self) -> &Grid {
+        &self.initial_front
+    }
+
+    fn get_indexer(&self) -> Rc<Indexer> {
+        Rc::clone(&self.indexer)
+    }
+
+    fn get_normals(&self) -> &Vec<DoublePoint> {
+        &self.normals
+    }
+
+    fn print_verbose_description(&self) {
+        // print something
     }
 
     fn clear_speed_within_narrow_band(&self, reset: bool) {}
@@ -229,7 +269,16 @@ where
         0.0
     }
 
-    fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {}
+    fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {
+        let distance_map = self.distance_map_generator.get_distance_map();
+        let mut is_considerable = Vec::<Vec<bool>>::new();
+        is_considerable.reserve(self.front.len());
+
+        for p in &self.front {
+            let a = self.distance_map_generator.select_labels(p);
+            is_considerable.push(a);
+        }
+    }
 
     fn register_to_narrow_band(
         indexer: &Indexer,
@@ -271,6 +320,7 @@ pub type LevelSetMethod2d = LevelSetMethod<
     Point2d<i32>,
     Point2d<f64>,
     DistanceMapGenerator2d,
+    DistanceMap2d,
     InitialFront2d,
     Grid2d,
     InsideEstimator2d,
@@ -285,6 +335,7 @@ pub type LevelSetMethod3d = LevelSetMethod<
     Point3d<i32>,
     Point3d<f64>,
     DistanceMapGenerator3d,
+    DistanceMap3d,
     InitialFront3d,
     Grid3d,
     InsideEstimator3d,
