@@ -1,6 +1,8 @@
 use crate::core::differential as df;
+use crate::core::differential::DifferentialMethod;
 use crate::core::indexer::{Indexer2d, Indexer3d, IndexerMethod};
 use crate::core::types::{Indexer, IntPoint, SpaceSize, ThreeDim, TwoDim};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 #[cfg(test)]
@@ -69,8 +71,8 @@ mod tests {
     fn differential2d_new() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3]);
-        let f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3]);
+        let f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
 
         let id = f.indexer;
         let p = IntPoint::<TwoDim>::new(1, 2);
@@ -78,17 +80,17 @@ mod tests {
         assert_eq!(q, 1 + 1 * 2);
 
         let bu = f.buffer;
-        assert_eq!(bu[0], 1);
-        assert_eq!(bu[1], 2);
-        assert_eq!(bu[2], 3);
+        assert_eq!(bu.borrow()[0], 1);
+        assert_eq!(bu.borrow()[1], 2);
+        assert_eq!(bu.borrow()[2], 3);
     }
 
     #[test]
     fn differential3d_new() {
         let space_size = SpaceSize::<ThreeDim>::new(1, 2, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3]);
-        let f = df::Differential3d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3]);
+        let f = df::Differential3d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
 
         let id = f.indexer;
         let p = IntPoint::<ThreeDim>::new(1, 2, 3);
@@ -96,9 +98,9 @@ mod tests {
         assert_eq!(q, 1 + 1 * 2 + 2 * (3));
 
         let bu = f.buffer;
-        assert_eq!(bu[0], 1);
-        assert_eq!(bu[1], 2);
-        assert_eq!(bu[2], 3);
+        assert_eq!(bu.borrow()[0], 1);
+        assert_eq!(bu.borrow()[1], 2);
+        assert_eq!(bu.borrow()[2], 3);
     }
 
     #[test]
@@ -115,8 +117,8 @@ mod tests {
     fn differential2d_value() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4]);
-        let f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4]);
+        let f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         let p = IntPoint::<TwoDim>::new(1, 2);
         assert_eq!(4, f.value(&p));
         assert_eq!(f.values.len(), 9);
@@ -126,8 +128,8 @@ mod tests {
     fn differential2d_set_v() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         let p = IntPoint::<TwoDim>::new(1, 2);
         f.set_v(0, 1, 3);
         assert_eq!(f.values[7], 3);
@@ -138,8 +140,8 @@ mod tests {
     fn differential2d_set_value() {
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         let p = IntPoint::<TwoDim>::new(1, 2);
 
         f.set_value(&p, 0, 1);
@@ -151,8 +153,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -207,8 +209,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -228,8 +230,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -249,8 +251,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -270,8 +272,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -291,8 +293,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -312,8 +314,8 @@ mod tests {
         let p = IntPoint::<TwoDim>::new(1, 1);
         let space_size = SpaceSize::<TwoDim>::new(1, 2);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let buffer = Rc::new(vec![1, 2, 3, 4, 5]);
-        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), Rc::clone(&buffer));
+        let buffer = RefCell::new(vec![1, 2, 3, 4, 5]);
+        let mut f = df::Differential2d::<i32>::new(Rc::clone(&indexer), RefCell::clone(&buffer));
         f.make_point(&p);
         assert_eq!(f.values[0], 1);
         assert_eq!(f.values[1], 2);
@@ -328,10 +330,10 @@ mod tests {
         assert_eq!(a, 0.0);
     }
 
-    fn sobel_x_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn sobel_x_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer2d::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.sobel_x());
@@ -339,15 +341,15 @@ mod tests {
 
     #[test]
     fn sobel_x_2d() {
-        let v = Rc::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0]);
+        let v = RefCell::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0]);
         let e = 8.0;
-        sobel_x_2d_core(Rc::clone(&v), e);
+        sobel_x_2d_core(RefCell::clone(&v), e);
     }
 
-    fn fx_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fx_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fx());
@@ -355,15 +357,15 @@ mod tests {
 
     #[test]
     fn fx_2d() {
-        let v = Rc::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0]);
+        let v = RefCell::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0]);
         let e = 1.0;
-        fx_2d_core(Rc::clone(&v), e);
+        fx_2d_core(RefCell::clone(&v), e);
     }
 
-    fn sobel_y_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn sobel_y_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.sobel_y());
@@ -371,15 +373,15 @@ mod tests {
 
     #[test]
     fn sobel_y_2d() {
-        let v = Rc::new(vec![1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0]);
+        let v = RefCell::new(vec![1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0]);
         let e = 8.0;
-        sobel_y_2d_core(Rc::clone(&v), e);
+        sobel_y_2d_core(RefCell::clone(&v), e);
     }
 
-    fn fy_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fy_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fy());
@@ -387,15 +389,15 @@ mod tests {
 
     #[test]
     fn fy_2d() {
-        let v = Rc::new(vec![1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0]);
+        let v = RefCell::new(vec![1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0]);
         let e = 1.0;
-        fy_2d_core(Rc::clone(&v), e);
+        fy_2d_core(RefCell::clone(&v), e);
     }
 
-    fn fxy_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fxy_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fxy());
@@ -403,15 +405,15 @@ mod tests {
 
     #[test]
     fn fxy_2d() {
-        let v = Rc::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 3.0]);
+        let v = RefCell::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 3.0]);
         let e = 0.25;
-        fxy_2d_core(Rc::clone(&v), e);
+        fxy_2d_core(RefCell::clone(&v), e);
     }
 
-    fn fxx_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fxx_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fxx());
@@ -419,15 +421,15 @@ mod tests {
 
     #[test]
     fn fxx_2d() {
-        let v = Rc::new(vec![1.0, 0.0, 3.0, 4.0, 0.0, 6.0, 7.0, 0.0, 9.0]);
+        let v = RefCell::new(vec![1.0, 0.0, 3.0, 4.0, 0.0, 6.0, 7.0, 0.0, 9.0]);
         let e = 10.0;
-        fxx_2d_core(Rc::clone(&v), e);
+        fxx_2d_core(RefCell::clone(&v), e);
     }
 
-    fn fyy_2d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fyy_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fyy());
@@ -435,15 +437,15 @@ mod tests {
 
     #[test]
     fn fyy_2d() {
-        let v = Rc::new(vec![1.0, 0.0, 3.0, 2.0, 2.0, 2.0, 1.0, 0.0, 3.0]);
+        let v = RefCell::new(vec![1.0, 0.0, 3.0, 2.0, 2.0, 2.0, 1.0, 0.0, 3.0]);
         let e = -2.0;
-        fyy_2d_core(Rc::clone(&v), e);
+        fyy_2d_core(RefCell::clone(&v), e);
     }
 
-    fn fx_fy_with_u8_2d_core(input: Rc<Vec<u8>>, expected_fx: f64, expected_fy: f64) {
+    fn fx_fy_with_u8_2d_core(input: RefCell<Vec<u8>>, expected_fx: f64, expected_fy: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
-        let mut cg = df::Differential2d::<u8>::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::Differential2d::<u8>::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<TwoDim>::new(1, 1);
         cg.make_point(&p);
         assert_eq!(expected_fx, cg.fx());
@@ -452,10 +454,10 @@ mod tests {
 
     #[test]
     fn fx_fy_with_u8_2d() {
-        let v = Rc::new(vec![50, 100, 20, 100, 0, 200, 70, 100, 30]);
+        let v = RefCell::new(vec![50, 100, 20, 100, 0, 200, 70, 100, 30]);
         let fx_e = 65.0 / 4.0;
         let fy_e = 15.0 / 4.0;
-        fx_fy_with_u8_2d_core(Rc::clone(&v), fx_e, fy_e);
+        fx_fy_with_u8_2d_core(RefCell::clone(&v), fx_e, fy_e);
     }
 
     #[test]
@@ -514,10 +516,10 @@ mod tests {
         assert_eq!(2.0, df::Differential3d::<i32>::h2dx(1, 1, 0));
     }
 
-    fn sobel_x_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn sobel_x_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.sobel_x());
@@ -525,18 +527,18 @@ mod tests {
 
     #[test]
     fn sobel_x_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0,
             1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
         ]);
         let e = 32.0;
-        sobel_x_3d_core(Rc::clone(&v), e);
+        sobel_x_3d_core(RefCell::clone(&v), e);
     }
 
-    fn sobel_y_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn sobel_y_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.sobel_y());
@@ -544,18 +546,18 @@ mod tests {
 
     #[test]
     fn sobel_y_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
         ]);
         let e = 32.0;
-        sobel_y_3d_core(Rc::clone(&v), e);
+        sobel_y_3d_core(RefCell::clone(&v), e);
     }
 
-    fn sobel_z_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn sobel_z_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.sobel_z());
@@ -563,18 +565,18 @@ mod tests {
 
     #[test]
     fn sobel_z_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
         ]);
         let e = 32.0;
-        sobel_z_3d_core(Rc::clone(&v), e);
+        sobel_z_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fx_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fx_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fx());
@@ -582,18 +584,18 @@ mod tests {
 
     #[test]
     fn fx_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
             1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
         ]);
         let e = 0.5;
-        fx_3d_core(Rc::clone(&v), e);
+        fx_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fy_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fy_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fy());
@@ -601,18 +603,18 @@ mod tests {
 
     #[test]
     fn fy_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0,
             1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
         ]);
         let e = 0.5;
-        fy_3d_core(Rc::clone(&v), e);
+        fy_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fz_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fz());
@@ -620,18 +622,18 @@ mod tests {
 
     #[test]
     fn fz_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
         ]);
         let e = 0.5;
-        fz_3d_core(Rc::clone(&v), e);
+        fz_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fxy_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fxy_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fxy());
@@ -639,18 +641,18 @@ mod tests {
 
     #[test]
     fn fxy_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             5.0, 0.0, 7.0, 0.0, 0.0, 0.0, 4.0, 0.0, 3.0, 6.0, 0.0, 8.0, 0.0, 0.0, 0.0, 5.0, 0.0,
             4.0, 7.0, 0.0, 9.0, 0.0, 0.0, 0.0, 6.0, 0.0, 5.0,
         ]);
         let e = -12.0 / 16.0;
-        fxy_3d_core(Rc::clone(&v), e);
+        fxy_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fxz_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fxz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fxz());
@@ -658,18 +660,18 @@ mod tests {
 
     #[test]
     fn fxz_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             5.0, 0.0, 7.0, 6.0, 0.0, 8.0, 7.0, 0.0, 9.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 4.0, 0.0, 3.0, 5.0, 0.0, 4.0, 6.0, 0.0, 5.0,
         ]);
         let e = -12.0 / 16.0;
-        fxz_3d_core(Rc::clone(&v), e);
+        fxz_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fyz_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fyz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fyz());
@@ -677,18 +679,18 @@ mod tests {
 
     #[test]
     fn fyz_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             5.0, 6.0, 7.0, 0.0, 0.0, 0.0, 4.0, 5.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 7.0, 8.0, 9.0, 0.0, 0.0, 0.0, 3.0, 4.0, 5.0,
         ]);
         let e = -12.0 / 16.0;
-        fyz_3d_core(Rc::clone(&v), e);
+        fyz_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fxx_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fxx_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fxx());
@@ -696,18 +698,18 @@ mod tests {
 
     #[test]
     fn fxx_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
             -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0,
         ]);
         let e = 4.0;
-        fxx_3d_core(Rc::clone(&v), e);
+        fxx_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fyy_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fyy_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fyy());
@@ -715,18 +717,18 @@ mod tests {
 
     #[test]
     fn fyy_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0,
             1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0,
         ]);
         let e = 4.0;
-        fyy_3d_core(Rc::clone(&v), e);
+        fyy_3d_core(RefCell::clone(&v), e);
     }
 
-    fn fzz_3d_core(input: Rc<Vec<f64>>, expected_output: f64) {
+    fn fzz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_output, cg.fzz());
@@ -734,23 +736,23 @@ mod tests {
 
     #[test]
     fn fzz_3d() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
             -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
         ]);
         let e = 4.0;
-        fzz_3d_core(Rc::clone(&v), e);
+        fzz_3d_core(RefCell::clone(&v), e);
     }
 
     fn fx_fy_fz_3d_with_u8_core(
-        input: Rc<Vec<u8>>,
+        input: RefCell<Vec<u8>>,
         expected_fx: f64,
         expected_fy: f64,
         expected_fz: f64,
     ) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
-        let mut cg = df::Differential3d::<u8>::new(Rc::clone(&indexer), Rc::clone(&input));
+        let mut cg = df::Differential3d::<u8>::new(Rc::clone(&indexer), RefCell::clone(&input));
         let p = IntPoint::<ThreeDim>::new(1, 1, 1);
         cg.make_point(&p);
         assert_eq!(expected_fx, cg.fx());
@@ -760,14 +762,14 @@ mod tests {
 
     #[test]
     fn fx_fy_fz_3d_with_u8() {
-        let v = Rc::new(vec![
+        let v = RefCell::new(vec![
             50, 100, 20, 100, 0, 200, 70, 100, 30, 50, 100, 20, 100, 0, 200, 70, 100, 30, 50, 100,
             20, 100, 0, 200, 70, 100, 30,
         ]);
         let fx_e = 65.0 / 4.0;
         let fy_e = 15.0 / 4.0;
         let fz_e = 0.0;
-        fx_fy_fz_3d_with_u8_core(Rc::clone(&v), fx_e, fy_e, fz_e);
+        fx_fy_fz_3d_with_u8_core(RefCell::clone(&v), fx_e, fy_e, fz_e);
     }
 
     #[test]

@@ -60,13 +60,13 @@ pub struct LevelSetMethod<
     phi: RefCell<Vec<f64>>,
 
     /// deviation of auxiliary function
-    dphi: Rc<Vec<f64>>,
+    dphi: RefCell<Vec<f64>>,
 
     /// velocity function
     speed: Vec<f64>,
 
     /// current statuses
-    statuses: Rc<Vec<Status>>,
+    statuses: RefCell<Vec<Status>>,
 
     /// front
     front: Vec<IntPoint>,
@@ -78,7 +78,7 @@ pub struct LevelSetMethod<
     narrow_bands: Vec<IntPoint>,
 
     /// input image(gray image)
-    input_object: Rc<Vec<u8>>,
+    input_object: RefCell<Vec<u8>>,
 
     upwind_scheme: UpwindScheme,
     speed_factor: SpeedFactor,
@@ -136,10 +136,10 @@ where
     pub fn new(
         parameters: Parameters,
         size: Rc<SpaceSize>,
-        gray: Rc<Vec<u8>>,
+        gray: RefCell<Vec<u8>>,
         initial_front: Grid,
     ) -> Self {
-        let statuses = Rc::new(vec![Status::Farway; size.get_total()]);
+        let statuses = RefCell::new(vec![Status::Farway; size.get_total()]);
         let indexer = Rc::new(Indexer::new(&size));
         let phi = RefCell::new(vec![0.0; size.get_total()]);
         Self {
@@ -150,13 +150,13 @@ where
             indexer: Rc::clone(&indexer),
             initial_front,
             phi: RefCell::clone(&phi),
-            dphi: Rc::new(vec![0.0; size.get_total()]),
+            dphi: RefCell::new(vec![0.0; size.get_total()]),
             speed: vec![0.0; size.get_total()],
-            statuses: Rc::clone(&statuses),
+            statuses: RefCell::clone(&statuses),
             upwind_scheme: UpwindScheme::new(Rc::clone(&indexer), RefCell::clone(&phi)),
-            speed_factor: SpeedFactor::new(Rc::clone(&indexer), Rc::clone(&gray)),
+            speed_factor: SpeedFactor::new(Rc::clone(&indexer), RefCell::clone(&gray)),
             grid_range: GridRange::new(&size),
-            input_object: Rc::clone(&gray),
+            input_object: RefCell::clone(&gray),
             front: Vec::<IntPoint>::new(),
             narrow_bands: Vec::<IntPoint>::new(),
             normals: Vec::<DoublePoint>::new(),
@@ -173,7 +173,7 @@ where
             distance_map_generator: DistanceMapGenerator::new(
                 parameters.wband,
                 Rc::clone(&indexer),
-                Rc::clone(&statuses),
+                RefCell::clone(&statuses),
             ),
         }
     }
@@ -204,26 +204,26 @@ where
     }
 
     fn initailze_over_all(&self, initial_front: &InitialFront) {
-        self.grid_range.foreach(
+        self.grid_range.foreach_phi(
             &self.indexer,
-            &self.statuses,
-            &mut RefCell::clone(&self.phi),
+            RefCell::clone(&self.statuses),
+            RefCell::clone(&self.phi),
             Self::register_to_phi,
         );
     }
 
     fn register_to_phi(
         indexer: &Indexer,
-        statuses: &Vec<Status>,
-        phi: &mut RefCell<Vec<f64>>,
+        statuses: RefCell<Vec<Status>>,
+        phi: RefCell<Vec<f64>>,
         p: IntPoint,
     ) {
         let index = indexer.get(&p);
-        match statuses[index as usize] {
-            Status::Front => {
+        match statuses.borrow()[index as usize] {
+            Status::Front => (),
+            _ => {
                 phi.borrow_mut()[index as usize] = 1.0;
             }
-            _ => (),
         }
     }
 
@@ -231,8 +231,8 @@ where
         RefCell::clone(&self.phi)
     }
 
-    fn get_status(&self) -> Rc<Vec<Status>> {
-        Rc::clone(&self.statuses)
+    fn get_status(&self) -> RefCell<Vec<Status>> {
+        RefCell::clone(&self.statuses)
     }
 
     fn get_front(&self) -> &Vec<IntPoint> {
@@ -255,10 +255,26 @@ where
         // print something
     }
 
-    fn clear_speed_within_narrow_band(&self, reset: bool) {}
+    fn clear_speed_within_narrow_band(&mut self, resets: bool) {
+        for p in &self.narrow_bands {
+            let index = self.indexer.get(p) as usize;
+            self.speed[index] = 0.0;
+            self.dphi.borrow_mut()[index] = 0.0;
+            if resets {
+                match self.statuses.borrow()[index] {
+                    Status::Front => (),
+                    _ => {
+                        self.statuses.borrow_mut()[index] = Status::Farway;
+                    }
+                }
+            }
+        }
+    }
 
     fn set_speed_on_front(&mut self) -> f64 {
         let fs = 0.0;
+        self.zero_count = 0;
+
         for p in &self.front {
             if self.inside_estimator_of_space_without_edge.is_inside(p) {
                 let i = self.indexer.get(&p) as usize;
@@ -282,12 +298,12 @@ where
 
     fn register_to_narrow_band(
         indexer: &Indexer,
-        statuses: &Vec<Status>,
+        statuses: RefCell<Vec<Status>>,
         band: &mut Vec<IntPoint>,
         p: IntPoint,
     ) {
         let index = indexer.get(&p);
-        match statuses[index as usize] {
+        match statuses.borrow()[index as usize] {
             Status::Farway => band.push(p),
             _ => (),
         }
@@ -299,9 +315,9 @@ where
         self.copy_nearest_speed_to_narrow_band(resets);
         if resets {
             self.narrow_bands.clear();
-            self.grid_range.foreach(
+            self.grid_range.foreach_band(
                 &self.indexer,
-                &self.statuses,
+                RefCell::clone(&self.statuses),
                 &mut self.narrow_bands,
                 Self::register_to_narrow_band,
             );

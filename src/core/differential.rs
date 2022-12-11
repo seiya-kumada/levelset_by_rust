@@ -4,8 +4,8 @@ use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D}
 use crate::core::point::{Point2d, Point3d};
 use num_traits::cast::ToPrimitive;
 use num_traits::Zero;
+use std::cell::RefCell;
 use std::rc::Rc;
-
 pub struct DifferentialTool;
 
 impl DifferentialTool {
@@ -43,19 +43,39 @@ impl DifferentialTool {
     }
 }
 
+pub trait DifferentialMethod<IntPoint> {
+    fn make_point(&mut self, p: &IntPoint);
+}
+
 pub struct Differential2d<T: ToPrimitive + Zero + Clone + Copy> {
     pub indexer: Rc<Indexer2d>,
-    pub buffer: Rc<Vec<T>>,
+    pub buffer: RefCell<Vec<T>>,
     pub values: Vec<T>,
 }
 
+impl<T: ToPrimitive + Zero + Clone + Copy> DifferentialMethod<Point2d<i32>> for Differential2d<T> {
+    fn make_point(&mut self, p: &Point2d<i32>) {
+        self.set_value(p, -1, -1);
+        self.set_value(p, 0, -1);
+        self.set_value(p, 1, -1);
+
+        self.set_value(p, -1, 0);
+        self.set_value(p, 0, 0);
+        self.set_value(p, 1, 0);
+
+        self.set_value(p, -1, 1);
+        self.set_value(p, 0, 1);
+        self.set_value(p, 1, 1);
+    }
+}
+
 impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
-    pub fn new(indexer: Rc<Indexer2d>, buffer: Rc<Vec<T>>) -> Self {
+    pub fn new(indexer: Rc<Indexer2d>, buffer: RefCell<Vec<T>>) -> Self {
         let s = 3usize.pow(dim::TWO as u32);
         let values = vec![T::zero(); s];
         Self {
-            indexer,
-            buffer,
+            indexer: Rc::clone(&indexer),
+            buffer: RefCell::clone(&buffer),
             values,
         }
     }
@@ -170,7 +190,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
     // test ok
     pub fn value(&self, p: &Point2d<i32>) -> T {
         use crate::core::indexer::IndexerMethod;
-        self.buffer[self.indexer.get(p) as usize]
+        self.buffer.borrow()[self.indexer.get(p) as usize]
     }
 
     // test ok
@@ -184,36 +204,61 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
         let a = self.value(&(p + NEIGHBORING_POINTS2D.get(x, y)));
         self.set_v(x, y, a);
     }
-
-    // test ok
-    pub fn make_point(&mut self, p: &Point2d<i32>) {
-        self.set_value(p, -1, -1);
-        self.set_value(p, 0, -1);
-        self.set_value(p, 1, -1);
-
-        self.set_value(p, -1, 0);
-        self.set_value(p, 0, 0);
-        self.set_value(p, 1, 0);
-
-        self.set_value(p, -1, 1);
-        self.set_value(p, 0, 1);
-        self.set_value(p, 1, 1);
-    }
 }
 pub struct Differential3d<T: ToPrimitive + Zero + Clone + Copy> {
     pub indexer: Rc<Indexer3d>,
-    pub buffer: Rc<Vec<T>>,
+    pub buffer: RefCell<Vec<T>>,
     pub values: Vec<T>,
+}
+
+impl<T: ToPrimitive + Zero + Clone + Copy> DifferentialMethod<Point3d<i32>> for Differential3d<T> {
+    fn make_point(&mut self, p: &Point3d<i32>) {
+        self.set_value(p, -1, -1, -1);
+        self.set_value(p, 0, -1, -1);
+        self.set_value(p, 1, -1, -1);
+
+        self.set_value(p, -1, 0, -1);
+        self.set_value(p, 0, 0, -1);
+        self.set_value(p, 1, 0, -1);
+
+        self.set_value(p, -1, 1, -1);
+        self.set_value(p, 0, 1, -1);
+        self.set_value(p, 1, 1, -1);
+
+        self.set_value(p, -1, -1, 0);
+        self.set_value(p, 0, -1, 0);
+        self.set_value(p, 1, -1, 0);
+
+        self.set_value(p, -1, 0, 0);
+        self.set_value(p, 0, 0, 0);
+        self.set_value(p, 1, 0, 0);
+
+        self.set_value(p, -1, 1, 0);
+        self.set_value(p, 0, 1, 0);
+        self.set_value(p, 1, 1, 0);
+
+        self.set_value(p, -1, -1, 1);
+        self.set_value(p, 0, -1, 1);
+        self.set_value(p, 1, -1, 1);
+
+        self.set_value(p, -1, 0, 1);
+        self.set_value(p, 0, 0, 1);
+        self.set_value(p, 1, 0, 1);
+
+        self.set_value(p, -1, 1, 1);
+        self.set_value(p, 0, 1, 1);
+        self.set_value(p, 1, 1, 1);
+    }
 }
 
 impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
     // test ok
-    pub fn new(indexer: Rc<Indexer3d>, buffer: Rc<Vec<T>>) -> Self {
+    pub fn new(indexer: Rc<Indexer3d>, buffer: RefCell<Vec<T>>) -> Self {
         let s = 3usize.pow(dim::THREE as u32);
         let values = vec![T::zero(); s];
         Self {
-            indexer,
-            buffer,
+            indexer: Rc::clone(&indexer),
+            buffer: RefCell::clone(&buffer),
             values,
         }
     }
@@ -393,7 +438,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
 
     pub fn value(&self, p: &Point3d<i32>) -> T {
         use crate::core::indexer::IndexerMethod;
-        self.buffer[self.indexer.get(p) as usize]
+        self.buffer.borrow()[self.indexer.get(p) as usize]
     }
 
     pub fn set_v(&mut self, x: i32, y: i32, z: i32, v: T) {
@@ -404,44 +449,6 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
     pub fn set_value(&mut self, p: &Point3d<i32>, x: i32, y: i32, z: i32) {
         let a = self.value(&(p + NEIGHBORING_POINTS3D.get(x, y, z)));
         self.set_v(x, y, z, a);
-    }
-
-    pub fn make_point(&mut self, p: &Point3d<i32>) {
-        self.set_value(p, -1, -1, -1);
-        self.set_value(p, 0, -1, -1);
-        self.set_value(p, 1, -1, -1);
-
-        self.set_value(p, -1, 0, -1);
-        self.set_value(p, 0, 0, -1);
-        self.set_value(p, 1, 0, -1);
-
-        self.set_value(p, -1, 1, -1);
-        self.set_value(p, 0, 1, -1);
-        self.set_value(p, 1, 1, -1);
-
-        self.set_value(p, -1, -1, 0);
-        self.set_value(p, 0, -1, 0);
-        self.set_value(p, 1, -1, 0);
-
-        self.set_value(p, -1, 0, 0);
-        self.set_value(p, 0, 0, 0);
-        self.set_value(p, 1, 0, 0);
-
-        self.set_value(p, -1, 1, 0);
-        self.set_value(p, 0, 1, 0);
-        self.set_value(p, 1, 1, 0);
-
-        self.set_value(p, -1, -1, 1);
-        self.set_value(p, 0, -1, 1);
-        self.set_value(p, 1, -1, 1);
-
-        self.set_value(p, -1, 0, 1);
-        self.set_value(p, 0, 0, 1);
-        self.set_value(p, 1, 0, 1);
-
-        self.set_value(p, -1, 1, 1);
-        self.set_value(p, 0, 1, 1);
-        self.set_value(p, 1, 1, 1);
     }
 }
 

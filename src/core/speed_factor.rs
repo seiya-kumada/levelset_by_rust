@@ -1,13 +1,13 @@
-use crate::core::differential::{Differential2d, Differential3d};
+use crate::core::differential::{Differential2d, Differential3d, DifferentialMethod};
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
-
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::speed::Speed;
 pub trait SpeedFactorMethod<T, P, S> {
-    fn new(indexer: Rc<T>, gray: Rc<Vec<u8>>) -> Self;
+    fn new(indexer: Rc<T>, gray: RefCell<Vec<u8>>) -> Self;
     fn get_value(&self, p: &P) -> f64;
     fn calculate_all(&mut self, space_size: &S);
 }
@@ -19,10 +19,10 @@ pub struct SpeedFactor2d {
 }
 
 impl SpeedFactorMethod<Indexer2d, Point2d<i32>, SpaceSize2d> for SpeedFactor2d {
-    fn new(indexer: Rc<Indexer2d>, gray: Rc<Vec<u8>>) -> Self {
+    fn new(indexer: Rc<Indexer2d>, gray: RefCell<Vec<u8>>) -> Self {
         Self {
             indexer: Rc::clone(&indexer),
-            differential: Differential2d::<u8>::new(Rc::clone(&indexer), Rc::clone(&gray)),
+            differential: Differential2d::<u8>::new(Rc::clone(&indexer), RefCell::clone(&gray)),
             factors: Vec::<f64>::new(),
         }
     }
@@ -61,10 +61,10 @@ pub struct SpeedFactor3d {
 }
 
 impl SpeedFactorMethod<Indexer3d, Point3d<i32>, SpaceSize3d> for SpeedFactor3d {
-    fn new(indexer: Rc<Indexer3d>, gray: Rc<Vec<u8>>) -> Self {
+    fn new(indexer: Rc<Indexer3d>, gray: RefCell<Vec<u8>>) -> Self {
         Self {
             indexer: Rc::clone(&indexer),
-            differential: Differential3d::<u8>::new(Rc::clone(&indexer), Rc::clone(&gray)),
+            differential: Differential3d::<u8>::new(Rc::clone(&indexer), RefCell::clone(&gray)),
             factors: Vec::<f64>::new(),
         }
     }

@@ -1,3 +1,4 @@
+use super::indexer::IndexerMethod;
 use crate::core::dim::{THREE, TWO};
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
@@ -5,9 +6,8 @@ use crate::core::point::{Point2d, Point3d};
 use crate::core::status::Status;
 use bimap::BiMap;
 use multimap::MultiMap;
+use std::cell::RefCell;
 use std::rc::Rc;
-
-use super::indexer::IndexerMethod;
 
 #[inline]
 fn is_zero(x: i32) -> bool {
@@ -186,7 +186,7 @@ impl Table3d {
     }
 }
 pub trait DistanceMapGeneratorMethod<T, D, P> {
-    fn new(wband: i32, indexer: Rc<T>, statuses: Rc<Vec<Status>>) -> Self;
+    fn new(wband: i32, indexer: Rc<T>, statuses: RefCell<Vec<Status>>) -> Self;
     fn create_distance_map(&mut self);
     fn get_distance_map(&self) -> &D;
     fn select_labels(&self, p: &P) -> Vec<bool>;
@@ -212,15 +212,15 @@ pub struct DistanceMapGenerator2d {
     wband: i32,
     squared_wband: i32,
     indexer: Rc<Indexer2d>,
-    statuses: Rc<Vec<Status>>,
+    statuses: RefCell<Vec<Status>>,
 }
 
 impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>> for DistanceMapGenerator2d {
-    fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: Rc<Vec<Status>>) -> Self {
+    fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: RefCell<Vec<Status>>) -> Self {
         Self {
             wband,
             indexer: Rc::clone(&indexer),
-            statuses: Rc::clone(&statuses),
+            statuses: RefCell::clone(&statuses),
             table: Table2d::new(),
             distance_map: DistanceMap2d::new(),
             squared_wband: 0,
@@ -269,7 +269,7 @@ impl DistanceMapGenerator2d {
         use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
-        match self.statuses[r as usize] {
+        match self.statuses.borrow()[r as usize] {
             Status::Front => {
                 labels[indices[0] as usize] = false;
                 labels[indices[1] as usize] = false;
@@ -286,7 +286,7 @@ impl DistanceMapGenerator2d {
         use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
-        match self.statuses[r as usize] {
+        match self.statuses.borrow()[r as usize] {
             Status::Front => {
                 labels[a as usize] = false;
             }
@@ -321,15 +321,15 @@ pub struct DistanceMapGenerator3d {
     wband: i32,
     squared_wband: i32,
     indexer: Rc<Indexer3d>,
-    statuses: Rc<Vec<Status>>,
+    statuses: RefCell<Vec<Status>>,
 }
 
 impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>> for DistanceMapGenerator3d {
-    fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: Rc<Vec<Status>>) -> Self {
+    fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: RefCell<Vec<Status>>) -> Self {
         Self {
             wband,
             indexer: Rc::clone(&indexer),
-            statuses: Rc::clone(&statuses),
+            statuses: RefCell::clone(&statuses),
             table: Table3d::new(),
             distance_map: DistanceMap3d::new(),
             squared_wband: 0,
@@ -409,7 +409,7 @@ impl DistanceMapGenerator3d {
         use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
-        match self.statuses[r as usize] {
+        match self.statuses.borrow()[r as usize] {
             Status::Front => {
                 labels[indices[0] as usize] = false;
                 labels[indices[1] as usize] = false;
@@ -432,7 +432,7 @@ impl DistanceMapGenerator3d {
         use crate::core::indexer::IndexerMethod;
         let q = p + self.table.point(a);
         let r = self.indexer.get(&q);
-        match self.statuses[r as usize] {
+        match self.statuses.borrow()[r as usize] {
             Status::Front => {
                 labels[a as usize] = false;
             }

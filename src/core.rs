@@ -1,3 +1,4 @@
+pub mod curvature_generator;
 pub mod differential;
 pub mod dim;
 pub mod distance_map_generator;
