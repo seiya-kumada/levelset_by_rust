@@ -1,9 +1,8 @@
-//use crate::core::speed as sp;
 use crate::core::indexer;
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
-use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d};
+use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d, UpwindSchemeMethod};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -21,10 +20,10 @@ mod tests {
             Point2d<i32>,
         >>::new(&space_size));
         let phi = RefCell::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
-        let mut scheme = <UpwindScheme2d as upwind_scheme::New<Indexer2d>>::new(
-            Rc::clone(&indexer),
-            RefCell::clone(&phi),
-        );
+        let mut scheme = <UpwindScheme2d as upwind_scheme::UpwindSchemeMethod<
+            Indexer2d,
+            Point2d<i32>,
+        >>::new(Rc::clone(&indexer), RefCell::clone(&phi));
         scheme.position.set_position(&p, Rc::clone(&indexer));
         let r = &scheme.position;
         assert_eq!(r.left, 2);
@@ -51,10 +50,10 @@ mod tests {
         >>::new(&space_size));
         let phi = RefCell::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
 
-        let mut scheme = <UpwindScheme3d as upwind_scheme::New<Indexer3d>>::new(
-            Rc::clone(&indexer),
-            RefCell::clone(&phi),
-        );
+        let mut scheme = <UpwindScheme3d as upwind_scheme::UpwindSchemeMethod<
+            Indexer3d,
+            Point3d<i32>,
+        >>::new(Rc::clone(&indexer), RefCell::clone(&phi));
         scheme.position.set_position(&p, Rc::clone(&indexer));
 
         let r = &scheme.position;

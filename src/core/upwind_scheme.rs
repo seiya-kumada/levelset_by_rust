@@ -8,8 +8,9 @@ use std::cell::RefCell;
 use std::cmp;
 use std::rc::Rc;
 
-pub trait New<T> {
+pub trait UpwindSchemeMethod<T, P> {
     fn new(t: Rc<T>, phi: RefCell<Vec<f64>>) -> Self;
+    fn calculate(&mut self, p: &P, speed: Speed) -> f64;
 }
 
 pub struct UpwindScheme2d {
@@ -19,7 +20,7 @@ pub struct UpwindScheme2d {
     pub indexer: Rc<Indexer2d>,
 }
 
-impl New<Indexer2d> for UpwindScheme2d {
+impl UpwindSchemeMethod<Indexer2d, Point2d<i32>> for UpwindScheme2d {
     fn new(indexer: Rc<Indexer2d>, phi: RefCell<Vec<f64>>) -> Self {
         Self {
             position: Position2d::new(),
@@ -28,10 +29,8 @@ impl New<Indexer2d> for UpwindScheme2d {
             indexer: Rc::clone(&indexer),
         }
     }
-}
 
-impl UpwindScheme2d {
-    pub fn calculate(&mut self, p: &Point2d<i32>, speed: &Speed) -> f64 {
+    fn calculate(&mut self, p: &Point2d<i32>, speed: Speed) -> f64 {
         self.position.set_position(p, Rc::clone(&self.indexer));
         match speed {
             Speed::Positive => self.calculate_with_positive_speed(),
@@ -42,6 +41,20 @@ impl UpwindScheme2d {
             + self.upwind.fdym.powf(2.0)
             + self.upwind.fdyp.powf(2.0)
     }
+}
+
+impl UpwindScheme2d {
+    //pub fn calculate(&mut self, p: &Point2d<i32>, speed: &Speed) -> f64 {
+    //    self.position.set_position(p, Rc::clone(&self.indexer));
+    //    match speed {
+    //        Speed::Positive => self.calculate_with_positive_speed(),
+    //        Speed::Negative => self.calculate_with_negative_speed(),
+    //    }
+    //    self.upwind.fdxm.powf(2.0)
+    //        + self.upwind.fdxp.powf(2.0)
+    //        + self.upwind.fdym.powf(2.0)
+    //        + self.upwind.fdyp.powf(2.0)
+    //}
 
     // test ok
     pub fn calculate_with_positive_speed(&mut self) {
@@ -67,6 +80,7 @@ impl UpwindScheme2d {
         );
     }
 
+    //test ok
     pub fn calculate_with_negative_speed(&mut self) {
         self.upwind.fdxp = util::max(
             self.phi.borrow()[(self.position.right) as usize]
@@ -97,7 +111,7 @@ pub struct UpwindScheme3d {
     pub indexer: Rc<Indexer3d>,
 }
 
-impl New<Indexer3d> for UpwindScheme3d {
+impl UpwindSchemeMethod<Indexer3d, Point3d<i32>> for UpwindScheme3d {
     fn new(indexer: Rc<Indexer3d>, phi: RefCell<Vec<f64>>) -> Self {
         Self {
             position: Position3d::new(),
@@ -106,10 +120,8 @@ impl New<Indexer3d> for UpwindScheme3d {
             indexer: Rc::clone(&indexer),
         }
     }
-}
 
-impl UpwindScheme3d {
-    pub fn calculate(&mut self, p: &Point3d<i32>, speed: &Speed) -> f64 {
+    fn calculate(&mut self, p: &Point3d<i32>, speed: Speed) -> f64 {
         self.position.set_position(p, Rc::clone(&self.indexer));
         match speed {
             Speed::Positive => self.calculate_with_positive_speed(),
@@ -122,8 +134,23 @@ impl UpwindScheme3d {
             + self.upwind.fdzm.powf(2.0)
             + self.upwind.fdzp.powf(2.0)
     }
+}
 
-    // test ok
+impl UpwindScheme3d {
+    //pub fn calculate(&mut self, p: &Point3d<i32>, speed: &Speed) -> f64 {
+    //    self.position.set_position(p, Rc::clone(&self.indexer));
+    //    match speed {
+    //        Speed::Positive => self.calculate_with_positive_speed(),
+    //        Speed::Negative => self.calculate_with_negative_speed(),
+    //    }
+    //    self.upwind.fdxm.powf(2.0)
+    //        + self.upwind.fdxp.powf(2.0)
+    //        + self.upwind.fdym.powf(2.0)
+    //        + self.upwind.fdyp.powf(2.0)
+    //        + self.upwind.fdzm.powf(2.0)
+    //        + self.upwind.fdzp.powf(2.0)
+    //}
+
     pub fn calculate_with_positive_speed(&mut self) {
         self.upwind.fdxm = util::max(
             self.phi.borrow()[(self.position.me) as usize]

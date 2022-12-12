@@ -1,3 +1,6 @@
+use crate::core::curvature_generator::{
+    CurvatureGenerator2d, CurvatureGenerator3d, CurvatureGeneratorMethod,
+};
 use crate::core::distance_map_generator::{
     DistanceMap2d, DistanceMap3d, DistanceMapGenerator2d, DistanceMapGenerator3d,
     DistanceMapGeneratorMethod,
@@ -10,10 +13,11 @@ use crate::core::inside_estimator::{InsideEstimator2d, InsideEstimator3d, Inside
 use crate::core::parameters::Parameters;
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d, SpaceSizeMethod};
+use crate::core::speed::Speed;
 use crate::core::speed_factor::{SpeedFactor2d, SpeedFactor3d, SpeedFactorMethod};
 use crate::core::status::Status;
 use crate::core::stopping_condition::StoppingCondition;
-use crate::core::upwind_scheme::{New, UpwindScheme2d, UpwindScheme3d};
+use crate::core::upwind_scheme::{UpwindScheme2d, UpwindScheme3d, UpwindSchemeMethod};
 use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
@@ -31,15 +35,17 @@ pub struct LevelSetMethod<
     InitialFront,
     Grid,
     InsideEstimator,
+    CurvatureGenerator,
 > where
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
-    UpwindScheme: New<Indexer>,
+    UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint>,
     DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
     Grid: GridMethod<InitialFront, SpaceSize>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
+    CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
 {
     phantom_initial_front: PhantomData<InitialFront>,
     phantom_distance_map: PhantomData<DistanceMap>,
@@ -85,15 +91,16 @@ pub struct LevelSetMethod<
 
     grid_range: GridRange,
 
-    inside_estimator_of_space_without_edge: InsideEstimator,
-    inside_estimator_of_space_with_edge: InsideEstimator,
-    inside_estimator_of_initial_front: InsideEstimator,
+    inside_estimator_for_space_without_edge: InsideEstimator,
+    inside_estimator_for_space_with_edge: InsideEstimator,
+    inside_estimator_for_initial_front: InsideEstimator,
 
     total_speed: f64,
 
     stopping_condition: StoppingCondition,
     zero_count: i32,
     distance_map_generator: DistanceMapGenerator,
+    curvature_generator: CurvatureGenerator,
 }
 impl<
         SpaceSize,
@@ -108,6 +115,7 @@ impl<
         InitialFront,
         Grid,
         InsideEstimator,
+        CurvatureGenerator,
     >
     LevelSetMethod<
         SpaceSize,
@@ -122,16 +130,18 @@ impl<
         InitialFront,
         Grid,
         InsideEstimator,
+        CurvatureGenerator,
     >
 where
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
-    UpwindScheme: New<Indexer>,
+    UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint>,
     DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
     Grid: GridMethod<InitialFront, SpaceSize>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
+    CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
 {
     pub fn new(
         parameters: Parameters,
@@ -160,13 +170,13 @@ where
             front: Vec::<IntPoint>::new(),
             narrow_bands: Vec::<IntPoint>::new(),
             normals: Vec::<DoublePoint>::new(),
-            inside_estimator_of_space_without_edge: InsideEstimator::from_grid(
+            inside_estimator_for_space_without_edge: InsideEstimator::from_grid(
                 Grid::create_space_without_edge(Rc::clone(&size)),
             ),
-            inside_estimator_of_space_with_edge: InsideEstimator::from_grid(
+            inside_estimator_for_space_with_edge: InsideEstimator::from_grid(
                 Grid::create_space_with_edge(Rc::clone(&size)),
             ),
-            inside_estimator_of_initial_front: InsideEstimator::new(),
+            inside_estimator_for_initial_front: InsideEstimator::new(),
             total_speed: 0.0,
             stopping_condition: StoppingCondition::new(),
             zero_count: 0,
@@ -175,6 +185,7 @@ where
                 Rc::clone(&indexer),
                 RefCell::clone(&statuses),
             ),
+            curvature_generator: CurvatureGenerator::new(Rc::clone(&indexer), RefCell::clone(&phi)),
         }
     }
 
@@ -199,7 +210,7 @@ where
         self.front.clear();
         self.normals.clear();
         self.initial_front.create_initial_front(initial_front);
-        self.inside_estimator_of_initial_front
+        self.inside_estimator_for_initial_front
             .set_grid(&self.initial_front);
     }
 
@@ -276,7 +287,7 @@ where
         self.zero_count = 0;
 
         for p in &self.front {
-            if self.inside_estimator_of_space_without_edge.is_inside(p) {
+            if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let i = self.indexer.get(&p) as usize;
                 let speed_factor = self.speed_factor.get_value(p);
                 self.speed[i] = speed_factor.clone();
@@ -325,6 +336,35 @@ where
         self.stopping_condition.add_total_speed(self.total_speed);
         self.stopping_condition.is_satisfied()
     }
+
+    fn propagate_front(&mut self) {
+        for p in &self.narrow_bands {
+            if self.inside_estimator_for_space_without_edge.is_inside(p) {
+                let index = self.indexer.get(p) as usize;
+                let speed = self.speed[index];
+                let mut upwind_scheme = 0.0;
+                if speed > 0.0 {
+                    upwind_scheme = self.upwind_scheme.calculate(p, Speed::Positive);
+                } else if speed < 0.0 {
+                    upwind_scheme = self.upwind_scheme.calculate(p, Speed::Negative);
+                }
+                self.dphi.borrow_mut()[index] = speed * upwind_scheme * self.parameters.time_step;
+            }
+        }
+
+        for p in &self.narrow_bands {
+            let index = self.indexer.get(p) as usize;
+            self.phi.borrow_mut()[index] -= self.dphi.borrow()[index];
+        }
+    }
+
+    fn calculate_normals(&mut self) {
+        self.normals.clear();
+        for p in &self.front {
+            let n = self.curvature_generator.calculate_normal(p);
+            self.normals.push(n);
+        }
+    }
 }
 
 pub type LevelSetMethod2d = LevelSetMethod<
@@ -340,6 +380,7 @@ pub type LevelSetMethod2d = LevelSetMethod<
     InitialFront2d,
     Grid2d,
     InsideEstimator2d,
+    CurvatureGenerator2d,
 >;
 
 pub type LevelSetMethod3d = LevelSetMethod<
@@ -355,4 +396,5 @@ pub type LevelSetMethod3d = LevelSetMethod<
     InitialFront3d,
     Grid3d,
     InsideEstimator3d,
+    CurvatureGenerator3d,
 >;

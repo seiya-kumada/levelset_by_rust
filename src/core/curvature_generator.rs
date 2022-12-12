@@ -25,3 +25,24 @@ impl CurvatureGeneratorMethod<Indexer2d, Point2d<i32>, Point2d<f64>> for Curvatu
         return Point2d::<f64>::new(self.differential.fx(), self.differential.fy());
     }
 }
+
+pub struct CurvatureGenerator3d {
+    differential: DifferentialDouble3d,
+}
+
+impl CurvatureGeneratorMethod<Indexer3d, Point3d<i32>, Point3d<f64>> for CurvatureGenerator3d {
+    fn new(indexer: Rc<Indexer3d>, phi: RefCell<Vec<f64>>) -> Self {
+        Self {
+            differential: DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+        }
+    }
+
+    fn calculate_normal(&mut self, p: &Point3d<i32>) -> Point3d<f64> {
+        self.differential.make_point(p);
+        return Point3d::<f64>::new(
+            self.differential.fx(),
+            self.differential.fy(),
+            self.differential.fz(),
+        );
+    }
+}
