@@ -283,17 +283,26 @@ where
     }
 
     fn set_speed_on_front(&mut self) -> f64 {
-        let fs = 0.0;
+        let mut fs = 0.0;
         self.zero_count = 0;
 
         for p in &self.front {
             if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let i = self.indexer.get(&p) as usize;
-                let speed_factor = self.speed_factor.get_value(p);
-                self.speed[i] = speed_factor.clone();
+                let mut speed = self.speed_factor.get_value(p);
+                let kappa = self.curvature_generator.generate(p);
+                speed *= (self.parameters.constant_speed - self.parameters.gain * kappa);
+                if speed.abs() < self.parameters.speed_threshold {
+                    speed = 0.0;
+                    self.zero_count += 1;
+                } else {
+                    //
+                }
+                fs += speed.abs();
+                self.speed[i] = speed;
             }
         }
-        0.0
+        fs
     }
 
     fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {
@@ -364,6 +373,17 @@ where
             let n = self.curvature_generator.calculate_normal(p);
             self.normals.push(n);
         }
+    }
+
+    fn create_labels(&mut self) -> bool {
+        let mut resets = false;
+        self.front.clear();
+        for p in &self.narrow_bands {
+            if self.inside_estimator_for_space_without_edge.is_inside(p) {
+                let index = self.indexer.get(p);
+            }
+        }
+        return resets;
     }
 }
 
