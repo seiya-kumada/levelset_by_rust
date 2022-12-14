@@ -179,6 +179,7 @@ mod tests {
         assert_eq!(a, 1.0);
     }
 
+    // OK-18
     #[test]
     fn differential2d_h2dx() {
         assert_eq!(1.0, df::Differential2d::<i32>::h2dx(-1, -1));
@@ -330,6 +331,7 @@ mod tests {
         assert_eq!(a, 0.0);
     }
 
+    // OK-01
     fn sobel_x_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer2d::new(&space_size));
@@ -346,6 +348,24 @@ mod tests {
         sobel_x_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-02
+    fn sobel_h_total_2d_core(input: RefCell<Vec<f64>>, expected_output: i32) {
+        let space_size = SpaceSize::<TwoDim>::new(3, 3);
+        let indexer = Rc::new(Indexer2d::new(&space_size));
+        let mut cg = df::DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&input));
+        let p = IntPoint::<TwoDim>::new(1, 1);
+        cg.make_point(&p);
+        assert_eq!(expected_output, df::DifferentialTool::H0D_TOTAL);
+    }
+
+    #[test]
+    fn sobel_h_total_2d() {
+        let v = RefCell::new(vec![0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0]);
+        let e = 4;
+        sobel_h_total_2d_core(RefCell::clone(&v), e);
+    }
+
+    // OK-3
     fn fx_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -362,6 +382,7 @@ mod tests {
         fx_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-4
     fn sobel_y_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -378,6 +399,7 @@ mod tests {
         sobel_y_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-5
     fn fy_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -394,6 +416,7 @@ mod tests {
         fy_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-13
     fn fxy_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -410,6 +433,7 @@ mod tests {
         fxy_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-17
     fn fxx_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -426,6 +450,7 @@ mod tests {
         fxx_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-19
     fn fyy_2d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -442,6 +467,7 @@ mod tests {
         fyy_2d_core(RefCell::clone(&v), e);
     }
 
+    // OK-24
     fn fx_fy_with_u8_2d_core(input: RefCell<Vec<u8>>, expected_fx: f64, expected_fy: f64) {
         let space_size = SpaceSize::<TwoDim>::new(3, 3);
         let indexer = Rc::new(Indexer::<TwoDim>::new(&space_size));
@@ -493,6 +519,7 @@ mod tests {
         assert_eq!(1.0, df::Differential3d::<i32>::h1dx(1, 1, 1));
     }
 
+    // OK-21
     #[test]
     fn differential3d_h2dx() {
         assert_eq!(1.0, df::Differential3d::<i32>::h2dx(-1, -1, -1));
@@ -516,6 +543,7 @@ mod tests {
         assert_eq!(2.0, df::Differential3d::<i32>::h2dx(1, 1, 0));
     }
 
+    // OK-7
     fn sobel_x_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -535,6 +563,7 @@ mod tests {
         sobel_x_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-8
     fn sobel_y_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -554,6 +583,7 @@ mod tests {
         sobel_y_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-9
     fn sobel_z_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -573,6 +603,7 @@ mod tests {
         sobel_z_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-10
     fn fx_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -592,6 +623,7 @@ mod tests {
         fx_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-11
     fn fy_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -611,6 +643,7 @@ mod tests {
         fy_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-12
     fn fz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -630,6 +663,7 @@ mod tests {
         fz_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-14
     fn fxy_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -649,6 +683,7 @@ mod tests {
         fxy_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-15
     fn fxz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -668,6 +703,7 @@ mod tests {
         fxz_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-16
     fn fyz_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -687,6 +723,7 @@ mod tests {
         fyz_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-20
     fn fxx_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -706,6 +743,7 @@ mod tests {
         fxx_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-22
     fn fyy_3d_core(input: RefCell<Vec<f64>>, expected_output: f64) {
         let space_size = SpaceSize::<ThreeDim>::new(3, 3, 3);
         let indexer = Rc::new(Indexer::<ThreeDim>::new(&space_size));
@@ -744,6 +782,7 @@ mod tests {
         fzz_3d_core(RefCell::clone(&v), e);
     }
 
+    // OK-25
     fn fx_fy_fz_3d_with_u8_core(
         input: RefCell<Vec<u8>>,
         expected_fx: f64,
@@ -770,97 +809,5 @@ mod tests {
         let fy_e = 15.0 / 4.0;
         let fz_e = 0.0;
         fx_fy_fz_3d_with_u8_core(RefCell::clone(&v), fx_e, fy_e, fz_e);
-    }
-
-    #[test]
-    fn hoge() {
-        trait Person {
-            fn name(&self) -> String;
-        }
-
-        trait Student: Person {
-            fn university(&self) -> String;
-        }
-
-        trait Programmer {
-            fn fav_language(&self) -> String;
-        }
-
-        trait CompSciStudent: Programmer + Student {
-            fn git_username(&self) -> String;
-        }
-
-        struct Kumada;
-        impl CompSciStudent for Kumada {
-            fn git_username(&self) -> String {
-                String::from("Kumada")
-            }
-        }
-
-        impl Programmer for Kumada {
-            fn fav_language(&self) -> String {
-                String::from("Kumada")
-            }
-        }
-
-        impl Student for Kumada {
-            fn university(&self) -> String {
-                String::from("Osaka")
-            }
-        }
-
-        impl Person for Kumada {
-            fn name(&self) -> String {
-                String::from("Kumada")
-            }
-        }
-
-        let kumada = Kumada {};
-        println!(
-            "{},{},{},{}",
-            kumada.name(),
-            kumada.university(),
-            kumada.fav_language(),
-            kumada.git_username()
-        );
-
-        fn hoge(kumada: &dyn CompSciStudent) {
-            println!(
-                "{},{},{},{}",
-                kumada.name(),
-                kumada.university(),
-                kumada.fav_language(),
-                kumada.git_username()
-            );
-        }
-        fn foo(kumada: &Kumada) {
-            println!(
-                "{},{},{},{}",
-                kumada.name(),
-                kumada.university(),
-                kumada.fav_language(),
-                kumada.git_username()
-            );
-        }
-        fn bar<K: CompSciStudent>(kumada: &K) {
-            println!(
-                "{},{},{},{}",
-                kumada.name(),
-                kumada.university(),
-                kumada.fav_language(),
-                kumada.git_username()
-            );
-        }
-
-        trait Foo {
-            fn method(&self) -> String;
-        }
-
-        fn do_something(x: &dyn Foo) {
-            x.method();
-        }
-
-        fn parse_csv_document<R: std::io::BufRead>(src: R) {}
-        fn parse_csv_document_(src: impl std::io::BufRead) {}
     }
 }

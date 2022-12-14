@@ -194,15 +194,15 @@ where
         self.set_speed_function(true);
     }
 
-    fn calculate_speed_factors(&mut self) {
+    pub fn calculate_speed_factors(&mut self) {
         self.speed_factor.calculate_all(&self.size);
     }
 
-    fn initailze_distance_map(&mut self) {
+    pub fn initailze_distance_map(&mut self) {
         self.distance_map_generator.create_distance_map();
     }
 
-    fn get_size(&self) -> Rc<SpaceSize> {
+    pub fn get_size(&self) -> Rc<SpaceSize> {
         Rc::clone(&self.size)
     }
 
@@ -214,7 +214,7 @@ where
             .set_grid(&self.initial_front);
     }
 
-    fn initailze_over_all(&self, initial_front: &InitialFront) {
+    pub fn initailze_over_all(&self, initial_front: &InitialFront) {
         self.grid_range.foreach_phi(
             &self.indexer,
             RefCell::clone(&self.statuses),
@@ -223,7 +223,11 @@ where
         );
     }
 
-    fn register_to_phi(
+    pub fn get_phi(&self) -> RefCell<Vec<f64>> {
+        RefCell::clone(&self.phi)
+    }
+
+    pub fn register_to_phi(
         indexer: &Indexer,
         statuses: RefCell<Vec<Status>>,
         phi: RefCell<Vec<f64>>,
@@ -238,31 +242,27 @@ where
         }
     }
 
-    fn get_phi(&self) -> RefCell<Vec<f64>> {
-        RefCell::clone(&self.phi)
-    }
-
-    fn get_status(&self) -> RefCell<Vec<Status>> {
+    pub fn get_status(&self) -> RefCell<Vec<Status>> {
         RefCell::clone(&self.statuses)
     }
 
-    fn get_front(&self) -> &Vec<IntPoint> {
+    pub fn get_front(&self) -> &Vec<IntPoint> {
         &self.front
     }
 
-    fn get_grid(&self) -> &Grid {
+    pub fn get_grid(&self) -> &Grid {
         &self.initial_front
     }
 
-    fn get_indexer(&self) -> Rc<Indexer> {
+    pub fn get_indexer(&self) -> Rc<Indexer> {
         Rc::clone(&self.indexer)
     }
 
-    fn get_normals(&self) -> &Vec<DoublePoint> {
+    pub fn get_normals(&self) -> &Vec<DoublePoint> {
         &self.normals
     }
 
-    fn print_verbose_description(&self) {
+    pub fn print_verbose_description(&self) {
         // print something
     }
 
@@ -329,7 +329,7 @@ where
         }
     }
 
-    fn set_speed_function(&mut self, resets: bool) -> bool {
+    pub fn set_speed_function(&mut self, resets: bool) -> bool {
         self.clear_speed_within_narrow_band(resets);
         self.total_speed = self.set_speed_on_front();
         self.copy_nearest_speed_to_narrow_band(resets);
@@ -346,7 +346,7 @@ where
         self.stopping_condition.is_satisfied()
     }
 
-    fn propagate_front(&mut self) {
+    pub fn propagate_front(&mut self) {
         for p in &self.narrow_bands {
             if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let index = self.indexer.get(p) as usize;
@@ -367,7 +367,7 @@ where
         }
     }
 
-    fn calculate_normals(&mut self) {
+    pub fn calculate_normals(&mut self) {
         self.normals.clear();
         for p in &self.front {
             let n = self.curvature_generator.calculate_normal(p);
@@ -375,7 +375,7 @@ where
         }
     }
 
-    fn create_labels(&mut self) -> bool {
+    pub fn create_labels(&mut self) -> bool {
         let mut resets = false;
         self.front.clear();
         for p in &self.narrow_bands {
@@ -384,6 +384,10 @@ where
             }
         }
         return resets;
+    }
+
+    pub fn get_input_object(&self) -> RefCell<Vec<u8>> {
+        RefCell::clone(&self.input_object)
     }
 }
 
