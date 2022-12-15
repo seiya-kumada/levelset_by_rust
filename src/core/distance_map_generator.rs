@@ -223,7 +223,7 @@ impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>> for Dist
             statuses: RefCell::clone(&statuses),
             table: Table2d::new(),
             distance_map: DistanceMap2d::new(),
-            squared_wband: 0,
+            squared_wband: wband * (1 + wband),
         }
     }
 
