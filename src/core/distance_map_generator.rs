@@ -194,8 +194,8 @@ pub trait DistanceMapGeneratorMethod<T, D, P> {
 
 #[derive(Eq, PartialEq, Hash)]
 pub struct PointInfo2d {
-    point: Point2d<i32>,
-    label: usize,
+    pub point: Point2d<i32>,
+    pub label: usize,
 }
 
 impl PointInfo2d {
@@ -303,8 +303,8 @@ impl DistanceMapGenerator2d {
 
 #[derive(Eq, PartialEq, Hash)]
 pub struct PointInfo3d {
-    point: Point3d<i32>,
-    label: usize,
+    pub point: Point3d<i32>,
+    pub label: usize,
 }
 
 impl PointInfo3d {
@@ -332,7 +332,7 @@ impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>> for Dist
             statuses: RefCell::clone(&statuses),
             table: Table3d::new(),
             distance_map: DistanceMap3d::new(),
-            squared_wband: 0,
+            squared_wband: wband * (1 + wband),
         }
     }
 

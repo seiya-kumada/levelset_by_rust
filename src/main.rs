@@ -7,10 +7,6 @@ pub mod test;
 pub fn main() {
     let args = cli::CommandlineArguments::parse();
     cli::execute_level_set_method(&args);
-    let wband = 3;
-    for x in -wband..(wband + 1) {
-        println!("{}", x);
-    }
 }
 
 //mod core;
@@ -24,12 +20,12 @@ pub fn main() {
 //use std::rc::Rc;
 //
 //pub fn main() {
-//    let size = SpaceSize2d::new(3, 3);
+//    let size = SpaceSize3d::new(3, 3, 3);
 //    let statuses = RefCell::new(Vec::<Status>::new());
-//    let wband = 3;
-//    let indexer = Rc::new(Indexer2d::new(&size));
+//    let wband = 1;
+//    let indexer = Rc::new(Indexer3d::new(&size));
 //    let mut generator =
-//        DistanceMapGenerator2d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+//        DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
 //    generator.create_distance_map();
 //    let map = generator.get_distance_map();
 //    let mut c = 0;
@@ -37,5 +33,6 @@ pub fn main() {
 //        let v = map.get_vec(k).unwrap();
 //        c += v.len();
 //    }
-//    assert_eq!(c, Che)
+//    println!("_/_/_/{}", c);
 //}
+//
