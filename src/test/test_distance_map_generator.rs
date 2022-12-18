@@ -226,4 +226,256 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn select_labels_with_2d() {
+        let size = SpaceSize2d::new(7, 7);
+        let indexer = Rc::new(Indexer2d::new(&size));
+        let statuses = RefCell::new(vec![
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+        ]);
+
+        let wband = 3;
+        let mut generator =
+            DistanceMapGenerator2d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+        let p = Point2d::<i32>::new(3, 3);
+        generator.create_distance_map();
+        let labels = generator.select_labels(&p);
+        assert_eq!(6, labels.iter().filter(|&n| *n == true).count());
+
+        let answers: Vec<usize> = vec![0, 2, 3, 5, 6, 8];
+        for s in answers {
+            assert_eq!(labels[s], true);
+        }
+    }
+
+    #[test]
+    fn select_labels_with_3d_0() {
+        let size = SpaceSize3d::new(3, 3, 3);
+        let indexer = Rc::new(Indexer3d::new(&size));
+        let statuses = RefCell::new(vec![
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+        ]);
+
+        let wband = 1;
+        let mut generator =
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+        generator.create_distance_map();
+
+        let p = Point3d::<i32>::new(1, 1, 1);
+        let labels = generator.select_labels(&p);
+
+        assert_eq!(18, labels.iter().filter(|&n| *n == true).count());
+
+        let answers = vec![
+            0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17, 18, 19, 20, 24, 25, 26,
+        ];
+
+        for s in &answers {
+            assert_eq!(labels[*s], true);
+        }
+
+        let mut k = 0;
+        for i in 0..labels.len() {
+            if labels[i] {
+                assert_eq!(i, answers[k]);
+                k += 1;
+            }
+        }
+    }
+
+    #[test]
+    fn select_labels_with_3d_1() {
+        let size = SpaceSize3d::new(3, 3, 3);
+        let indexer = Rc::new(Indexer3d::new(&size));
+        let statuses = RefCell::new(vec![
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+        ]);
+
+        let wband = 1;
+        let mut generator =
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+        generator.create_distance_map();
+
+        let p = Point3d::<i32>::new(1, 1, 1);
+        let labels = generator.select_labels(&p);
+
+        assert_eq!(26, labels.iter().filter(|&n| *n == true).count());
+
+        let answers = vec![
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            25, 26,
+        ];
+
+        for s in &answers {
+            assert_eq!(labels[*s], true);
+        }
+
+        let mut k = 0;
+        for i in 0..labels.len() {
+            if labels[i] {
+                assert_eq!(i, answers[k]);
+                k += 1;
+            }
+        }
+    }
+
+    #[test]
+    fn select_labels_with_3d_2() {
+        let size = SpaceSize3d::new(3, 3, 3);
+        let indexer = Rc::new(Indexer3d::new(&size));
+        let statuses = RefCell::new(vec![
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+            Status::Front,
+            Status::Farway,
+            Status::Farway,
+            Status::Farway,
+        ]);
+
+        let wband = 1;
+        let mut generator =
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+        generator.create_distance_map();
+
+        let p = Point3d::<i32>::new(1, 1, 1);
+        let labels = generator.select_labels(&p);
+
+        assert_eq!(17, labels.iter().filter(|&n| *n == true).count());
+
+        let answers = vec![0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17, 18, 19, 20, 25, 26];
+
+        for s in &answers {
+            assert_eq!(labels[*s], true);
+        }
+
+        let mut k = 0;
+        for i in 0..labels.len() {
+            if labels[i] {
+                assert_eq!(i, answers[k]);
+                k += 1;
+            }
+        }
+    }
 }

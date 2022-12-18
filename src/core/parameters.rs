@@ -8,3 +8,16 @@ pub struct Parameters {
     pub constant_speed: f64,
     pub speed_threshold: f64,
 }
+
+impl Parameters {
+    pub fn new() -> Self {
+        Self {
+            wband: 0,
+            wreset: 0,
+            time_step: 0.0,
+            gain: 0.0,
+            constant_speed: 0.0,
+            speed_threshold: 0.0,
+        }
+    }
+}

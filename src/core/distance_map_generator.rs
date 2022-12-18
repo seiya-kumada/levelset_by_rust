@@ -362,7 +362,7 @@ impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>> for Dist
 
         let flag_0 = self.remove(p, 1, [1, 4, 7, 10, 13, 16, 19, 22, 25], &mut labels);
         let flag_1 = self.remove(p, 2, [2, 5, 8, 11, 14, 17, 20, 23, 26], &mut labels);
-        let flag_2 = self.remove(p, 3, [3, 6, 9, 12, 15, 18, 21, 24, 27], &mut labels);
+        let flag_2 = self.remove(p, 3, [3, 4, 5, 12, 13, 14, 21, 22, 23], &mut labels);
 
         if flag_0 {
             self.remove_(p, 4, &mut labels);
