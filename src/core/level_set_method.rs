@@ -37,6 +37,7 @@ pub struct LevelSetMethod<
     InsideEstimator,
     CurvatureGenerator,
 > where
+    IntPoint: Copy,
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
@@ -133,6 +134,7 @@ impl<
         CurvatureGenerator,
     >
 where
+    IntPoint: Copy,
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
@@ -214,6 +216,13 @@ where
             .set_grid(&self.initial_front);
     }
 
+    pub fn initialize_point_on_front(&mut self, p: &IntPoint) {
+        let index = self.indexer.get(p) as usize;
+        self.phi.borrow_mut()[index] = 0.0;
+        self.statuses.borrow_mut()[index] = Status::Front;
+        self.front.push(p.clone());
+    }
+
     pub fn initailze_over_all(&self, initial_front: &InitialFront) {
         self.grid_range.foreach_phi(
             &self.indexer,
@@ -242,7 +251,7 @@ where
         }
     }
 
-    pub fn get_status(&self) -> RefCell<Vec<Status>> {
+    pub fn get_statuses(&self) -> RefCell<Vec<Status>> {
         RefCell::clone(&self.statuses)
     }
 

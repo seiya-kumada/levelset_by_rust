@@ -1,3 +1,3 @@
 level_set_method.rs
-
- 
+Gridに
+initialize_along_frontを実装する。 
