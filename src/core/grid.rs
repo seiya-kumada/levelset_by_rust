@@ -1,13 +1,16 @@
 use super::{
     initial_front::{InitialFront2d, InitialFront3d},
+    level_set_method::{LevelSetMethod2d, LevelSetMethod3d},
+    point::{Point2d, Point3d},
     space_size::{SpaceSize2d, SpaceSize3d},
 };
 use std::rc::Rc;
 
-pub trait GridMethod<T, U> {
+pub trait GridMethod<T, U, L, P> {
     fn create_initial_front(&mut self, front: &T);
     fn create_space_with_edge(space_size: Rc<U>) -> Self;
     fn create_space_without_edge(space_size: Rc<U>) -> Self;
+    fn initialize_along_front(&self, lsm: &mut L, fun: fn(lsm: &mut L, p: &P));
 }
 
 #[derive(Clone)]
@@ -29,7 +32,7 @@ impl Grid2d {
     }
 }
 
-impl GridMethod<InitialFront2d, SpaceSize2d> for Grid2d {
+impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for Grid2d {
     fn create_initial_front(&mut self, front: &InitialFront2d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
@@ -52,6 +55,29 @@ impl GridMethod<InitialFront2d, SpaceSize2d> for Grid2d {
             right: space_size.width - 1,
             top: 0,
             bottom: space_size.height - 1,
+        }
+    }
+
+    fn initialize_along_front(
+        &self,
+        lsm: &mut LevelSetMethod2d,
+        fun: fn(lsm: &mut LevelSetMethod2d, p: &Point2d<i32>),
+    ) {
+        for i in self.left..self.right {
+            let p = Point2d::<i32>::new(i, self.top);
+            fun(lsm, &p);
+        }
+        for j in self.top..self.bottom {
+            let p = Point2d::<i32>::new(self.right, j);
+            fun(lsm, &p);
+        }
+        for i in (self.left..self.right).rev() {
+            let p = Point2d::<i32>::new(i, self.bottom);
+            fun(lsm, &p);
+        }
+        for j in (self.top..self.bottom).rev() {
+            let p = Point2d::<i32>::new(self.left, j);
+            fun(lsm, &p);
         }
     }
 }
@@ -79,7 +105,7 @@ impl Grid3d {
     }
 }
 
-impl GridMethod<InitialFront3d, SpaceSize3d> for Grid3d {
+impl GridMethod<InitialFront3d, SpaceSize3d, LevelSetMethod3d, Point3d<i32>> for Grid3d {
     fn create_initial_front(&mut self, front: &InitialFront3d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
@@ -108,6 +134,39 @@ impl GridMethod<InitialFront3d, SpaceSize3d> for Grid3d {
             bottom: space_size.height - 1,
             front: 0,
             back: space_size.depth - 1,
+        }
+    }
+
+    fn initialize_along_front(
+        &self,
+        lsm: &mut LevelSetMethod3d,
+        fun: fn(lsm: &mut LevelSetMethod3d, p: &Point3d<i32>),
+    ) {
+        for j in self.top..(self.bottom + 1) {
+            for i in self.left..(self.right + 1) {
+                let p = Point3d::<i32>::new(i, j, self.front);
+                fun(lsm, &p);
+                let p = Point3d::<i32>::new(i, j, self.back);
+                fun(lsm, &p);
+            }
+        }
+
+        for k in (self.front + 1)..self.back {
+            for i in self.left..(self.right + 1) {
+                let p = Point3d::<i32>::new(i, self.top, k);
+                fun(lsm, &p);
+                let p = Point3d::<i32>::new(i, self.bottom, k);
+                fun(lsm, &p);
+            }
+        }
+
+        for j in (self.top + 1)..self.bottom {
+            for k in (self.front + 1)..self.back {
+                let p = Point3d::<i32>::new(self.left, j, k);
+                fun(lsm, &p);
+                let p = Point3d::<i32>::new(self.right, j, k);
+                fun(lsm, &p);
+            }
         }
     }
 }
