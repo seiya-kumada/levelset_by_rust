@@ -215,15 +215,14 @@ where
         self.inside_estimator_for_initial_front
             .set_grid(&self.initial_front);
 
-        //self.initial_front
-        //    .initialize_along_front(self, Self::initialize_point_on_front);
+        //self.initial_front.initialize_along_front(&mut self);
     }
 
-    pub fn initialize_point_on_front(lsm: &mut Self, p: &IntPoint) {
-        let index = lsm.indexer.get(p) as usize;
-        lsm.phi.borrow_mut()[index] = 0.0;
-        lsm.statuses.borrow_mut()[index] = Status::Front;
-        lsm.front.push(p.clone());
+    pub fn initialize_point_on_front(&mut self, p: &IntPoint) {
+        let index = self.indexer.get(p) as usize;
+        self.phi.borrow_mut()[index] = 0.0;
+        self.statuses.borrow_mut()[index] = Status::Front;
+        self.front.push(p.clone());
     }
 
     pub fn initailze_over_all(&self, initial_front: &InitialFront) {

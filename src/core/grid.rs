@@ -10,7 +10,7 @@ pub trait GridMethod<T, U, L, P> {
     fn create_initial_front(&mut self, front: &T);
     fn create_space_with_edge(space_size: Rc<U>) -> Self;
     fn create_space_without_edge(space_size: Rc<U>) -> Self;
-    fn initialize_along_front(&self, lsm: &mut L, fun: fn(lsm: &mut L, p: &P));
+    fn initialize_along_front(&self, lsm: &mut L);
 }
 
 #[derive(Clone)]
@@ -58,26 +58,22 @@ impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for
         }
     }
 
-    fn initialize_along_front(
-        &self,
-        lsm: &mut LevelSetMethod2d,
-        fun: fn(lsm: &mut LevelSetMethod2d, p: &Point2d<i32>),
-    ) {
+    fn initialize_along_front(&self, lsm: &mut LevelSetMethod2d) {
         for i in self.left..self.right {
             let p = Point2d::<i32>::new(i, self.top);
-            fun(lsm, &p);
+            lsm.initialize_point_on_front(&p);
         }
         for j in self.top..self.bottom {
             let p = Point2d::<i32>::new(self.right, j);
-            fun(lsm, &p);
+            lsm.initialize_point_on_front(&p);
         }
         for i in (self.left..self.right).rev() {
             let p = Point2d::<i32>::new(i, self.bottom);
-            fun(lsm, &p);
+            lsm.initialize_point_on_front(&p);
         }
         for j in (self.top..self.bottom).rev() {
             let p = Point2d::<i32>::new(self.left, j);
-            fun(lsm, &p);
+            lsm.initialize_point_on_front(&p);
         }
     }
 }
@@ -137,35 +133,31 @@ impl GridMethod<InitialFront3d, SpaceSize3d, LevelSetMethod3d, Point3d<i32>> for
         }
     }
 
-    fn initialize_along_front(
-        &self,
-        lsm: &mut LevelSetMethod3d,
-        fun: fn(lsm: &mut LevelSetMethod3d, p: &Point3d<i32>),
-    ) {
+    fn initialize_along_front(&self, lsm: &mut LevelSetMethod3d) {
         for j in self.top..(self.bottom + 1) {
             for i in self.left..(self.right + 1) {
                 let p = Point3d::<i32>::new(i, j, self.front);
-                fun(lsm, &p);
+                lsm.initialize_point_on_front(&p);
                 let p = Point3d::<i32>::new(i, j, self.back);
-                fun(lsm, &p);
+                lsm.initialize_point_on_front(&p);
             }
         }
 
         for k in (self.front + 1)..self.back {
             for i in self.left..(self.right + 1) {
                 let p = Point3d::<i32>::new(i, self.top, k);
-                fun(lsm, &p);
+                lsm.initialize_point_on_front(&p);
                 let p = Point3d::<i32>::new(i, self.bottom, k);
-                fun(lsm, &p);
+                lsm.initialize_point_on_front(&p);
             }
         }
 
         for j in (self.top + 1)..self.bottom {
             for k in (self.front + 1)..self.back {
                 let p = Point3d::<i32>::new(self.left, j, k);
-                fun(lsm, &p);
+                lsm.initialize_point_on_front(&p);
                 let p = Point3d::<i32>::new(self.right, j, k);
-                fun(lsm, &p);
+                lsm.initialize_point_on_front(&p);
             }
         }
     }
