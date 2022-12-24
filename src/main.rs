@@ -1,14 +1,31 @@
 #![allow(unused)]
-use clap::Parser;
-use interface::commandline_interface as cli;
 pub mod core;
 pub mod interface;
 pub mod test;
+use crate::core::grid::Grid3d;
+use crate::core::initial_front::InitialFront3d;
+use crate::core::level_set_method::LevelSetMethod3d;
+use crate::core::parameters::Parameters;
+use crate::core::point::Point3d;
+use crate::core::space_size::SpaceSize3d;
+use std::cell::RefCell;
+use std::rc::Rc;
 pub fn main() {
-    let args = cli::CommandlineArguments::parse();
-    cli::execute_level_set_method(&args);
-}
+    let mut params = Parameters::new();
+    params.wband = 3;
+    let mut initial_front = InitialFront3d::new();
+    initial_front.vertices[0] = Point3d::<i32>::new(10, 15, 32);
+    initial_front.vertices[1] = Point3d::<i32>::new(82, 74, 61);
 
+    let size = Rc::new(SpaceSize3d::new(101, 143, 131));
+    let gray = Rc::new(RefCell::new(vec![0u8]));
+    let grid = Grid3d::new();
+    let mut lsm = LevelSetMethod3d::new(params.clone(), Rc::clone(&size), Rc::clone(&gray), grid);
+    lsm.initialize_along_front(&initial_front);
+    lsm.initailze_over_all(&initial_front);
+}
+//不変参照(&,borrow)と可変参照(&mut,borrow_mut)
+//借用=borrow
 //mod core;
 //use crate::core::distance_map_generator::{
 //    DistanceMapGenerator2d, DistanceMapGenerator3d, DistanceMapGeneratorMethod,

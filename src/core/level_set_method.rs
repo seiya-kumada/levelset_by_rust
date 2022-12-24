@@ -1,3 +1,5 @@
+use opencv::prelude::AlgorithmTrait;
+
 use crate::core::curvature_generator::{
     CurvatureGenerator2d, CurvatureGenerator3d, CurvatureGeneratorMethod,
 };
@@ -64,19 +66,19 @@ pub struct LevelSetMethod<
     initial_front: Grid,
 
     /// auxiliary function
-    phi: RefCell<Vec<f64>>,
+    phi: Rc<RefCell<Vec<f64>>>,
 
     /// deviation of auxiliary function
-    dphi: RefCell<Vec<f64>>,
+    dphi: Rc<RefCell<Vec<f64>>>,
 
     /// velocity function
     speed: Vec<f64>,
 
     /// current statuses
-    statuses: RefCell<Vec<Status>>,
+    statuses: Rc<RefCell<Vec<Status>>>,
 
     /// front
-    front: Vec<IntPoint>,
+    front: Rc<RefCell<Vec<IntPoint>>>,
 
     /// normals
     normals: Vec<DoublePoint>,
@@ -85,7 +87,7 @@ pub struct LevelSetMethod<
     narrow_bands: Vec<IntPoint>,
 
     /// input image(gray image)
-    input_object: RefCell<Vec<u8>>,
+    input_object: Rc<RefCell<Vec<u8>>>,
 
     upwind_scheme: UpwindScheme,
     speed_factor: SpeedFactor,
@@ -148,12 +150,12 @@ where
     pub fn new(
         parameters: Parameters,
         size: Rc<SpaceSize>,
-        gray: RefCell<Vec<u8>>,
+        gray: Rc<RefCell<Vec<u8>>>,
         initial_front: Grid,
     ) -> Self {
         let statuses = RefCell::new(vec![Status::Farway; size.get_total()]);
         let indexer = Rc::new(Indexer::new(&size));
-        let phi = RefCell::new(vec![0.0; size.get_total()]);
+        let phi = Rc::new(RefCell::new(vec![0.0; size.get_total()]));
         Self {
             phantom_initial_front: PhantomData,
             phantom_distance_map: PhantomData,
@@ -161,15 +163,15 @@ where
             size: Rc::clone(&size),
             indexer: Rc::clone(&indexer),
             initial_front,
-            phi: RefCell::clone(&phi),
-            dphi: RefCell::new(vec![0.0; size.get_total()]),
+            phi: Rc::new(RefCell::clone(&phi)),
+            dphi: Rc::new(RefCell::new(vec![0.0; size.get_total()])),
             speed: vec![0.0; size.get_total()],
-            statuses: RefCell::clone(&statuses),
-            upwind_scheme: UpwindScheme::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+            statuses: Rc::new(RefCell::clone(&statuses)),
+            upwind_scheme: UpwindScheme::new(Rc::clone(&indexer), Rc::clone(&phi)),
             speed_factor: SpeedFactor::new(Rc::clone(&indexer), RefCell::clone(&gray)),
             grid_range: GridRange::new(&size),
-            input_object: RefCell::clone(&gray),
-            front: Vec::<IntPoint>::new(),
+            input_object: Rc::clone(&gray),
+            front: Rc::new(RefCell::new(Vec::<IntPoint>::new())),
             narrow_bands: Vec::<IntPoint>::new(),
             normals: Vec::<DoublePoint>::new(),
             inside_estimator_for_space_without_edge: InsideEstimator::from_grid(
@@ -209,20 +211,20 @@ where
     }
 
     pub fn initialize_along_front(&mut self, initial_front: &InitialFront) {
-        self.front.clear();
+        self.front.borrow_mut().clear();
         self.normals.clear();
         self.initial_front.create_initial_front(initial_front);
         self.inside_estimator_for_initial_front
             .set_grid(&self.initial_front);
 
-        //self.initial_front.initialize_along_front(&mut self);
+        self.initial_front.initialize_along_front(&self);
     }
 
-    pub fn initialize_point_on_front(&mut self, p: &IntPoint) {
+    pub fn initialize_point_on_front(&self, p: &IntPoint) {
         let index = self.indexer.get(p) as usize;
         self.phi.borrow_mut()[index] = 0.0;
         self.statuses.borrow_mut()[index] = Status::Front;
-        self.front.push(p.clone());
+        self.front.borrow_mut().push(p.clone());
     }
 
     pub fn initailze_over_all(&self, initial_front: &InitialFront) {
@@ -257,8 +259,8 @@ where
         RefCell::clone(&self.statuses)
     }
 
-    pub fn get_front(&self) -> &Vec<IntPoint> {
-        &self.front
+    pub fn get_front(&self) -> RefCell<Vec<IntPoint>> {
+        RefCell::clone(&self.front)
     }
 
     pub fn get_grid(&self) -> &Grid {
@@ -297,7 +299,7 @@ where
         let mut fs = 0.0;
         self.zero_count = 0;
 
-        for p in &self.front {
+        for p in self.front.borrow().iter() {
             if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let i = self.indexer.get(&p) as usize;
                 let mut speed = self.speed_factor.get_value(p);
@@ -319,9 +321,9 @@ where
     fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {
         let distance_map = self.distance_map_generator.get_distance_map();
         let mut is_considerable = Vec::<Vec<bool>>::new();
-        is_considerable.reserve(self.front.len());
+        is_considerable.reserve(self.front.borrow().len());
 
-        for p in &self.front {
+        for p in self.front.borrow().iter() {
             let a = self.distance_map_generator.select_labels(p);
             is_considerable.push(a);
         }
@@ -380,7 +382,7 @@ where
 
     pub fn calculate_normals(&mut self) {
         self.normals.clear();
-        for p in &self.front {
+        for p in self.front.borrow().iter() {
             let n = self.curvature_generator.calculate_normal(p);
             self.normals.push(n);
         }
@@ -388,7 +390,7 @@ where
 
     pub fn create_labels(&mut self) -> bool {
         let mut resets = false;
-        self.front.clear();
+        self.front.borrow_mut().clear();
         for p in &self.narrow_bands {
             if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let index = self.indexer.get(p);

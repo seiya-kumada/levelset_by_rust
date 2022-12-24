@@ -19,11 +19,11 @@ mod tests {
             SpaceSize2d,
             Point2d<i32>,
         >>::new(&space_size));
-        let phi = RefCell::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
+        let phi = Rc::new(RefCell::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]));
         let mut scheme = <UpwindScheme2d as upwind_scheme::UpwindSchemeMethod<
             Indexer2d,
             Point2d<i32>,
-        >>::new(Rc::clone(&indexer), RefCell::clone(&phi));
+        >>::new(Rc::clone(&indexer), Rc::clone(&phi));
         scheme.position.set_position(&p, Rc::clone(&indexer));
         let r = &scheme.position;
         assert_eq!(r.left, 2);
@@ -48,12 +48,12 @@ mod tests {
             SpaceSize3d,
             Point3d<i32>,
         >>::new(&space_size));
-        let phi = RefCell::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]);
+        let phi = Rc::new(RefCell::new(vec![0.0, 1.0, 2.0, 3.0, 4.0]));
 
         let mut scheme = <UpwindScheme3d as upwind_scheme::UpwindSchemeMethod<
             Indexer3d,
             Point3d<i32>,
-        >>::new(Rc::clone(&indexer), RefCell::clone(&phi));
+        >>::new(Rc::clone(&indexer), Rc::clone(&phi));
         scheme.position.set_position(&p, Rc::clone(&indexer));
 
         let r = &scheme.position;

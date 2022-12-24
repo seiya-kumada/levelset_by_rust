@@ -9,7 +9,7 @@ use std::cmp;
 use std::rc::Rc;
 
 pub trait UpwindSchemeMethod<T, P> {
-    fn new(t: Rc<T>, phi: RefCell<Vec<f64>>) -> Self;
+    fn new(t: Rc<T>, phi: Rc<RefCell<Vec<f64>>>) -> Self;
     fn calculate(&mut self, p: &P, speed: Speed) -> f64;
 }
 
@@ -21,7 +21,7 @@ pub struct UpwindScheme2d {
 }
 
 impl UpwindSchemeMethod<Indexer2d, Point2d<i32>> for UpwindScheme2d {
-    fn new(indexer: Rc<Indexer2d>, phi: RefCell<Vec<f64>>) -> Self {
+    fn new(indexer: Rc<Indexer2d>, phi: Rc<RefCell<Vec<f64>>>) -> Self {
         Self {
             position: Position2d::new(),
             upwind: Upwind2d::new(),
@@ -112,7 +112,7 @@ pub struct UpwindScheme3d {
 }
 
 impl UpwindSchemeMethod<Indexer3d, Point3d<i32>> for UpwindScheme3d {
-    fn new(indexer: Rc<Indexer3d>, phi: RefCell<Vec<f64>>) -> Self {
+    fn new(indexer: Rc<Indexer3d>, phi: Rc<RefCell<Vec<f64>>>) -> Self {
         Self {
             position: Position3d::new(),
             upwind: Upwind3d::new(),

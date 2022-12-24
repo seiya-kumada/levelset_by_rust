@@ -10,7 +10,7 @@ pub trait GridMethod<T, U, L, P> {
     fn create_initial_front(&mut self, front: &T);
     fn create_space_with_edge(space_size: Rc<U>) -> Self;
     fn create_space_without_edge(space_size: Rc<U>) -> Self;
-    fn initialize_along_front(&self, lsm: &mut L);
+    fn initialize_along_front(&self, lsm: &L);
 }
 
 #[derive(Clone)]
@@ -58,7 +58,7 @@ impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for
         }
     }
 
-    fn initialize_along_front(&self, lsm: &mut LevelSetMethod2d) {
+    fn initialize_along_front(&self, lsm: &LevelSetMethod2d) {
         for i in self.left..self.right {
             let p = Point2d::<i32>::new(i, self.top);
             lsm.initialize_point_on_front(&p);
@@ -133,7 +133,7 @@ impl GridMethod<InitialFront3d, SpaceSize3d, LevelSetMethod3d, Point3d<i32>> for
         }
     }
 
-    fn initialize_along_front(&self, lsm: &mut LevelSetMethod3d) {
+    fn initialize_along_front(&self, lsm: &LevelSetMethod3d) {
         for j in self.top..(self.bottom + 1) {
             for i in self.left..(self.right + 1) {
                 let p = Point3d::<i32>::new(i, j, self.front);
