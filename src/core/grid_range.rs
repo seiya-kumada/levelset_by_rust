@@ -5,7 +5,9 @@ use crate::core::status::Status;
 use std::cell::RefCell;
 use std::ops::Range;
 use std::rc::Rc;
-pub trait GridRangeMethod<T, I, P> {
+
+use crate::core::level_set_method::{LevelSetMethod2d, LevelSetMethod3d};
+pub trait GridRangeMethod<T, I, P, L> {
     fn new(space_size: &T) -> Self;
     fn foreach_band(
         &self,
@@ -14,13 +16,7 @@ pub trait GridRangeMethod<T, I, P> {
         band: &mut Vec<P>,
         fun: fn(&I, RefCell<Vec<Status>>, &mut Vec<P>, P),
     );
-    fn foreach_phi(
-        &self,
-        indexer: &I,
-        statuses: RefCell<Vec<Status>>,
-        phi: RefCell<Vec<f64>>,
-        fun: fn(&I, RefCell<Vec<Status>>, RefCell<Vec<f64>>, P),
-    );
+    fn foreach_phi(&self, lsm: &L);
 }
 
 pub struct GridRange2d {
@@ -28,7 +24,7 @@ pub struct GridRange2d {
     y_range: (i32, i32),
 }
 
-impl GridRangeMethod<SpaceSize2d, Indexer2d, Point2d<i32>> for GridRange2d {
+impl GridRangeMethod<SpaceSize2d, Indexer2d, Point2d<i32>, LevelSetMethod2d> for GridRange2d {
     fn new(space_size: &SpaceSize2d) -> Self {
         Self {
             x_range: (0, space_size.width),
@@ -55,21 +51,11 @@ impl GridRangeMethod<SpaceSize2d, Indexer2d, Point2d<i32>> for GridRange2d {
         }
     }
 
-    fn foreach_phi(
-        &self,
-        indexer: &Indexer2d,
-        statuses: RefCell<Vec<Status>>,
-        phi: RefCell<Vec<f64>>,
-        fun: fn(&Indexer2d, RefCell<Vec<Status>>, RefCell<Vec<f64>>, Point2d<i32>),
-    ) {
+    fn foreach_phi(&self, lsm: &LevelSetMethod2d) {
         for j in self.y_range.0..self.y_range.1 {
             for i in self.x_range.0..self.x_range.1 {
-                fun(
-                    indexer,
-                    RefCell::clone(&statuses),
-                    RefCell::clone(&phi),
-                    Point2d::<i32>::new(i, j),
-                );
+                let p = Point2d::<i32>::new(i, j);
+                lsm.register_to_phi_(&p);
             }
         }
     }
@@ -81,7 +67,7 @@ pub struct GridRange3d {
     z_range: (i32, i32),
 }
 
-impl GridRangeMethod<SpaceSize3d, Indexer3d, Point3d<i32>> for GridRange3d {
+impl GridRangeMethod<SpaceSize3d, Indexer3d, Point3d<i32>, LevelSetMethod3d> for GridRange3d {
     fn new(space_size: &SpaceSize3d) -> Self {
         Self {
             x_range: (0, space_size.width),
@@ -111,22 +97,12 @@ impl GridRangeMethod<SpaceSize3d, Indexer3d, Point3d<i32>> for GridRange3d {
         }
     }
 
-    fn foreach_phi(
-        &self,
-        indexer: &Indexer3d,
-        statuses: RefCell<Vec<Status>>,
-        phi: RefCell<Vec<f64>>,
-        fun: fn(&Indexer3d, RefCell<Vec<Status>>, RefCell<Vec<f64>>, Point3d<i32>),
-    ) {
+    fn foreach_phi(&self, lsm: &LevelSetMethod3d) {
         for k in self.z_range.0..self.z_range.1 {
             for j in self.y_range.0..self.y_range.1 {
                 for i in self.x_range.0..self.x_range.1 {
-                    fun(
-                        indexer,
-                        RefCell::clone(&statuses),
-                        RefCell::clone(&phi),
-                        Point3d::<i32>::new(i, j, k),
-                    );
+                    let p = Point3d::<i32>::new(i, j, k);
+                    lsm.register_to_phi_(&p);
                 }
             }
         }

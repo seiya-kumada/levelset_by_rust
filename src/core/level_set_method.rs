@@ -44,7 +44,7 @@ pub struct LevelSetMethod<
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
-    GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint>,
+    GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint, Self>,
     DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
     Grid: GridMethod<InitialFront, SpaceSize, Self, IntPoint>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
@@ -141,7 +141,7 @@ where
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
-    GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint>,
+    GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint, Self>,
     DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
     Grid: GridMethod<InitialFront, SpaceSize, Self, IntPoint>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
@@ -228,29 +228,19 @@ where
     }
 
     pub fn initailze_over_all(&self, initial_front: &InitialFront) {
-        self.grid_range.foreach_phi(
-            &self.indexer,
-            RefCell::clone(&self.statuses),
-            RefCell::clone(&self.phi),
-            Self::register_to_phi,
-        );
+        self.grid_range.foreach_phi(&self);
     }
 
     pub fn get_phi(&self) -> RefCell<Vec<f64>> {
         RefCell::clone(&self.phi)
     }
 
-    pub fn register_to_phi(
-        indexer: &Indexer,
-        statuses: RefCell<Vec<Status>>,
-        phi: RefCell<Vec<f64>>,
-        p: IntPoint,
-    ) {
-        let index = indexer.get(&p);
-        match statuses.borrow()[index as usize] {
+    pub fn register_to_phi_(&self, p: &IntPoint) {
+        let index = self.indexer.get(&p);
+        match self.statuses.borrow()[index as usize] {
             Status::Front => (),
             _ => {
-                phi.borrow_mut()[index as usize] = 1.0;
+                self.phi.borrow_mut()[index as usize] = 1.0;
             }
         }
     }

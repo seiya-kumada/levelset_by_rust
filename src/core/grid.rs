@@ -13,7 +13,7 @@ pub trait GridMethod<T, U, L, P> {
     fn initialize_along_front(&self, lsm: &L);
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Grid2d {
     pub left: i32,
     pub top: i32,
@@ -78,7 +78,7 @@ impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Grid3d {
     pub left: i32,
     pub top: i32,

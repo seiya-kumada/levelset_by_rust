@@ -3,11 +3,14 @@ pub mod core;
 pub mod interface;
 pub mod test;
 use crate::core::grid::Grid3d;
+use crate::core::indexer::IndexerMethod;
 use crate::core::initial_front::InitialFront3d;
+use crate::core::inside_estimator::{InsideEstimator3d, InsideEstimatorMethod};
 use crate::core::level_set_method::LevelSetMethod3d;
 use crate::core::parameters::Parameters;
 use crate::core::point::Point3d;
 use crate::core::space_size::SpaceSize3d;
+use crate::core::status::Status;
 use std::cell::RefCell;
 use std::rc::Rc;
 pub fn main() {
@@ -23,6 +26,30 @@ pub fn main() {
     let mut lsm = LevelSetMethod3d::new(params.clone(), Rc::clone(&size), Rc::clone(&gray), grid);
     lsm.initialize_along_front(&initial_front);
     lsm.initailze_over_all(&initial_front);
+
+    let phi = lsm.get_phi();
+    let width = size.width;
+    let height = size.height;
+    let depth = size.depth;
+    let indexer = lsm.get_indexer();
+    let statuses = lsm.get_statuses();
+    let mut insider = InsideEstimator3d::new();
+    insider.set_grid(&grid);
+    for k in 0..depth {
+        for j in 0..height {
+            for i in 0..width {
+                let p = Point3d::<i32>::new(i, j, k);
+                let index = indexer.get(&p) as usize;
+                if statuses.borrow()[index] != Status::Front {
+                    if insider.is_inside(&p) {
+                        assert_eq!(phi.borrow()[index], -params.wband as f64);
+                    } else {
+                        assert_eq!(phi.borrow()[index], params.wband as f64);
+                    }
+                }
+            }
+        }
+    }
 }
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)
 //借用=borrow
