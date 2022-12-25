@@ -1,4 +1,4 @@
-use crate::core::grid::{Grid2d, Grid3d};
+use crate::core::grid::{Grid2d, Grid3d, GridMethod};
 use crate::core::point::{Point2d, Point3d};
 
 pub trait InsideEstimatorMethod<T, P> {

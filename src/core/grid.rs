@@ -11,6 +11,7 @@ pub trait GridMethod<T, U, L, P> {
     fn create_space_with_edge(space_size: Rc<U>) -> Self;
     fn create_space_without_edge(space_size: Rc<U>) -> Self;
     fn initialize_along_front(&self, lsm: &L);
+    fn new() -> Self;
 }
 
 #[derive(Clone, Copy)]
@@ -21,8 +22,19 @@ pub struct Grid2d {
     pub bottom: i32,
 }
 
-impl Grid2d {
-    pub fn new() -> Self {
+//impl Grid2d {
+//    pub fn new() -> Self {
+//        Self {
+//            left: 0,
+//            top: 0,
+//            right: 0,
+//            bottom: 0,
+//        }
+//    }
+//}
+
+impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for Grid2d {
+    fn new() -> Self {
         Self {
             left: 0,
             top: 0,
@@ -30,9 +42,7 @@ impl Grid2d {
             bottom: 0,
         }
     }
-}
 
-impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for Grid2d {
     fn create_initial_front(&mut self, front: &InitialFront2d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;
@@ -88,8 +98,21 @@ pub struct Grid3d {
     pub back: i32,
 }
 
-impl Grid3d {
-    pub fn new() -> Self {
+//impl Grid3d {
+//    pub fn new() -> Self {
+//        Self {
+//            left: 0,
+//            top: 0,
+//            right: 0,
+//            bottom: 0,
+//            front: 0,
+//            back: 0,
+//        }
+//    }
+//}
+
+impl GridMethod<InitialFront3d, SpaceSize3d, LevelSetMethod3d, Point3d<i32>> for Grid3d {
+    fn new() -> Self {
         Self {
             left: 0,
             top: 0,
@@ -99,9 +122,6 @@ impl Grid3d {
             back: 0,
         }
     }
-}
-
-impl GridMethod<InitialFront3d, SpaceSize3d, LevelSetMethod3d, Point3d<i32>> for Grid3d {
     fn create_initial_front(&mut self, front: &InitialFront3d) {
         self.left = front.vertices[0].x;
         self.top = front.vertices[0].y;

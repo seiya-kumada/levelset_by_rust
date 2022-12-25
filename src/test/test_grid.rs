@@ -1,25 +1,31 @@
-use crate::core::types::{Grid, ThreeDim, TwoDim};
+use crate::core::grid::{Grid2d, Grid3d, GridMethod};
+use crate::core::space_size::{SpaceSize2d, SpaceSize3d, SpaceSizeMethod};
+use std::rc::Rc;
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    //#[test]
-    //fn grid_2d_new() {
-    //    let a = Grid::<TwoDim>::new(1, 2, 3, 4);
-    //    assert_eq!(a.left, 1);
-    //    assert_eq!(a.top, 2);
-    //    assert_eq!(a.right, 3);
-    //    assert_eq!(a.bottom, 4);
-    //}
+    #[test]
+    fn create_space_without_edge_2d() {
+        let size = Rc::new(SpaceSize2d::new(101, 143));
+        let grid = Grid2d::create_space_without_edge(Rc::clone(&size));
 
-    //#[test]
-    //fn grid_3d_new() {
-    //    let a = Grid::<ThreeDim>::new(1, 2, 3, 4, 5, 6);
-    //    assert_eq!(a.left, 1);
-    //    assert_eq!(a.top, 2);
-    //    assert_eq!(a.right, 3);
-    //    assert_eq!(a.bottom, 4);
-    //    assert_eq!(a.front, 5);
-    //    assert_eq!(a.back, 6);
-    //}
+        assert!(grid.left == 0);
+        assert!(grid.right == size.width - 1);
+        assert!(grid.top == 0);
+        assert!(grid.bottom == size.height - 1);
+    }
+    #[test]
+    fn create_space_without_edge_3d() {
+        let size = Rc::new(SpaceSize3d::new(101, 143, 3));
+        let grid = Grid3d::create_space_without_edge(Rc::clone(&size));
+
+        assert!(grid.left == 0);
+        assert!(grid.right == size.width - 1);
+        assert!(grid.top == 0);
+        assert!(grid.bottom == size.height - 1);
+        assert!(grid.front == 0);
+        assert!(grid.back == size.depth - 1);
+    }
 }

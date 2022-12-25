@@ -55,7 +55,7 @@ impl GridRangeMethod<SpaceSize2d, Indexer2d, Point2d<i32>, LevelSetMethod2d> for
         for j in self.y_range.0..self.y_range.1 {
             for i in self.x_range.0..self.x_range.1 {
                 let p = Point2d::<i32>::new(i, j);
-                lsm.register_to_phi_(&p);
+                lsm.register_to_phi(&p);
             }
         }
     }
@@ -102,7 +102,7 @@ impl GridRangeMethod<SpaceSize3d, Indexer3d, Point3d<i32>, LevelSetMethod3d> for
             for j in self.y_range.0..self.y_range.1 {
                 for i in self.x_range.0..self.x_range.1 {
                     let p = Point3d::<i32>::new(i, j, k);
-                    lsm.register_to_phi_(&p);
+                    lsm.register_to_phi(&p);
                 }
             }
         }

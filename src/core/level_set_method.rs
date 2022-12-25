@@ -147,15 +147,11 @@ where
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
     CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
 {
-    pub fn new(
-        parameters: Parameters,
-        size: Rc<SpaceSize>,
-        gray: Rc<RefCell<Vec<u8>>>,
-        initial_front: Grid,
-    ) -> Self {
+    pub fn new(parameters: Parameters, size: Rc<SpaceSize>, gray: Rc<RefCell<Vec<u8>>>) -> Self {
         let statuses = RefCell::new(vec![Status::Farway; size.get_total()]);
         let indexer = Rc::new(Indexer::new(&size));
         let phi = Rc::new(RefCell::new(vec![0.0; size.get_total()]));
+        let initial_front = Grid::new();
         Self {
             phantom_initial_front: PhantomData,
             phantom_distance_map: PhantomData,
@@ -235,12 +231,17 @@ where
         RefCell::clone(&self.phi)
     }
 
-    pub fn register_to_phi_(&self, p: &IntPoint) {
+    pub fn register_to_phi(&self, p: &IntPoint) {
         let index = self.indexer.get(&p);
         match self.statuses.borrow()[index as usize] {
             Status::Front => (),
             _ => {
-                self.phi.borrow_mut()[index as usize] = 1.0;
+                self.phi.borrow_mut()[index as usize] =
+                    if self.inside_estimator_for_initial_front.is_inside(&p) {
+                        -self.parameters.wband as f64
+                    } else {
+                        self.parameters.wband as f64
+                    }
             }
         }
     }

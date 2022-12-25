@@ -26,8 +26,7 @@ mod tests {
 
         let size = Rc::new(SpaceSize3d::new(3, 3, 3));
         let gray = Rc::new(RefCell::new(vec![0u8]));
-        let grid = Grid3d::new();
-        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray), grid);
+        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
         lsm.initialize_along_front(&initial_front);
 
         let front = lsm.get_front();
@@ -45,8 +44,7 @@ mod tests {
 
         let size = Rc::new(SpaceSize3d::new(101, 143, 131));
         let gray = Rc::new(RefCell::new(vec![0u8]));
-        let grid = Grid3d::new();
-        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray), grid);
+        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
         lsm.initialize_along_front(&initial_front);
 
         let phi = lsm.get_phi();
@@ -101,7 +99,7 @@ mod tests {
         }
     }
 
-    //#[test]
+    #[test]
     fn initialize_over_all_3d() {
         let mut params = Parameters::new();
         params.wband = 3;
@@ -111,13 +109,7 @@ mod tests {
 
         let size = Rc::new(SpaceSize3d::new(101, 143, 131));
         let gray = Rc::new(RefCell::new(vec![0u8]));
-        let grid = Grid3d::new();
-        let mut lsm = LevelSetMethod3d::new(
-            params.clone(),
-            Rc::clone(&size),
-            Rc::clone(&gray),
-            grid.clone(),
-        );
+        let mut lsm = LevelSetMethod3d::new(params.clone(), Rc::clone(&size), Rc::clone(&gray));
         lsm.initialize_along_front(&initial_front);
         lsm.initailze_over_all(&initial_front);
 
@@ -128,6 +120,7 @@ mod tests {
         let indexer = lsm.get_indexer();
         let statuses = lsm.get_statuses();
         let mut insider = InsideEstimator3d::new();
+        let grid = lsm.get_grid();
         insider.set_grid(&grid);
         for k in 0..depth {
             for j in 0..height {
@@ -156,19 +149,14 @@ mod tests {
 
         let size = Rc::new(SpaceSize2d::new(101, 143));
         let gray = Rc::new(RefCell::new(vec![0u8]));
-        let grid = Grid2d::new();
-        let mut lsm = LevelSetMethod2d::new(
-            params.clone(),
-            Rc::clone(&size),
-            Rc::clone(&gray),
-            grid.clone(),
-        );
+        let mut lsm = LevelSetMethod2d::new(params.clone(), Rc::clone(&size), Rc::clone(&gray));
         lsm.initialize_along_front(&initial_front);
         lsm.initailze_over_all(&initial_front);
 
         let phi = lsm.get_phi();
         let width = size.width;
         let height = size.height;
+        let grid = lsm.get_grid();
 
         let indexer = lsm.get_indexer();
         let statuses = lsm.get_statuses();
