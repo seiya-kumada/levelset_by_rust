@@ -189,6 +189,10 @@ where
         }
     }
 
+    pub fn get_speed(&self) -> &Vec<f64> {
+        &self.speed
+    }
+
     pub fn initialize_narrow_band(&mut self) {
         self.narrow_bands.clear();
         self.set_speed_function(true);
@@ -286,7 +290,7 @@ where
         }
     }
 
-    fn set_speed_on_front(&mut self) -> f64 {
+    pub fn set_speed_on_front(&mut self) -> f64 {
         let mut fs = 0.0;
         self.zero_count = 0;
 
@@ -318,6 +322,8 @@ where
             let a = self.distance_map_generator.select_labels(p);
             is_considerable.push(a);
         }
+
+        //something to do
     }
 
     fn register_to_narrow_band(

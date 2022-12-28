@@ -176,4 +176,79 @@ mod tests {
             }
         }
     }
+
+    fn make_input_gray(size: &SpaceSize3d, front: &InitialFront3d) -> Rc<RefCell<Vec<u8>>> {
+        let mut gray = vec![1u8; size.total as usize];
+        let left = front.vertices[0].x;
+        let top = front.vertices[0].y;
+        let front_ = front.vertices[0].z;
+        let right = front.vertices[1].x;
+        let bottom = front.vertices[1].y;
+        let back = front.vertices[1].z;
+
+        let indexer = Indexer3d::new(&size);
+
+        for j in top..bottom {
+            for i in left..right {
+                let p = Point3d::<i32>::new(i, j, front_);
+                let q = Point3d::<i32>::new(i, j, back);
+                let p_index = indexer.get(&p) as usize;
+                let q_index = indexer.get(&q) as usize;
+                gray[p_index] = 0u8;
+                gray[q_index] = 0u8;
+            }
+        }
+
+        for j in top..bottom {
+            for k in front_..back {
+                let p = Point3d::<i32>::new(left, j, k);
+                let q = Point3d::<i32>::new(right, j, k);
+                let p_index = indexer.get(&p) as usize;
+                let q_index = indexer.get(&q) as usize;
+                gray[p_index] = 0u8;
+                gray[q_index] = 0u8;
+            }
+        }
+
+        for i in left..right {
+            for k in front_..back {
+                let p = Point3d::<i32>::new(i, top, k);
+                let q = Point3d::<i32>::new(i, bottom, k);
+                let p_index = indexer.get(&p) as usize;
+                let q_index = indexer.get(&q) as usize;
+                gray[p_index] = 0u8;
+                gray[q_index] = 0u8;
+            }
+        }
+        Rc::new(RefCell::new(gray))
+    }
+
+    #[test]
+    fn set_speed_on_front_3d() {
+        let mut params = Parameters::new();
+        params.wband = 1;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+
+        let mut initial_front = InitialFront3d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        let front = 3;
+        let back = 7;
+
+        initial_front.vertices[0] = Point3d::<i32>::new(left, top, front);
+        initial_front.vertices[1] = Point3d::<i32>::new(right, bottom, back);
+
+        let size = Rc::new(SpaceSize3d::new(11, 11, 11));
+        let gray = make_input_gray(&size, &initial_front);
+
+        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.calculate_speed_factors();
+        lsm.initialize_narrow_band();
+
+        let fs = lsm.set_speed_on_front();
+        assert!(fs != 0.0);
+    }
 }
