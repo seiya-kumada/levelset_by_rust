@@ -58,6 +58,16 @@ impl<'a, T: std::ops::Add<Output = T> + Copy> Add for &'a Point2d<T> {
     }
 }
 
+//impl<T: std::ops::Add<Output = T> + Copy> Add for Point2d<T> {
+//    type Output = Point2d<T>;
+//    fn add(self, rhs: Self) -> Self::Output {
+//        Point2d::<T>::new(
+//            self.x.clone() + rhs.x.clone(),
+//            self.y.clone() + rhs.y.clone(),
+//        )
+//    }
+//}
+
 impl<'a, T: std::ops::Add<Output = T> + Copy> Add for &'a Point3d<T> {
     type Output = Point3d<T>;
     fn add(self, rhs: Self) -> Self::Output {
@@ -68,3 +78,14 @@ impl<'a, T: std::ops::Add<Output = T> + Copy> Add for &'a Point3d<T> {
         )
     }
 }
+
+//impl<T: std::ops::Add<Output = T> + Copy> Add for Point3d<T> {
+//    type Output = Point3d<T>;
+//    fn add(self, rhs: Self) -> Self::Output {
+//        Point3d::<T>::new(
+//            self.x.clone() + rhs.x.clone(),
+//            self.y.clone() + rhs.y.clone(),
+//            self.z.clone() + rhs.z.clone(),
+//        )
+//    }
+//}

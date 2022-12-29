@@ -5,7 +5,7 @@ use crate::core::curvature_generator::{
 };
 use crate::core::distance_map_generator::{
     DistanceMap2d, DistanceMap3d, DistanceMapGenerator2d, DistanceMapGenerator3d,
-    DistanceMapGeneratorMethod,
+    DistanceMapGeneratorMethod, PointInfo2d, PointInfo3d, PointInfoMethod,
 };
 use crate::core::grid::{Grid2d, Grid3d, GridMethod};
 use crate::core::grid_range::{GridRange2d, GridRange3d, GridRangeMethod};
@@ -31,6 +31,7 @@ pub struct LevelSetMethod<
     SpeedFactor,
     GridRange,
     IntPoint,
+    PointInfo,
     DoublePoint,
     DistanceMapGenerator,
     DistanceMap,
@@ -40,18 +41,20 @@ pub struct LevelSetMethod<
     CurvatureGenerator,
 > where
     IntPoint: Copy,
+    PointInfo: PointInfoMethod<IntPoint>,
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint, Self>,
-    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
+    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint, Self>,
     Grid: GridMethod<InitialFront, SpaceSize, Self, IntPoint>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
     CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
 {
     phantom_initial_front: PhantomData<InitialFront>,
     phantom_distance_map: PhantomData<DistanceMap>,
+    phantom_point_info: PhantomData<PointInfo>,
 
     /// input parameters
     parameters: Parameters,
@@ -72,7 +75,7 @@ pub struct LevelSetMethod<
     dphi: Rc<RefCell<Vec<f64>>>,
 
     /// velocity function
-    speed: Vec<f64>,
+    speed: Rc<RefCell<Vec<f64>>>,
 
     /// current statuses
     statuses: Rc<RefCell<Vec<Status>>>,
@@ -104,6 +107,8 @@ pub struct LevelSetMethod<
     zero_count: i32,
     distance_map_generator: DistanceMapGenerator,
     curvature_generator: CurvatureGenerator,
+
+    upper_distance: i32,
 }
 impl<
         SpaceSize,
@@ -112,6 +117,7 @@ impl<
         SpeedFactor,
         GridRange,
         IntPoint,
+        PointInfo,
         DoublePoint,
         DistanceMapGenerator,
         DistanceMap,
@@ -127,6 +133,7 @@ impl<
         SpeedFactor,
         GridRange,
         IntPoint,
+        PointInfo,
         DoublePoint,
         DistanceMapGenerator,
         DistanceMap,
@@ -137,12 +144,13 @@ impl<
     >
 where
     IntPoint: Copy,
+    PointInfo: PointInfoMethod<IntPoint>,
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
     UpwindScheme: UpwindSchemeMethod<Indexer, IntPoint>,
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint, Self>,
-    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint>,
+    DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint, Self>,
     Grid: GridMethod<InitialFront, SpaceSize, Self, IntPoint>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
     CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
@@ -155,13 +163,14 @@ where
         Self {
             phantom_initial_front: PhantomData,
             phantom_distance_map: PhantomData,
+            phantom_point_info: PhantomData,
             parameters: parameters.clone(),
             size: Rc::clone(&size),
             indexer: Rc::clone(&indexer),
             initial_front,
             phi: Rc::new(RefCell::clone(&phi)),
             dphi: Rc::new(RefCell::new(vec![0.0; size.get_total()])),
-            speed: vec![0.0; size.get_total()],
+            speed: Rc::new(RefCell::new(vec![0.0; size.get_total()])),
             statuses: Rc::new(RefCell::clone(&statuses)),
             upwind_scheme: UpwindScheme::new(Rc::clone(&indexer), Rc::clone(&phi)),
             speed_factor: SpeedFactor::new(Rc::clone(&indexer), RefCell::clone(&gray)),
@@ -186,11 +195,12 @@ where
                 RefCell::clone(&statuses),
             ),
             curvature_generator: CurvatureGenerator::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+            upper_distance: (parameters.wband - parameters.wreset).pow(2),
         }
     }
 
-    pub fn get_speed(&self) -> &Vec<f64> {
-        &self.speed
+    pub fn get_speed(&self) -> Rc<RefCell<Vec<f64>>> {
+        Rc::clone(&self.speed)
     }
 
     pub fn initialize_narrow_band(&mut self) {
@@ -277,7 +287,7 @@ where
     fn clear_speed_within_narrow_band(&mut self, resets: bool) {
         for p in &self.narrow_bands {
             let index = self.indexer.get(p) as usize;
-            self.speed[index] = 0.0;
+            self.speed.borrow_mut()[index] = 0.0;
             self.dphi.borrow_mut()[index] = 0.0;
             if resets {
                 match self.statuses.borrow()[index] {
@@ -307,7 +317,7 @@ where
                     //
                 }
                 fs += speed.abs();
-                self.speed[i] = speed;
+                self.speed.borrow_mut()[i] = speed;
             }
         }
         fs
@@ -323,7 +333,55 @@ where
             is_considerable.push(a);
         }
 
-        //something to do
+        self.distance_map_generator
+            .foreach(&self, resets, &is_considerable);
+    }
+
+    pub fn foo(
+        &self,
+        resets: bool,
+        is_considerable: &Vec<Vec<bool>>,
+        distance: &i32,
+        range: &Vec<PointInfo>,
+    ) {
+        let mut k = 0usize;
+        for p in self.front.borrow().iter() {
+            let index = self.indexer.get(p) as usize;
+            if resets {
+                self.phi.borrow_mut()[index] = 0.0;
+            }
+            self.hoge(&is_considerable[k], range, p, resets, distance, index);
+            k += 1;
+        }
+    }
+
+    fn hoge(
+        &self,
+        is_considerable: &Vec<bool>,
+        range: &Vec<PointInfo>,
+        center: &IntPoint,
+        resets: bool,
+        distance: &i32,
+        center_index: usize,
+    ) {
+        //for info in range {
+        //    if is_considerable[info.get_label()] {
+        //        let p = *center + *info.get_point();
+        //        if self.inside_estimator_for_space_with_edge.is_inside(&p) {
+        //            let index = self.indexer.get(p) as usize;
+        //            if self.statuses.borrow()[index] != Status::Front {
+        //                if resets {
+        //                    if *distance > self.upper_distance {
+        //                        self.statuses.borrow_mut()[index] = Status::ResetBand;
+        //                    } else {
+        //                        self.statuses.borrow_mut()[index] = Status::Band;
+        //                    }
+        //                }
+        //                self.speed.borrow_mut()[index] = self.speed.borrow()[center_index];
+        //            }
+        //        }
+        //    }
+        //}
     }
 
     fn register_to_narrow_band(
@@ -360,7 +418,7 @@ where
         for p in &self.narrow_bands {
             if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let index = self.indexer.get(p) as usize;
-                let speed = self.speed[index];
+                let speed = self.speed.borrow()[index];
                 let mut upwind_scheme = 0.0;
                 if speed > 0.0 {
                     upwind_scheme = self.upwind_scheme.calculate(p, Speed::Positive);
@@ -399,6 +457,8 @@ where
     pub fn get_input_object(&self) -> RefCell<Vec<u8>> {
         RefCell::clone(&self.input_object)
     }
+
+    pub fn copy_speed_to_narrow_band(&self) {}
 }
 
 pub type LevelSetMethod2d = LevelSetMethod<
@@ -408,6 +468,7 @@ pub type LevelSetMethod2d = LevelSetMethod<
     SpeedFactor2d,
     GridRange2d,
     Point2d<i32>,
+    PointInfo2d,
     Point2d<f64>,
     DistanceMapGenerator2d,
     DistanceMap2d,
@@ -424,6 +485,7 @@ pub type LevelSetMethod3d = LevelSetMethod<
     SpeedFactor3d,
     GridRange3d,
     Point3d<i32>,
+    PointInfo3d,
     Point3d<f64>,
     DistanceMapGenerator3d,
     DistanceMap3d,

@@ -1,6 +1,6 @@
 use crate::core::grid::{Grid2d, Grid3d, GridMethod};
 use crate::core::point::{Point2d, Point3d};
-
+use std::ops::Add;
 pub trait InsideEstimatorMethod<T, P> {
     fn new() -> Self;
     fn set_grid(&mut self, grid: &T);

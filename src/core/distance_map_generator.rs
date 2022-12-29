@@ -1,4 +1,5 @@
 use super::indexer::IndexerMethod;
+use super::level_set_method::{LevelSetMethod2d, LevelSetMethod3d};
 use crate::core::dim::{THREE, TWO};
 use crate::core::indexer::{Indexer2d, Indexer3d};
 use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D};
@@ -185,11 +186,12 @@ impl Table3d {
         &self.points[index as usize]
     }
 }
-pub trait DistanceMapGeneratorMethod<T, D, P> {
+pub trait DistanceMapGeneratorMethod<T, D, P, L> {
     fn new(wband: i32, indexer: Rc<T>, statuses: RefCell<Vec<Status>>) -> Self;
     fn create_distance_map(&mut self);
     fn get_distance_map(&self) -> &D;
     fn select_labels(&self, p: &P) -> Vec<bool>;
+    fn foreach(&self, lsm: &L, resets: bool, is_considerable: &Vec<Vec<bool>>);
 }
 
 #[derive(Eq, PartialEq, Hash)]
@@ -198,9 +200,23 @@ pub struct PointInfo2d {
     pub label: usize,
 }
 
+pub trait PointInfoMethod<P> {
+    fn get_label(&self) -> usize;
+    fn get_point(&self) -> &P;
+}
+
 impl PointInfo2d {
     pub fn new(point: Point2d<i32>, label: usize) -> Self {
         Self { point, label }
+    }
+}
+
+impl PointInfoMethod<Point2d<i32>> for PointInfo2d {
+    fn get_label(&self) -> usize {
+        self.label
+    }
+    fn get_point(&self) -> &Point2d<i32> {
+        &self.point
     }
 }
 
@@ -215,7 +231,9 @@ pub struct DistanceMapGenerator2d {
     statuses: RefCell<Vec<Status>>,
 }
 
-impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>> for DistanceMapGenerator2d {
+impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>, LevelSetMethod2d>
+    for DistanceMapGenerator2d
+{
     fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: RefCell<Vec<Status>>) -> Self {
         Self {
             wband,
@@ -263,7 +281,27 @@ impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>> for Dist
         }
         labels
     }
+
+    fn foreach(&self, lsm: &LevelSetMethod2d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
+        for (distance, range) in self.distance_map.iter_all() {
+            lsm.foo(resets, is_considerable, distance, range);
+            //let mut k = 0usize;
+            //for p in lsm.get_front().borrow().iter() {
+            //    let index = self.indexer.get(p) as usize;
+            //    if resets {
+            //        lsm.get_phi().borrow_mut()[index] = 0.0;
+            //    }
+            //    lsm.hoge(&is_considerable[k], range, p, resets, distance, index);
+            //    //for info in range {
+            //    //    //
+            //    //    if is_considerable[k][info.label] {}
+            //    //}
+            //    k += 1;
+            //}
+        }
+    }
 }
+
 impl DistanceMapGenerator2d {
     fn remove(&self, p: &Point2d<i32>, a: i32, indices: [i32; 3], labels: &mut Vec<bool>) -> bool {
         use crate::core::indexer::IndexerMethod;
@@ -306,7 +344,14 @@ pub struct PointInfo3d {
     pub point: Point3d<i32>,
     pub label: usize,
 }
-
+impl PointInfoMethod<Point3d<i32>> for PointInfo3d {
+    fn get_label(&self) -> usize {
+        self.label
+    }
+    fn get_point(&self) -> &Point3d<i32> {
+        &self.point
+    }
+}
 impl PointInfo3d {
     pub fn new(point: Point3d<i32>, label: usize) -> Self {
         Self { point, label }
@@ -324,7 +369,9 @@ pub struct DistanceMapGenerator3d {
     statuses: RefCell<Vec<Status>>,
 }
 
-impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>> for DistanceMapGenerator3d {
+impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>, LevelSetMethod3d>
+    for DistanceMapGenerator3d
+{
     fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: RefCell<Vec<Status>>) -> Self {
         Self {
             wband,
@@ -402,6 +449,8 @@ impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>> for Dist
 
         labels
     }
+
+    fn foreach(&self, lsm: &LevelSetMethod3d, resets: bool, is_considerable: &Vec<Vec<bool>>) {}
 }
 
 impl DistanceMapGenerator3d {
