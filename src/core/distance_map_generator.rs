@@ -284,20 +284,7 @@ impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>, LevelSet
 
     fn foreach(&self, lsm: &LevelSetMethod2d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
         for (distance, range) in self.distance_map.iter_all() {
-            lsm.foo(resets, is_considerable, distance, range);
-            //let mut k = 0usize;
-            //for p in lsm.get_front().borrow().iter() {
-            //    let index = self.indexer.get(p) as usize;
-            //    if resets {
-            //        lsm.get_phi().borrow_mut()[index] = 0.0;
-            //    }
-            //    lsm.hoge(&is_considerable[k], range, p, resets, distance, index);
-            //    //for info in range {
-            //    //    //
-            //    //    if is_considerable[k][info.label] {}
-            //    //}
-            //    k += 1;
-            //}
+            lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
         }
     }
 }

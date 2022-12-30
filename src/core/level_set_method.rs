@@ -13,7 +13,7 @@ use crate::core::indexer::{Indexer2d, Indexer3d, IndexerMethod};
 use crate::core::initial_front::{InitialFront2d, InitialFront3d};
 use crate::core::inside_estimator::{InsideEstimator2d, InsideEstimator3d, InsideEstimatorMethod};
 use crate::core::parameters::Parameters;
-use crate::core::point::{Point2d, Point3d};
+use crate::core::point::{Point2d, Point3d, PointMethod};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d, SpaceSizeMethod};
 use crate::core::speed::Speed;
 use crate::core::speed_factor::{SpeedFactor2d, SpeedFactor3d, SpeedFactorMethod};
@@ -40,7 +40,7 @@ pub struct LevelSetMethod<
     InsideEstimator,
     CurvatureGenerator,
 > where
-    IntPoint: Copy,
+    IntPoint: Copy + PointMethod<Type = IntPoint>,
     PointInfo: PointInfoMethod<IntPoint>,
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
@@ -143,7 +143,7 @@ impl<
         CurvatureGenerator,
     >
 where
-    IntPoint: Copy,
+    IntPoint: Copy + PointMethod<Type = IntPoint>,
     PointInfo: PointInfoMethod<IntPoint>,
     SpaceSize: SpaceSizeMethod,
     Indexer: IndexerMethod<SpaceSize, IntPoint>,
@@ -237,7 +237,7 @@ where
         self.front.borrow_mut().push(p.clone());
     }
 
-    pub fn initailze_over_all(&self, initial_front: &InitialFront) {
+    pub fn initialize_over_all(&self, initial_front: &InitialFront) {
         self.grid_range.foreach_phi(&self);
     }
 
@@ -280,17 +280,26 @@ where
         &self.normals
     }
 
+    pub fn get_dphi(&self) -> Rc<RefCell<Vec<f64>>> {
+        Rc::clone(&self.dphi)
+    }
+
     pub fn print_verbose_description(&self) {
         // print something
     }
 
-    fn clear_speed_within_narrow_band(&mut self, resets: bool) {
+    pub fn get_narrow_bands(&mut self) -> &mut Vec<IntPoint> {
+        &mut self.narrow_bands
+    }
+
+    pub fn clear_speed_within_narrow_band(&mut self, resets: bool) {
         for p in &self.narrow_bands {
             let index = self.indexer.get(p) as usize;
             self.speed.borrow_mut()[index] = 0.0;
             self.dphi.borrow_mut()[index] = 0.0;
+            let status = self.statuses.borrow()[index];
             if resets {
-                match self.statuses.borrow()[index] {
+                match status {
                     Status::Front => (),
                     _ => {
                         self.statuses.borrow_mut()[index] = Status::Farway;
@@ -337,7 +346,7 @@ where
             .foreach(&self, resets, &is_considerable);
     }
 
-    pub fn foo(
+    pub fn copy_nearest_speed_to_narrow_band_core(
         &self,
         resets: bool,
         is_considerable: &Vec<Vec<bool>>,
@@ -350,12 +359,19 @@ where
             if resets {
                 self.phi.borrow_mut()[index] = 0.0;
             }
-            self.hoge(&is_considerable[k], range, p, resets, distance, index);
+            self.copy_nearest_speed_to_narrow_band_core_core(
+                &is_considerable[k],
+                range,
+                p,
+                resets,
+                distance,
+                index,
+            );
             k += 1;
         }
     }
 
-    fn hoge(
+    fn copy_nearest_speed_to_narrow_band_core_core(
         &self,
         is_considerable: &Vec<bool>,
         range: &Vec<PointInfo>,
@@ -364,24 +380,24 @@ where
         distance: &i32,
         center_index: usize,
     ) {
-        //for info in range {
-        //    if is_considerable[info.get_label()] {
-        //        let p = *center + *info.get_point();
-        //        if self.inside_estimator_for_space_with_edge.is_inside(&p) {
-        //            let index = self.indexer.get(p) as usize;
-        //            if self.statuses.borrow()[index] != Status::Front {
-        //                if resets {
-        //                    if *distance > self.upper_distance {
-        //                        self.statuses.borrow_mut()[index] = Status::ResetBand;
-        //                    } else {
-        //                        self.statuses.borrow_mut()[index] = Status::Band;
-        //                    }
-        //                }
-        //                self.speed.borrow_mut()[index] = self.speed.borrow()[center_index];
-        //            }
-        //        }
-        //    }
-        //}
+        for info in range {
+            if is_considerable[info.get_label()] {
+                let p = center.add(info.get_point());
+                if self.inside_estimator_for_space_with_edge.is_inside(&p) {
+                    let index = self.indexer.get(&p) as usize;
+                    if self.statuses.borrow()[index] != Status::Front {
+                        if resets {
+                            if *distance > self.upper_distance {
+                                self.statuses.borrow_mut()[index] = Status::ResetBand;
+                            } else {
+                                self.statuses.borrow_mut()[index] = Status::Band;
+                            }
+                        }
+                        self.speed.borrow_mut()[index] = self.speed.borrow()[center_index];
+                    }
+                }
+            }
+        }
     }
 
     fn register_to_narrow_band(

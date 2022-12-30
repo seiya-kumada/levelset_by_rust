@@ -111,7 +111,7 @@ mod tests {
         let gray = Rc::new(RefCell::new(vec![0u8]));
         let mut lsm = LevelSetMethod3d::new(params.clone(), Rc::clone(&size), Rc::clone(&gray));
         lsm.initialize_along_front(&initial_front);
-        lsm.initailze_over_all(&initial_front);
+        lsm.initialize_over_all(&initial_front);
 
         let phi = lsm.get_phi();
         let width = size.width;
@@ -151,7 +151,7 @@ mod tests {
         let gray = Rc::new(RefCell::new(vec![0u8]));
         let mut lsm = LevelSetMethod2d::new(params.clone(), Rc::clone(&size), Rc::clone(&gray));
         lsm.initialize_along_front(&initial_front);
-        lsm.initailze_over_all(&initial_front);
+        lsm.initialize_over_all(&initial_front);
 
         let phi = lsm.get_phi();
         let width = size.width;
@@ -245,10 +245,104 @@ mod tests {
         let gray = make_input_gray(&size, &initial_front);
 
         let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+
         lsm.calculate_speed_factors();
         lsm.initialize_narrow_band();
 
         let fs = lsm.set_speed_on_front();
-        //assert!(fs != 0.0);
+        assert!(fs != 0.0);
+
+        let width = size.width;
+        let height = size.height;
+        let area = width * height;
+        let depth = size.depth;
+
+        let speed = lsm.get_speed();
+        for k in 0..depth {
+            let ak = area * k;
+            for j in 0..height {
+                let wj = ak + width * j;
+                for i in 0..width {
+                    let index = (wj + i) as usize;
+                    if (left <= i && i <= right && top <= j && j <= bottom)
+                        && (k == front || k == back)
+                    {
+                        assert!(0.0 != speed.borrow()[index]);
+                    } else if (left <= i && i <= right && front <= k && k <= back)
+                        && (j == top || j == bottom)
+                    {
+                        assert!(0.0 != speed.borrow()[index]);
+                    } else if ((top <= j && j <= bottom && front <= k && k <= back)
+                        && (i == left || i == right))
+                    {
+                        assert!(0.0 != speed.borrow()[index]);
+                    } else {
+                        assert!(0.0 == speed.borrow()[index]);
+                    }
+                }
+            }
+        }
+    }
+
+    fn set_narrow_band(narrow_band: &mut Vec<Point3d<i32>>) {
+        for k in 2..9 {
+            for j in 2..9 {
+                for i in 1..10 {
+                    if (j == 5 && k == 5 && (i == 4 || i == 5 || i == 6)) {
+                        //
+                    } else {
+                        narrow_band.push(Point3d::<i32>::new(i, j, k));
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn clear_speed_within_narrow_band_3d() {
+        let mut params = Parameters::new();
+        params.wband = 1;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+
+        let mut initial_front = InitialFront3d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        let front = 3;
+        let back = 7;
+        initial_front.vertices[0] = Point3d::<i32>::new(left, top, front);
+        initial_front.vertices[1] = Point3d::<i32>::new(right, bottom, back);
+
+        let size = Rc::new(SpaceSize3d::new(11, 11, 11));
+        let gray = make_input_gray(&size, &initial_front);
+        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+
+        // initialize narrow band
+        let mut narrow_bands = lsm.get_narrow_bands();
+        set_narrow_band(narrow_bands);
+
+        // initialize phi
+        let mut dphi = lsm.get_dphi();
+        let s = dphi.borrow().len();
+        for i in 0..s {
+            dphi.borrow_mut()[i] = 1.0;
+        }
+
+        // speed
+        let mut speed = lsm.get_speed();
+        let s = speed.borrow().len();
+        for i in 0..s {
+            speed.borrow_mut()[i] = 1.0;
+        }
+
+        lsm.clear_speed_within_narrow_band(true);
+        //check_buffer(speed, size);
+        //check_buffer(dphi, size);
     }
 }
