@@ -8,6 +8,7 @@ use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 use crate::core::status::Status;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[cfg(test)]
@@ -342,7 +343,212 @@ mod tests {
         }
 
         lsm.clear_speed_within_narrow_band(true);
-        //check_buffer(speed, size);
-        //check_buffer(dphi, size);
+        check_buffer(speed, Rc::clone(&size));
+        check_buffer(dphi, Rc::clone(&size));
+    }
+
+    fn is_within_narrow_band(p: &Point3d<i32>) -> bool {
+        let i = p.x;
+        let j = p.y;
+        let k = p.z;
+        if (2 <= k && k <= 8) {
+            if (2 <= j && j <= 8) {
+                if (1 <= i && i <= 9) {
+                    if (j == 5 && k == 5 && (i == 4 || i == 5 || i == 6)) {
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    fn check_buffer(buffer: Rc<RefCell<Vec<f64>>>, size: Rc<SpaceSize3d>) {
+        let w = size.width;
+        let h = size.height;
+        let d = size.depth;
+        let a = w * h;
+
+        for k in 0..d {
+            let ak = a * k;
+            for j in 0..h {
+                let wj = ak + w * j;
+                for i in 0..w {
+                    let p = buffer.borrow()[(wj + i) as usize];
+                    let q = Point3d::<i32>::new(i, j, k);
+                    if is_within_narrow_band(&q) {
+                        assert!(p == 0.0);
+                    } else {
+                        assert!(p == 1.0);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn set_speed_function_3d() {
+        let mut params = Parameters::new();
+        params.wband = 1;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+
+        let mut initial_front = InitialFront3d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        let front = 3;
+        let back = 7;
+
+        initial_front.vertices[0] = Point3d::<i32>::new(left, top, front);
+        initial_front.vertices[1] = Point3d::<i32>::new(right, bottom, back);
+
+        let size = Rc::new(SpaceSize3d::new(11, 11, 11));
+        let gray = make_input_gray(&size, &initial_front);
+        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+
+        lsm.calculate_speed_factors();
+        lsm.initialize_narrow_band();
+
+        let resets = true;
+        let is_stopped = lsm.set_speed_function(resets);
+        assert!(!is_stopped);
+
+        let mut speed = lsm.get_speed();
+        let width = size.width;
+        let height = size.height;
+        let area = width * height;
+        let depth = size.depth;
+
+        for k in 0..depth {
+            let ak = area * k;
+            for j in 0..height {
+                let wj = ak + width * j;
+                for i in 0..width {
+                    let p = speed.borrow()[(wj + i) as usize];
+                    if ((left <= i && i <= right && top <= j && j <= bottom)
+                        && (k == front || k == back))
+                    {
+                        assert!(p != 0.0);
+                    } else if ((left <= i && i <= right && front <= k && k <= back)
+                        && (j == top || j == bottom))
+                    {
+                        assert!(p != 0.0);
+                    } else if ((top <= j && j <= bottom && front <= k && k <= back)
+                        && (i == left || i == right))
+                    {
+                        assert!(p != 0.0);
+                    } else {
+                        assert!(p == 0.0);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn copy_nearest_speed_to_narrow_band_3d() {
+        let mut params = Parameters::new();
+        params.wband = 3;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+        params.wreset = 1;
+
+        let mut initial_front = InitialFront3d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        let front = 3;
+        let back = 7;
+
+        initial_front.vertices[0] = Point3d::<i32>::new(left, top, front);
+        initial_front.vertices[1] = Point3d::<i32>::new(right, bottom, back);
+
+        let size = Rc::new(SpaceSize3d::new(11, 11, 11));
+        let gray = make_input_gray(&size, &initial_front);
+        let mut lsm = LevelSetMethod3d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_distance_map();
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+        lsm.calculate_speed_factors();
+
+        let resets = true;
+
+        lsm.clear_speed_within_narrow_band(resets);
+        lsm.set_speed_on_front();
+
+        lsm.copy_nearest_speed_to_narrow_band(resets);
+
+        let mut status_map: HashMap<usize, Status> = HashMap::new();
+        status_map.insert(0, Status::Farway);
+        status_map.insert(1, Status::Band);
+        status_map.insert(2, Status::ResetBand);
+        status_map.insert(3, Status::Front);
+
+        let status_answers: Vec<usize> = vec![
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2,
+            2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1,
+            2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1,
+            1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+            2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1,
+            1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1,
+            1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3, 3, 3,
+            3, 3, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
+            1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3,
+            3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1,
+            1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2,
+            2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+            1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1,
+            1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 2, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1,
+            3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3,
+            1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3,
+            3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3,
+            3, 3, 3, 3, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2,
+            0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1,
+            2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1,
+            1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2,
+            2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0,
+            0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2,
+            2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        let statuses = lsm.get_statuses();
+
+        for (i, status) in statuses.borrow().iter().enumerate() {
+            let a = status_answers[i];
+            let b = status_map[&a];
+            let c = *status;
+            assert_eq!(b, c);
+            if i == 22 {
+                //i<=22までは良い。
+                break;
+            }
+        }
     }
 }

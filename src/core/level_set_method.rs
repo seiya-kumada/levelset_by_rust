@@ -245,6 +245,10 @@ where
         RefCell::clone(&self.phi)
     }
 
+    pub fn initialize_distance_map(&mut self) {
+        self.distance_map_generator.create_distance_map();
+    }
+
     pub fn register_to_phi(&self, p: &IntPoint) {
         let index = self.indexer.get(&p);
         match self.statuses.borrow()[index as usize] {
@@ -332,7 +336,7 @@ where
         fs
     }
 
-    fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {
+    pub fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {
         let distance_map = self.distance_map_generator.get_distance_map();
         let mut is_considerable = Vec::<Vec<bool>>::new();
         is_considerable.reserve(self.front.borrow().len());
