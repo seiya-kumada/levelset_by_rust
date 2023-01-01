@@ -203,6 +203,10 @@ where
         Rc::clone(&self.speed)
     }
 
+    pub fn get_grid_range(&self) -> &GridRange {
+        &self.grid_range
+    }
+
     pub fn initialize_narrow_band(&mut self) {
         self.narrow_bands.clear();
         self.set_speed_function(true);
@@ -241,8 +245,8 @@ where
         self.grid_range.foreach_phi(&self);
     }
 
-    pub fn get_phi(&self) -> RefCell<Vec<f64>> {
-        RefCell::clone(&self.phi)
+    pub fn get_phi(&self) -> Rc<RefCell<Vec<f64>>> {
+        Rc::clone(&self.phi)
     }
 
     pub fn initialize_distance_map(&mut self) {
@@ -264,12 +268,12 @@ where
         }
     }
 
-    pub fn get_statuses(&self) -> RefCell<Vec<Status>> {
-        RefCell::clone(&self.statuses)
+    pub fn get_statuses(&self) -> Rc<RefCell<Vec<Status>>> {
+        Rc::clone(&self.statuses)
     }
 
-    pub fn get_front(&self) -> RefCell<Vec<IntPoint>> {
-        RefCell::clone(&self.front)
+    pub fn get_front(&self) -> Rc<RefCell<Vec<IntPoint>>> {
+        Rc::clone(&self.front)
     }
 
     pub fn get_grid(&self) -> &Grid {
@@ -404,7 +408,7 @@ where
         }
     }
 
-    fn register_to_narrow_band(
+    pub fn register_to_narrow_band(
         indexer: &Indexer,
         statuses: RefCell<Vec<Status>>,
         band: &mut Vec<IntPoint>,
@@ -412,9 +416,31 @@ where
     ) {
         let index = indexer.get(&p);
         match statuses.borrow()[index as usize] {
-            Status::Farway => band.push(p),
-            _ => (),
+            Status::Farway => (),
+            _ => band.push(p),
         }
+    }
+
+    pub fn see_statues(&self, log: &str) {
+        use std::collections::HashMap;
+        let mut status_map: HashMap<Status, usize> = HashMap::new();
+        status_map.insert(Status::Farway, 0);
+        status_map.insert(Status::Band, 1);
+        status_map.insert(Status::ResetBand, 2);
+        status_map.insert(Status::Front, 3);
+
+        println!("{} {}", log, status_map[&self.statuses.borrow()[0]]);
+        println!("{} {}", log, status_map[&self.statuses.borrow()[1]]);
+        println!("{} {}", log, status_map[&self.statuses.borrow()[2]]);
+        println!("{} {}", log, status_map[&self.statuses.borrow()[3]]);
+    }
+    pub fn register_to_narrow_band_(&mut self) {
+        self.grid_range.foreach_band(
+            &self.indexer,
+            RefCell::clone(&self.statuses),
+            &mut self.narrow_bands,
+            Self::register_to_narrow_band,
+        )
     }
 
     pub fn set_speed_function(&mut self, resets: bool) -> bool {

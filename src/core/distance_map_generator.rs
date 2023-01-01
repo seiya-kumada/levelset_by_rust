@@ -437,7 +437,11 @@ impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>, LevelSet
         labels
     }
 
-    fn foreach(&self, lsm: &LevelSetMethod3d, resets: bool, is_considerable: &Vec<Vec<bool>>) {}
+    fn foreach(&self, lsm: &LevelSetMethod3d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
+        for (distance, range) in self.distance_map.iter_all() {
+            lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
+        }
+    }
 }
 
 impl DistanceMapGenerator3d {
