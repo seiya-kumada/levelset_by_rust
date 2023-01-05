@@ -45,8 +45,10 @@ pub fn main() {
     assert!(phi.borrow()[13] == 2.0);
     speed.borrow_mut()[13] = -3.0;
     lsm.propagate_front();
-    println!("{}", phi.borrow()[13]);
-    println!("{}", 2.0 + 3.0 * 91.0_f64.sqrt());
+    println!("> phi[13]:{}", phi.borrow()[13]);
+    let dphi = lsm.get_dphi();
+    println!("> dphi[13]:{}", dphi.borrow()[13]);
+    println!("> {}", 2.0 + 3.0 * 91.0_f64.sqrt());
 }
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)
 //借用=borrow

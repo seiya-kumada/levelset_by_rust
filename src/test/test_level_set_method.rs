@@ -625,7 +625,6 @@ mod tests {
         assert!(phi.borrow()[13] == 2.0);
         speed.borrow_mut()[13] = -3.0;
         lsm.propagate_front();
-        //println!("{}", phi.borrow()[13]);
-        //println!("{}", 2.0 + 3.0 * 91.0_f64.sqrt());
+        assert_eq!(phi.borrow()[13], 2.0 + 3.0 * 91.0_f64.sqrt());
     }
 }

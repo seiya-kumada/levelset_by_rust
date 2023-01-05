@@ -24,6 +24,8 @@ use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
+use super::upwind;
+
 pub struct LevelSetMethod<
     SpaceSize,
     Indexer,
@@ -470,6 +472,8 @@ where
                     upwind_scheme = self.upwind_scheme.calculate(p, Speed::Positive);
                 } else if speed < 0.0 {
                     upwind_scheme = self.upwind_scheme.calculate(p, Speed::Negative);
+                } else {
+                    upwind_scheme = 0.0;
                 }
                 self.dphi.borrow_mut()[index] = speed * upwind_scheme * self.parameters.time_step;
             }
