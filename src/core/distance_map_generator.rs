@@ -187,7 +187,7 @@ impl Table3d {
     }
 }
 pub trait DistanceMapGeneratorMethod<T, D, P, L> {
-    fn new(wband: i32, indexer: Rc<T>, statuses: RefCell<Vec<Status>>) -> Self;
+    fn new(wband: i32, indexer: Rc<T>, statuses: Rc<RefCell<Vec<Status>>>) -> Self;
     fn create_distance_map(&mut self);
     fn get_distance_map(&self) -> &D;
     fn select_labels(&self, p: &P) -> Vec<bool>;
@@ -228,17 +228,17 @@ pub struct DistanceMapGenerator2d {
     wband: i32,
     squared_wband: i32,
     indexer: Rc<Indexer2d>,
-    statuses: RefCell<Vec<Status>>,
+    statuses: Rc<RefCell<Vec<Status>>>,
 }
 
 impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>, LevelSetMethod2d>
     for DistanceMapGenerator2d
 {
-    fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: RefCell<Vec<Status>>) -> Self {
+    fn new(wband: i32, indexer: Rc<Indexer2d>, statuses: Rc<RefCell<Vec<Status>>>) -> Self {
         Self {
             wband,
             indexer: Rc::clone(&indexer),
-            statuses: RefCell::clone(&statuses),
+            statuses: Rc::clone(&statuses),
             table: Table2d::new(),
             distance_map: DistanceMap2d::new(),
             squared_wband: wband * (1 + wband),
@@ -353,17 +353,17 @@ pub struct DistanceMapGenerator3d {
     wband: i32,
     squared_wband: i32,
     indexer: Rc<Indexer3d>,
-    statuses: RefCell<Vec<Status>>,
+    statuses: Rc<RefCell<Vec<Status>>>,
 }
 
 impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>, LevelSetMethod3d>
     for DistanceMapGenerator3d
 {
-    fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: RefCell<Vec<Status>>) -> Self {
+    fn new(wband: i32, indexer: Rc<Indexer3d>, statuses: Rc<RefCell<Vec<Status>>>) -> Self {
         Self {
             wband,
             indexer: Rc::clone(&indexer),
-            statuses: RefCell::clone(&statuses),
+            statuses: Rc::clone(&statuses),
             table: Table3d::new(),
             distance_map: DistanceMap3d::new(),
             squared_wband: wband * (1 + wband),

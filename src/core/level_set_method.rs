@@ -158,7 +158,7 @@ where
     CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
 {
     pub fn new(parameters: Parameters, size: Rc<SpaceSize>, gray: Rc<RefCell<Vec<u8>>>) -> Self {
-        let statuses = RefCell::new(vec![Status::Farway; size.get_total()]);
+        let statuses = Rc::new(RefCell::new(vec![Status::Farway; size.get_total()]));
         let indexer = Rc::new(Indexer::new(&size));
         let phi = Rc::new(RefCell::new(vec![0.0; size.get_total()]));
         let initial_front = Grid::new();
@@ -170,12 +170,12 @@ where
             size: Rc::clone(&size),
             indexer: Rc::clone(&indexer),
             initial_front,
-            phi: Rc::new(RefCell::clone(&phi)),
+            phi: Rc::clone(&phi),
             dphi: Rc::new(RefCell::new(vec![0.0; size.get_total()])),
             speed: Rc::new(RefCell::new(vec![0.0; size.get_total()])),
-            statuses: Rc::new(RefCell::clone(&statuses)),
+            statuses: Rc::clone(&statuses),
             upwind_scheme: UpwindScheme::new(Rc::clone(&indexer), Rc::clone(&phi)),
-            speed_factor: SpeedFactor::new(Rc::clone(&indexer), RefCell::clone(&gray)),
+            speed_factor: SpeedFactor::new(Rc::clone(&indexer), Rc::clone(&gray)),
             grid_range: GridRange::new(&size),
             input_object: Rc::clone(&gray),
             front: Rc::new(RefCell::new(Vec::<IntPoint>::new())),
@@ -194,9 +194,9 @@ where
             distance_map_generator: DistanceMapGenerator::new(
                 parameters.wband,
                 Rc::clone(&indexer),
-                RefCell::clone(&statuses),
+                Rc::clone(&statuses),
             ),
-            curvature_generator: CurvatureGenerator::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+            curvature_generator: CurvatureGenerator::new(Rc::clone(&indexer), Rc::clone(&phi)),
             upper_distance: (parameters.wband - parameters.wreset).pow(2),
         }
     }
@@ -369,13 +369,14 @@ where
             if resets {
                 self.phi.borrow_mut()[index] = 0.0;
             }
+            let center_speed = self.speed.borrow()[index];
             self.copy_nearest_speed_to_narrow_band_core_core(
                 &is_considerable[k],
                 range,
                 p,
                 resets,
                 distance,
-                index,
+                center_speed,
             );
             k += 1;
         }
@@ -388,7 +389,7 @@ where
         center: &IntPoint,
         resets: bool,
         distance: &i32,
-        center_index: usize,
+        center_speed: f64,
     ) {
         for info in range {
             if is_considerable[info.get_label()] {
@@ -403,7 +404,7 @@ where
                                 self.statuses.borrow_mut()[index] = Status::Band;
                             }
                         }
-                        self.speed.borrow_mut()[index] = self.speed.borrow()[center_index];
+                        self.speed.borrow_mut()[index] = center_speed;
                     }
                 }
             }
@@ -412,7 +413,7 @@ where
 
     pub fn register_to_narrow_band(
         indexer: &Indexer,
-        statuses: RefCell<Vec<Status>>,
+        statuses: Rc<RefCell<Vec<Status>>>,
         band: &mut Vec<IntPoint>,
         p: IntPoint,
     ) {
@@ -439,7 +440,7 @@ where
     pub fn register_to_narrow_band_(&mut self) {
         self.grid_range.foreach_band(
             &self.indexer,
-            RefCell::clone(&self.statuses),
+            Rc::clone(&self.statuses),
             &mut self.narrow_bands,
             Self::register_to_narrow_band,
         )
@@ -453,7 +454,7 @@ where
             self.narrow_bands.clear();
             self.grid_range.foreach_band(
                 &self.indexer,
-                RefCell::clone(&self.statuses),
+                Rc::clone(&self.statuses),
                 &mut self.narrow_bands,
                 Self::register_to_narrow_band,
             );
@@ -504,11 +505,11 @@ where
         return resets;
     }
 
-    pub fn get_input_object(&self) -> RefCell<Vec<u8>> {
-        RefCell::clone(&self.input_object)
+    pub fn get_input_object(&self) -> Rc<RefCell<Vec<u8>>> {
+        Rc::clone(&self.input_object)
     }
 
-    pub fn copy_speed_to_narrow_band(&self) {}
+    //pub fn copy_speed_to_narrow_band(&self) {}
 }
 
 pub type LevelSetMethod2d = LevelSetMethod<

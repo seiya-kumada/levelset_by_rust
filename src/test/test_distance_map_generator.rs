@@ -151,11 +151,11 @@ mod tests {
     #[test]
     fn initialize_distance_map_2d() {
         let size = SpaceSize2d::new(3, 3);
-        let statuses = RefCell::new(Vec::<Status>::new());
+        let statuses = Rc::new(RefCell::new(Vec::<Status>::new()));
         let wband = 3;
         let indexer = Rc::new(Indexer2d::new(&size));
         let mut generator =
-            DistanceMapGenerator2d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+            DistanceMapGenerator2d::new(wband, Rc::clone(&indexer), Rc::clone(&statuses));
         generator.create_distance_map();
         let map = generator.get_distance_map();
         let mut c = 0;
@@ -190,11 +190,11 @@ mod tests {
     #[test]
     fn initialize_distance_map_3d() {
         let size = SpaceSize3d::new(3, 3, 3);
-        let statuses = RefCell::new(Vec::<Status>::new());
+        let statuses = Rc::new(RefCell::new(Vec::<Status>::new()));
         let wband = 1;
         let indexer = Rc::new(Indexer3d::new(&size));
         let mut generator =
-            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), Rc::clone(&statuses));
         generator.create_distance_map();
         let map = generator.get_distance_map();
         let mut c = 0;
@@ -231,7 +231,7 @@ mod tests {
     fn select_labels_with_2d() {
         let size = SpaceSize2d::new(7, 7);
         let indexer = Rc::new(Indexer2d::new(&size));
-        let statuses = RefCell::new(vec![
+        let statuses = Rc::new(RefCell::new(vec![
             Status::Farway,
             Status::Farway,
             Status::Farway,
@@ -281,11 +281,11 @@ mod tests {
             Status::Farway,
             Status::Farway,
             Status::Farway,
-        ]);
+        ]));
 
         let wband = 3;
         let mut generator =
-            DistanceMapGenerator2d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+            DistanceMapGenerator2d::new(wband, Rc::clone(&indexer), Rc::clone(&statuses));
         let p = Point2d::<i32>::new(3, 3);
         generator.create_distance_map();
         let labels = generator.select_labels(&p);
@@ -301,7 +301,7 @@ mod tests {
     fn select_labels_with_3d_0() {
         let size = SpaceSize3d::new(3, 3, 3);
         let indexer = Rc::new(Indexer3d::new(&size));
-        let statuses = RefCell::new(vec![
+        let statuses = Rc::new(RefCell::new(vec![
             Status::Farway,
             Status::Farway,
             Status::Farway,
@@ -329,11 +329,11 @@ mod tests {
             Status::Farway,
             Status::Farway,
             Status::Farway,
-        ]);
+        ]));
 
         let wband = 1;
         let mut generator =
-            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), Rc::clone(&statuses));
         generator.create_distance_map();
 
         let p = Point3d::<i32>::new(1, 1, 1);
@@ -362,7 +362,7 @@ mod tests {
     fn select_labels_with_3d_1() {
         let size = SpaceSize3d::new(3, 3, 3);
         let indexer = Rc::new(Indexer3d::new(&size));
-        let statuses = RefCell::new(vec![
+        let statuses = Rc::new(RefCell::new(vec![
             Status::Farway,
             Status::Farway,
             Status::Farway,
@@ -390,11 +390,11 @@ mod tests {
             Status::Farway,
             Status::Farway,
             Status::Farway,
-        ]);
+        ]));
 
         let wband = 1;
         let mut generator =
-            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), Rc::clone(&statuses));
         generator.create_distance_map();
 
         let p = Point3d::<i32>::new(1, 1, 1);
@@ -424,7 +424,7 @@ mod tests {
     fn select_labels_with_3d_2() {
         let size = SpaceSize3d::new(3, 3, 3);
         let indexer = Rc::new(Indexer3d::new(&size));
-        let statuses = RefCell::new(vec![
+        let statuses = Rc::new(RefCell::new(vec![
             Status::Farway,
             Status::Farway,
             Status::Farway,
@@ -452,11 +452,11 @@ mod tests {
             Status::Farway,
             Status::Farway,
             Status::Farway,
-        ]);
+        ]));
 
         let wband = 1;
         let mut generator =
-            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), RefCell::clone(&statuses));
+            DistanceMapGenerator3d::new(wband, Rc::clone(&indexer), Rc::clone(&statuses));
         generator.create_distance_map();
 
         let p = Point3d::<i32>::new(1, 1, 1);

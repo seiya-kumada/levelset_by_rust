@@ -16,7 +16,7 @@ pub trait UpwindSchemeMethod<T, P> {
 pub struct UpwindScheme2d {
     pub position: Position2d,
     pub upwind: Upwind2d,
-    pub phi: RefCell<Vec<f64>>,
+    pub phi: Rc<RefCell<Vec<f64>>>,
     pub indexer: Rc<Indexer2d>,
 }
 
@@ -25,7 +25,7 @@ impl UpwindSchemeMethod<Indexer2d, Point2d<i32>> for UpwindScheme2d {
         Self {
             position: Position2d::new(),
             upwind: Upwind2d::new(),
-            phi: RefCell::clone(&phi),
+            phi: Rc::clone(&phi),
             indexer: Rc::clone(&indexer),
         }
     }
@@ -44,18 +44,6 @@ impl UpwindSchemeMethod<Indexer2d, Point2d<i32>> for UpwindScheme2d {
 }
 
 impl UpwindScheme2d {
-    //pub fn calculate(&mut self, p: &Point2d<i32>, speed: &Speed) -> f64 {
-    //    self.position.set_position(p, Rc::clone(&self.indexer));
-    //    match speed {
-    //        Speed::Positive => self.calculate_with_positive_speed(),
-    //        Speed::Negative => self.calculate_with_negative_speed(),
-    //    }
-    //    self.upwind.fdxm.powf(2.0)
-    //        + self.upwind.fdxp.powf(2.0)
-    //        + self.upwind.fdym.powf(2.0)
-    //        + self.upwind.fdyp.powf(2.0)
-    //}
-
     // test ok
     pub fn calculate_with_positive_speed(&mut self) {
         self.upwind.fdxm = util::max(
@@ -107,7 +95,7 @@ impl UpwindScheme2d {
 pub struct UpwindScheme3d {
     pub position: Position3d,
     pub upwind: Upwind3d,
-    pub phi: RefCell<Vec<f64>>,
+    pub phi: Rc<RefCell<Vec<f64>>>,
     pub indexer: Rc<Indexer3d>,
 }
 
@@ -116,7 +104,7 @@ impl UpwindSchemeMethod<Indexer3d, Point3d<i32>> for UpwindScheme3d {
         Self {
             position: Position3d::new(),
             upwind: Upwind3d::new(),
-            phi: RefCell::clone(&phi),
+            phi: Rc::clone(&phi),
             indexer: Rc::clone(&indexer),
         }
     }
@@ -138,20 +126,6 @@ impl UpwindSchemeMethod<Indexer3d, Point3d<i32>> for UpwindScheme3d {
 }
 
 impl UpwindScheme3d {
-    //pub fn calculate(&mut self, p: &Point3d<i32>, speed: &Speed) -> f64 {
-    //    self.position.set_position(p, Rc::clone(&self.indexer));
-    //    match speed {
-    //        Speed::Positive => self.calculate_with_positive_speed(),
-    //        Speed::Negative => self.calculate_with_negative_speed(),
-    //    }
-    //    self.upwind.fdxm.powf(2.0)
-    //        + self.upwind.fdxp.powf(2.0)
-    //        + self.upwind.fdym.powf(2.0)
-    //        + self.upwind.fdyp.powf(2.0)
-    //        + self.upwind.fdzm.powf(2.0)
-    //        + self.upwind.fdzp.powf(2.0)
-    //}
-
     pub fn calculate_with_positive_speed(&mut self) {
         self.upwind.fdxm = util::max(
             self.phi.borrow()[(self.position.me) as usize]

@@ -12,9 +12,9 @@ pub trait GridRangeMethod<T, I, P, L> {
     fn foreach_band(
         &self,
         indexer: &I,
-        statuses: RefCell<Vec<Status>>,
+        statuses: Rc<RefCell<Vec<Status>>>,
         band: &mut Vec<P>,
-        fun: fn(&I, RefCell<Vec<Status>>, &mut Vec<P>, P),
+        fun: fn(&I, Rc<RefCell<Vec<Status>>>, &mut Vec<P>, P),
     );
     fn foreach_phi(&self, lsm: &L);
 }
@@ -35,15 +35,15 @@ impl GridRangeMethod<SpaceSize2d, Indexer2d, Point2d<i32>, LevelSetMethod2d> for
     fn foreach_band(
         &self,
         indexer: &Indexer2d,
-        statuses: RefCell<Vec<Status>>,
+        statuses: Rc<RefCell<Vec<Status>>>,
         band: &mut Vec<Point2d<i32>>,
-        fun: fn(&Indexer2d, RefCell<Vec<Status>>, &mut Vec<Point2d<i32>>, Point2d<i32>),
+        fun: fn(&Indexer2d, Rc<RefCell<Vec<Status>>>, &mut Vec<Point2d<i32>>, Point2d<i32>),
     ) {
         for j in self.y_range.0..self.y_range.1 {
             for i in self.x_range.0..self.x_range.1 {
                 fun(
                     indexer,
-                    RefCell::clone(&statuses),
+                    Rc::clone(&statuses),
                     band,
                     Point2d::<i32>::new(i, j),
                 );
@@ -79,16 +79,16 @@ impl GridRangeMethod<SpaceSize3d, Indexer3d, Point3d<i32>, LevelSetMethod3d> for
     fn foreach_band(
         &self,
         indexer: &Indexer3d,
-        statuses: RefCell<Vec<Status>>,
+        statuses: Rc<RefCell<Vec<Status>>>,
         band: &mut Vec<Point3d<i32>>,
-        fun: fn(&Indexer3d, RefCell<Vec<Status>>, &mut Vec<Point3d<i32>>, Point3d<i32>),
+        fun: fn(&Indexer3d, Rc<RefCell<Vec<Status>>>, &mut Vec<Point3d<i32>>, Point3d<i32>),
     ) {
         for k in self.z_range.0..self.z_range.1 {
             for j in self.y_range.0..self.y_range.1 {
                 for i in self.x_range.0..self.x_range.1 {
                     fun(
                         indexer,
-                        RefCell::clone(&statuses),
+                        Rc::clone(&statuses),
                         band,
                         Point3d::<i32>::new(i, j, k),
                     );

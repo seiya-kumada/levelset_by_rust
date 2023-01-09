@@ -49,7 +49,7 @@ pub trait DifferentialMethod<IntPoint> {
 
 pub struct Differential2d<T: ToPrimitive + Zero + Clone + Copy> {
     pub indexer: Rc<Indexer2d>,
-    pub buffer: RefCell<Vec<T>>,
+    pub buffer: Rc<RefCell<Vec<T>>>,
     pub values: Vec<T>,
 }
 
@@ -70,12 +70,12 @@ impl<T: ToPrimitive + Zero + Clone + Copy> DifferentialMethod<Point2d<i32>> for 
 }
 
 impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
-    pub fn new(indexer: Rc<Indexer2d>, buffer: RefCell<Vec<T>>) -> Self {
+    pub fn new(indexer: Rc<Indexer2d>, buffer: Rc<RefCell<Vec<T>>>) -> Self {
         let s = 3usize.pow(dim::TWO as u32);
         let values = vec![T::zero(); s];
         Self {
             indexer: Rc::clone(&indexer),
-            buffer: RefCell::clone(&buffer),
+            buffer: Rc::clone(&buffer),
             values,
         }
     }
@@ -207,7 +207,7 @@ impl<T: ToPrimitive + Zero + Clone + Copy> Differential2d<T> {
 }
 pub struct Differential3d<T: ToPrimitive + Zero + Clone + Copy> {
     pub indexer: Rc<Indexer3d>,
-    pub buffer: RefCell<Vec<T>>,
+    pub buffer: Rc<RefCell<Vec<T>>>,
     pub values: Vec<T>,
 }
 
@@ -253,12 +253,12 @@ impl<T: ToPrimitive + Zero + Clone + Copy> DifferentialMethod<Point3d<i32>> for 
 
 impl<T: ToPrimitive + Zero + Clone + Copy> Differential3d<T> {
     // test ok
-    pub fn new(indexer: Rc<Indexer3d>, buffer: RefCell<Vec<T>>) -> Self {
+    pub fn new(indexer: Rc<Indexer3d>, buffer: Rc<RefCell<Vec<T>>>) -> Self {
         let s = 3usize.pow(dim::THREE as u32);
         let values = vec![T::zero(); s];
         Self {
             indexer: Rc::clone(&indexer),
-            buffer: RefCell::clone(&buffer),
+            buffer: Rc::clone(&buffer),
             values,
         }
     }

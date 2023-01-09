@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 pub trait CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint> {
-    fn new(indexer: Rc<Indexer>, phi: RefCell<Vec<f64>>) -> Self;
+    fn new(indexer: Rc<Indexer>, phi: Rc<RefCell<Vec<f64>>>) -> Self;
     fn calculate_normal(&mut self, p: &IntPoint) -> DoublePoint;
     fn generate(&mut self, p: &IntPoint) -> f64;
 }
@@ -15,9 +15,9 @@ pub struct CurvatureGenerator2d {
 }
 
 impl CurvatureGeneratorMethod<Indexer2d, Point2d<i32>, Point2d<f64>> for CurvatureGenerator2d {
-    fn new(indexer: Rc<Indexer2d>, phi: RefCell<Vec<f64>>) -> Self {
+    fn new(indexer: Rc<Indexer2d>, phi: Rc<RefCell<Vec<f64>>>) -> Self {
         Self {
-            differential: DifferentialDouble2d::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+            differential: DifferentialDouble2d::new(Rc::clone(&indexer), Rc::clone(&phi)),
         }
     }
 
@@ -54,9 +54,9 @@ pub struct CurvatureGenerator3d {
 }
 
 impl CurvatureGeneratorMethod<Indexer3d, Point3d<i32>, Point3d<f64>> for CurvatureGenerator3d {
-    fn new(indexer: Rc<Indexer3d>, phi: RefCell<Vec<f64>>) -> Self {
+    fn new(indexer: Rc<Indexer3d>, phi: Rc<RefCell<Vec<f64>>>) -> Self {
         Self {
-            differential: DifferentialDouble3d::new(Rc::clone(&indexer), RefCell::clone(&phi)),
+            differential: DifferentialDouble3d::new(Rc::clone(&indexer), Rc::clone(&phi)),
         }
     }
 
