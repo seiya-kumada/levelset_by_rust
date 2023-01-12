@@ -51,15 +51,20 @@ impl<T> Point3d<T> {
 pub trait PointMethod {
     type Type;
     fn add(&self, rhs: &Self::Type) -> Self::Type;
+    fn print(&self);
 }
 
-impl<T: std::ops::Add<Output = T> + Clone> PointMethod for Point2d<T> {
+impl<T: std::fmt::Display + std::ops::Add<Output = T> + Clone> PointMethod for Point2d<T> {
     type Type = Point2d<T>;
     fn add(&self, rhs: &Self::Type) -> Self::Type {
         Point2d::<T>::new(
             self.x.clone() + rhs.x.clone(),
             self.y.clone() + rhs.y.clone(),
         )
+    }
+
+    fn print(&self) {
+        println!("{},{}", self.x, self.y);
     }
 }
 //https://stackoverflow.com/questions/66832882/generics-partial-specialization-in-rust
@@ -74,7 +79,7 @@ impl<'a, T: std::ops::Add<Output = T> + Copy> Add for &'a Point2d<T> {
     }
 }
 
-impl<T: std::ops::Add<Output = T> + Clone> PointMethod for Point3d<T> {
+impl<T: std::fmt::Display + std::ops::Add<Output = T> + Clone> PointMethod for Point3d<T> {
     type Type = Point3d<T>;
     fn add(&self, rhs: &Self::Type) -> Self::Type {
         Point3d::<T>::new(
@@ -82,6 +87,10 @@ impl<T: std::ops::Add<Output = T> + Clone> PointMethod for Point3d<T> {
             self.y.clone() + rhs.y.clone(),
             self.z.clone() + rhs.z.clone(),
         )
+    }
+
+    fn print(&self) {
+        println!("{},{},{}", self.x, self.y, self.z);
     }
 }
 

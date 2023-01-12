@@ -67,9 +67,7 @@ pub fn main() {
     let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
     lsm.initialize_along_front(&initial_front);
     lsm.initialize_over_all(&initial_front);
-
     lsm.calculate_speed_factors();
-    lsm.initialize_narrow_band();
 
     let fs = lsm.set_speed_on_front();
     assert!(fs != 0.0);
@@ -90,25 +88,31 @@ pub fn main() {
             } else if (i == right && top <= j && j < bottom) {
                 assert!(0.0 != speed.borrow()[index]);
             } else if (i == right && j == bottom) {
-                //assert!(0.0 != speed.borrow()[index]);
-                //if 0.0 == speed.borrow()[index] {
-                //    println!("D: {},{}", index, speed.borrow()[index]);
-                //}
+                assert!(0.0 != speed.borrow()[index]);
             } else if (left <= i && i < right && j == top) {
                 assert!(0.0 != speed.borrow()[index]);
             } else if (i == left && top < j && top <= bottom) {
                 //assert!(0.0 != speed.borrow()[index]);
-                //if 0.0 == speed.borrow()[index] {
-                //    println!("E: {},{}", index, speed.borrow()[index]);
-                //}
+                if 0.0 == speed.borrow()[index] {
+                    println!("E: {},{}", index, speed.borrow()[index]);
+                }
             } else {
                 //assert!(0.0 == speed.borrow()[index]);
-                //if 0.0 != speed.borrow()[index] {
-                //    println!("F: {},{}", index, speed.borrow()[index]);
-                //}
+                if 0.0 != speed.borrow()[index] {
+                    println!("F: {},{}", index, speed.borrow()[index]);
+                }
             }
         }
     }
+
+    //let s = 1;
+    //let e = 3;
+    //for i in s..e {
+    //    println!("{}", i);
+    //}
+    //for i in ((s + 1)..(e + 1)).rev() {
+    //    println!("{}", i);
+    //}
 }
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)
 //借用=borrow

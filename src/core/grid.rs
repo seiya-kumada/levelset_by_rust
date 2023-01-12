@@ -77,11 +77,11 @@ impl GridMethod<InitialFront2d, SpaceSize2d, LevelSetMethod2d, Point2d<i32>> for
             let p = Point2d::<i32>::new(self.right, j);
             lsm.initialize_point_on_front(&p);
         }
-        for i in (self.left..self.right).rev() {
+        for i in ((self.left + 1)..(self.right + 1)).rev() {
             let p = Point2d::<i32>::new(i, self.bottom);
             lsm.initialize_point_on_front(&p);
         }
-        for j in (self.top..self.bottom).rev() {
+        for j in ((self.top + 1)..(self.bottom + 1)).rev() {
             let p = Point2d::<i32>::new(self.left, j);
             lsm.initialize_point_on_front(&p);
         }

@@ -348,7 +348,7 @@ mod tests {
         lsm.initialize_over_all(&initial_front);
 
         lsm.calculate_speed_factors();
-        lsm.initialize_narrow_band();
+        //lsm.initialize_narrow_band();
 
         let fs = lsm.set_speed_on_front();
         assert!(fs != 0.0);

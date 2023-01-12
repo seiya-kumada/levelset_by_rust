@@ -322,12 +322,13 @@ where
     pub fn set_speed_on_front(&mut self) -> f64 {
         let mut fs = 0.0;
         self.zero_count = 0;
-
         for p in self.front.borrow().iter() {
             if self.inside_estimator_for_space_without_edge.is_inside(p) {
                 let i = self.indexer.get(&p) as usize;
                 let mut speed = self.speed_factor.get_value(p);
                 let kappa = self.curvature_generator.generate(p);
+                //p.print();
+                //println!("kappa:{}", kappa);
                 speed *= (self.parameters.constant_speed - self.parameters.gain * kappa);
                 if speed.abs() < self.parameters.speed_threshold {
                     speed = 0.0;
