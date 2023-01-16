@@ -496,22 +496,22 @@ mod tests {
         set_narrow_band_2d(narrow_bands);
 
         // initialize phi
-        //let mut dphi = lsm.get_dphi();
-        //let s = dphi.borrow().len();
-        //for i in 0..s {
-        //    dphi.borrow_mut()[i] = 1.0;
-        //}
+        let mut dphi = lsm.get_dphi();
+        let s = dphi.borrow().len();
+        for i in 0..s {
+            dphi.borrow_mut()[i] = 1.0;
+        }
 
-        //// speed
-        //let mut speed = lsm.get_speed();
-        //let s = speed.borrow().len();
-        //for i in 0..s {
-        //    speed.borrow_mut()[i] = 1.0;
-        //}
+        // speed
+        let mut speed = lsm.get_speed();
+        let s = speed.borrow().len();
+        for i in 0..s {
+            speed.borrow_mut()[i] = 1.0;
+        }
 
-        //lsm.clear_speed_within_narrow_band(true);
-        //check_buffer(speed, Rc::clone(&size));
-        //check_buffer(dphi, Rc::clone(&size));
+        lsm.clear_speed_within_narrow_band(true);
+        check_buffer_2d(speed, Rc::clone(&size));
+        check_buffer_2d(dphi, Rc::clone(&size));
     }
 
     #[test]
@@ -577,6 +577,30 @@ mod tests {
         return false;
     }
 
+    fn check_buffer_2d(buffer: Rc<RefCell<Vec<f64>>>, size: Rc<SpaceSize2d>) {
+        let w = size.width;
+        let h = size.height;
+        let a = w * h;
+
+        for j in 0..h {
+            let wj = w * j;
+            for i in 0..w {
+                let p = buffer.borrow()[(wj + i) as usize];
+                if (1 <= i && i <= 9) {
+                    if (j == 2 || j == 3 || j == 4 || j == 6 || j == 7 || j == 8) {
+                        assert!(p == 0.0);
+                    }
+                } else if (j == 5) {
+                    if (i == 1 || i == 2 || i == 3 || i == 7 || i == 8 || i == 9) {
+                        assert!(p == 0.0);
+                    }
+                } else {
+                    assert!(p == 1.0);
+                }
+            }
+        }
+    }
+
     fn check_buffer(buffer: Rc<RefCell<Vec<f64>>>, size: Rc<SpaceSize3d>) {
         let w = size.width;
         let h = size.height;
@@ -595,6 +619,63 @@ mod tests {
                     } else {
                         assert!(p == 1.0);
                     }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn set_speed_function_2d() {
+        let mut params = Parameters::new();
+        params.wband = 1;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+
+        let mut initial_front = InitialFront2d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+
+        initial_front.vertices[0] = Point2d::<i32>::new(left, top);
+        initial_front.vertices[1] = Point2d::<i32>::new(right, bottom);
+
+        let size = Rc::new(SpaceSize2d::new(11, 11));
+        let gray = make_input_gray_2d(&size, &initial_front);
+        let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+
+        lsm.calculate_speed_factors();
+        lsm.initialize_narrow_band();
+
+        let resets = true;
+        let is_stopped = lsm.set_speed_function(resets);
+        assert!(!is_stopped);
+
+        let mut speed = lsm.get_speed();
+        let width = size.width;
+        let height = size.height;
+        let area = width * height;
+
+        for j in 0..height {
+            let wj = width * j;
+            for i in 0..width {
+                let p = speed.borrow()[(wj + i) as usize];
+                if (i == left && j == top) {
+                    assert!(p != 0.0);
+                } else if (left < i && i <= right && j == top) {
+                    assert!(p != 0.0);
+                } else if (i == right && top <= j && j < bottom) {
+                    assert!(p != 0.0);
+                } else if (i == right && j == bottom) {
+                    assert!(p != 0.0);
+                } else if (left <= i && i < right && j == top) {
+                    assert!(p != 0.0);
+                } else if (i == left && top < j && top <= bottom) {
+                    assert!(p != 0.0);
+                } else {
+                    assert!(p == 0.0);
                 }
             }
         }
