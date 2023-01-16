@@ -36,10 +36,11 @@ impl UpwindSchemeMethod<Indexer2d, Point2d<i32>> for UpwindScheme2d {
             Speed::Positive => self.calculate_with_positive_speed(),
             Speed::Negative => self.calculate_with_negative_speed(),
         }
-        self.upwind.fdxm.powf(2.0)
+        let t = self.upwind.fdxm.powf(2.0)
             + self.upwind.fdxp.powf(2.0)
             + self.upwind.fdym.powf(2.0)
-            + self.upwind.fdyp.powf(2.0)
+            + self.upwind.fdyp.powf(2.0);
+        t.sqrt()
     }
 }
 

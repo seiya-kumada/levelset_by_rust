@@ -661,21 +661,18 @@ mod tests {
         for j in 0..height {
             let wj = width * j;
             for i in 0..width {
-                let p = speed.borrow()[(wj + i) as usize];
-                if (i == left && j == top) {
-                    assert!(p != 0.0);
-                } else if (left < i && i <= right && j == top) {
-                    assert!(p != 0.0);
-                } else if (i == right && top <= j && j < bottom) {
-                    assert!(p != 0.0);
-                } else if (i == right && j == bottom) {
-                    assert!(p != 0.0);
-                } else if (left <= i && i < right && j == top) {
-                    assert!(p != 0.0);
-                } else if (i == left && top < j && top <= bottom) {
-                    assert!(p != 0.0);
+                let index = (wj + i) as usize;
+                let p = speed.borrow()[index];
+                if (left <= i && i <= right && j == top) {
+                    assert!(0.0 != speed.borrow()[index]);
+                } else if (left <= i && i <= right && j == bottom) {
+                    assert!(0.0 != speed.borrow()[index]);
+                } else if (i == right && top <= j && j <= bottom) {
+                    assert!(0.0 != speed.borrow()[index]);
+                } else if (i == left && top <= j && j <= bottom) {
+                    assert!(0.0 != speed.borrow()[index]);
                 } else {
-                    assert!(p == 0.0);
+                    assert!(0.0 == speed.borrow()[index]);
                 }
             }
         }
@@ -742,6 +739,53 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn copy_nearest_speed_to_narrow_band_2d() {
+        let mut params = Parameters::new();
+        params.wband = 3;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+        params.wreset = 1;
+
+        let mut initial_front = InitialFront2d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        initial_front.vertices[0] = Point2d::<i32>::new(left, top);
+        initial_front.vertices[1] = Point2d::<i32>::new(right, bottom);
+        let size = Rc::new(SpaceSize2d::new(11, 11));
+        let gray = make_input_gray_2d(&size, &initial_front);
+        let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_distance_map();
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+        lsm.calculate_speed_factors();
+
+        let resets = true;
+
+        lsm.clear_speed_within_narrow_band(resets);
+        lsm.set_speed_on_front();
+
+        lsm.copy_nearest_speed_to_narrow_band(resets);
+
+        let squared_phi_answers: Vec<f64> = vec![
+            9.0, 10.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 10.0, 9.0, 8.0, 5.0, 4.0, 4.0, 4.0, 4.0,
+            4.0, 4.0, 4.0, 5.0, 8.0, 5.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 5.0, 4.0,
+            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, -1.0, -1.0, -1.0,
+            -1.0, -1.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, -1.0, -4.0, -4.0, -4.0, -1.0, 0.0, 1.0, 4.0,
+            4.0, 1.0, 0.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 1.0, 4.0, 5.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 5.0,
+            8.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 8.0, 9.0, 10.0, 9.0, 9.0, 9.0, 9.0,
+            9.0, 9.0, 9.0, 10.0, 9.0,
+        ];
+
+        //let phi = lsm.get_phi();
+        //for (phi, ans) in phi.borrow().iter().zip(&squared_phi_answers) {
+        //    assert!((phi - ans.abs().sqrt()).abs() < 1.0e-03);
+        //}
     }
 
     #[test]
@@ -954,6 +998,43 @@ mod tests {
     }
 
     #[test]
+    fn register_to_narrow_band_2d() {
+        let mut params = Parameters::new();
+        params.wband = 3;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+        params.wreset = 1;
+
+        let size = SpaceSize2d::new(11, 11);
+        let mut initial_front = InitialFront2d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        initial_front.vertices[0] = Point2d::<i32>::new(left, top);
+        initial_front.vertices[1] = Point2d::<i32>::new(right, bottom);
+
+        let size = Rc::new(SpaceSize2d::new(11, 11));
+        let gray = make_input_gray_2d(&size, &initial_front);
+        let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
+
+        let mut statuses = lsm.get_statuses();
+
+        statuses.borrow_mut()[0] = Status::Band;
+        statuses.borrow_mut()[1] = Status::ResetBand;
+        statuses.borrow_mut()[2] = Status::Front;
+
+        lsm.register_to_narrow_band_();
+
+        let narrow_band = lsm.get_narrow_bands();
+
+        assert_eq!(narrow_band.len(), 3);
+        assert_eq!(narrow_band[0], Point2d::<i32>::new(0, 0));
+        assert_eq!(narrow_band[1], Point2d::<i32>::new(1, 0));
+        assert_eq!(narrow_band[2], Point2d::<i32>::new(2, 0));
+    }
+
+    #[test]
     fn register_to_narrow_band_3d() {
         let mut params = Parameters::new();
         params.wband = 3;
@@ -990,6 +1071,43 @@ mod tests {
         assert_eq!(narrow_band[0], Point3d::<i32>::new(0, 0, 0));
         assert_eq!(narrow_band[1], Point3d::<i32>::new(1, 0, 0));
         assert_eq!(narrow_band[2], Point3d::<i32>::new(2, 0, 0));
+    }
+
+    #[test]
+    fn propagate_front_2d() {
+        let mut params = Parameters::new();
+        params.wband = 3;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+        params.wreset = 1;
+        params.time_step = 1.0;
+
+        let size = Rc::new(SpaceSize2d::new(3, 3));
+        let gray = Rc::new(RefCell::new(vec![0u8]));
+        let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
+
+        let phi = lsm.get_phi();
+        let speed = lsm.get_speed();
+        let narrow_band = lsm.get_narrow_bands();
+
+        let p = Point2d::<i32>::new(1, 1);
+        narrow_band.push(p);
+        speed.borrow_mut()[4] = 3.0; // positive
+
+        let sphi = vec![0.0, 3.0, 0.0, 4.0, 2.0, 6.0, 0.0, 5.0, 0.0];
+
+        for i in 0..sphi.len() {
+            phi.borrow_mut()[i] = sphi[i];
+        }
+        lsm.propagate_front();
+        assert!(phi.borrow()[4] == 2.0);
+
+        for i in 0..sphi.len() {
+            phi.borrow_mut()[i] = sphi[i];
+        }
+        speed.borrow_mut()[4] = -3.0;
+        lsm.propagate_front();
+        assert_eq!(phi.borrow()[4], 2.0 + 3.0 * 30.0_f64.sqrt());
     }
 
     #[test]
