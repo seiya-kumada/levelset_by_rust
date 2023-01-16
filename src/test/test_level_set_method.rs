@@ -348,7 +348,6 @@ mod tests {
         lsm.initialize_over_all(&initial_front);
 
         lsm.calculate_speed_factors();
-        //lsm.initialize_narrow_band();
 
         let fs = lsm.set_speed_on_front();
         assert!(fs != 0.0);
@@ -357,22 +356,17 @@ mod tests {
         let height = size.height;
 
         let speed = lsm.get_speed();
-
         for j in 0..height {
             let wj = width * j;
             for i in 0..width {
                 let index = (wj + i) as usize;
-                if (i == left && j == top) {
+                if (left <= i && i <= right && j == top) {
                     assert!(0.0 != speed.borrow()[index]);
-                } else if (left < i && i <= right && j == top) {
+                } else if (left <= i && i <= right && j == bottom) {
                     assert!(0.0 != speed.borrow()[index]);
-                } else if (i == right && top <= j && j < bottom) {
+                } else if (i == right && top <= j && j <= bottom) {
                     assert!(0.0 != speed.borrow()[index]);
-                } else if (i == right && j == bottom) {
-                    assert!(0.0 != speed.borrow()[index]);
-                } else if (left <= i && i < right && j == top) {
-                    assert!(0.0 != speed.borrow()[index]);
-                } else if (i == left && top < j && top <= bottom) {
+                } else if (i == left && top <= j && j <= bottom) {
                     assert!(0.0 != speed.borrow()[index]);
                 } else {
                     assert!(0.0 == speed.borrow()[index]);
@@ -444,6 +438,24 @@ mod tests {
         }
     }
 
+    fn set_narrow_band_2d(narrow_band: &mut Vec<Point2d<i32>>) {
+        for i in 1..10 {
+            narrow_band.push(Point2d::<i32>::new(i, 2));
+            narrow_band.push(Point2d::<i32>::new(i, 3));
+            narrow_band.push(Point2d::<i32>::new(i, 4));
+            narrow_band.push(Point2d::<i32>::new(i, 5));
+            narrow_band.push(Point2d::<i32>::new(i, 6));
+            narrow_band.push(Point2d::<i32>::new(i, 7));
+            narrow_band.push(Point2d::<i32>::new(i, 8));
+        }
+        narrow_band.push(Point2d::<i32>::new(1, 5));
+        narrow_band.push(Point2d::<i32>::new(2, 5));
+        narrow_band.push(Point2d::<i32>::new(3, 5));
+        narrow_band.push(Point2d::<i32>::new(7, 5));
+        narrow_band.push(Point2d::<i32>::new(8, 5));
+        narrow_band.push(Point2d::<i32>::new(9, 5));
+    }
+
     fn set_narrow_band(narrow_band: &mut Vec<Point3d<i32>>) {
         for k in 2..9 {
             for j in 2..9 {
@@ -456,6 +468,50 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn clear_speed_within_narrow_band_2d() {
+        let mut params = Parameters::new();
+        params.wband = 1;
+        params.constant_speed = 1.0;
+        params.gain = 2.0;
+
+        let mut initial_front = InitialFront2d::new();
+        let left = 2;
+        let top = 3;
+        let right = 8;
+        let bottom = 7;
+        initial_front.vertices[0] = Point2d::<i32>::new(left, top);
+        initial_front.vertices[1] = Point2d::<i32>::new(right, bottom);
+
+        let size = Rc::new(SpaceSize2d::new(11, 11));
+        let gray = make_input_gray_2d(&size, &initial_front);
+        let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
+        lsm.initialize_along_front(&initial_front);
+        lsm.initialize_over_all(&initial_front);
+
+        // initialize narrow band
+        let mut narrow_bands = lsm.get_narrow_bands();
+        set_narrow_band_2d(narrow_bands);
+
+        // initialize phi
+        //let mut dphi = lsm.get_dphi();
+        //let s = dphi.borrow().len();
+        //for i in 0..s {
+        //    dphi.borrow_mut()[i] = 1.0;
+        //}
+
+        //// speed
+        //let mut speed = lsm.get_speed();
+        //let s = speed.borrow().len();
+        //for i in 0..s {
+        //    speed.borrow_mut()[i] = 1.0;
+        //}
+
+        //lsm.clear_speed_within_narrow_band(true);
+        //check_buffer(speed, Rc::clone(&size));
+        //check_buffer(dphi, Rc::clone(&size));
     }
 
     #[test]

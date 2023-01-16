@@ -328,8 +328,8 @@ where
                 let mut speed = self.speed_factor.get_value(p);
                 let kappa = self.curvature_generator.generate(p);
                 //p.print();
-                //println!("kappa:{}", kappa);
                 speed *= (self.parameters.constant_speed - self.parameters.gain * kappa);
+                //println!("s:{}", speed);
                 if speed.abs() < self.parameters.speed_threshold {
                     speed = 0.0;
                     self.zero_count += 1;
