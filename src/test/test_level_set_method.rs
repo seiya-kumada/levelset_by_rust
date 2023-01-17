@@ -784,7 +784,11 @@ mod tests {
 
         //let phi = lsm.get_phi();
         //for (phi, ans) in phi.borrow().iter().zip(&squared_phi_answers) {
-        //    assert!((phi - ans.abs().sqrt()).abs() < 1.0e-03);
+        //    let mut a = ans.abs().sqrt();
+        //    if *ans < 0.0 {
+        //        a = -a;
+        //    }
+        //    assert!((phi - a).abs() < 1.0e-03);
         //}
     }
 

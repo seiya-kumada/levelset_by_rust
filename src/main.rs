@@ -48,51 +48,58 @@ fn make_input_gray_2d(size: &SpaceSize2d, front: &InitialFront2d) -> Rc<RefCell<
 
 pub fn main() {
     let mut params = Parameters::new();
-    params.wband = 1;
+    params.wband = 3;
     params.constant_speed = 1.0;
     params.gain = 2.0;
+    params.wreset = 1;
 
     let mut initial_front = InitialFront2d::new();
     let left = 2;
     let top = 3;
     let right = 8;
     let bottom = 7;
-
     initial_front.vertices[0] = Point2d::<i32>::new(left, top);
     initial_front.vertices[1] = Point2d::<i32>::new(right, bottom);
-
     let size = Rc::new(SpaceSize2d::new(11, 11));
     let gray = make_input_gray_2d(&size, &initial_front);
-
     let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
+    lsm.initialize_distance_map();
     lsm.initialize_along_front(&initial_front);
     lsm.initialize_over_all(&initial_front);
     lsm.calculate_speed_factors();
 
-    let fs = lsm.set_speed_on_front();
-    assert!(fs != 0.0);
+    let resets = true;
 
-    let width = size.width;
-    let height = size.height;
+    lsm.clear_speed_within_narrow_band(resets);
+    lsm.set_speed_on_front();
 
-    let speed = lsm.get_speed();
-    for j in 0..height {
-        let wj = width * j;
-        for i in 0..width {
-            let index = (wj + i) as usize;
-            if (left <= i && i <= right && j == top) {
-                assert!(0.0 != speed.borrow()[index]);
-            } else if (left <= i && i <= right && j == bottom) {
-                assert!(0.0 != speed.borrow()[index]);
-            } else if (i == right && top <= j && j <= bottom) {
-                assert!(0.0 != speed.borrow()[index]);
-            } else if (i == left && top <= j && j <= bottom) {
-                assert!(0.0 != speed.borrow()[index]);
-            } else {
-                assert!(0.0 == speed.borrow()[index]);
-            }
+    lsm.copy_nearest_speed_to_narrow_band(resets);
+
+    let squared_phi_answers: Vec<f64> = vec![
+        9.0, 10.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 10.0, 9.0, 8.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0,
+        4.0, 4.0, 5.0, 8.0, 5.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 5.0, 4.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0,
+        1.0, 4.0, 4.0, 1.0, 0.0, -1.0, -4.0, -4.0, -4.0, -1.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, -1.0,
+        -1.0, -1.0, -1.0, -1.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        4.0, 5.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 5.0, 8.0, 5.0, 4.0, 4.0, 4.0, 4.0,
+        4.0, 4.0, 4.0, 5.0, 8.0, 9.0, 10.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 10.0, 9.0,
+    ];
+
+    let phi = lsm.get_phi();
+    let mut c = 0;
+    for (phi, ans) in phi.borrow().iter().zip(&squared_phi_answers) {
+        let mut a = ans.abs().sqrt();
+        if *ans < 0.0 {
+            a = -a;
         }
+        //assert!((phi - a).abs() < 1.0e-03);
+        //println!("c:(phi,a,ans)={}:({},{},{})", c, phi, a, *ans);
+        if (phi - a).abs() >= 1.0e-03 {
+            println!("c:(phi,a,ans)={}:({},{},{})", c, phi, a, *ans);
+        }
+        c += 1;
     }
 }
+
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)
 //借用=borrow
