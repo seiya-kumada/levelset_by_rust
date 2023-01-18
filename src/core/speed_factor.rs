@@ -9,7 +9,7 @@ use super::speed::Speed;
 pub trait SpeedFactorMethod<T, P, S> {
     fn new(indexer: Rc<T>, gray: Rc<RefCell<Vec<u8>>>) -> Self;
     fn get_value(&self, p: &P) -> f64;
-    fn calculate_all(&mut self, space_size: &S);
+    fn calculate_all(&mut self, space_size: &Rc<S>);
 }
 
 pub struct SpeedFactor2d {
@@ -32,7 +32,7 @@ impl SpeedFactorMethod<Indexer2d, Point2d<i32>, SpaceSize2d> for SpeedFactor2d {
         self.factors[self.indexer.get(p) as usize]
     }
 
-    fn calculate_all(&mut self, space_size: &SpaceSize2d) {
+    fn calculate_all(&mut self, space_size: &Rc<SpaceSize2d>) {
         let w = space_size.width as usize;
         let h = space_size.height as usize;
         self.factors.resize(w * h, 0.0);
@@ -74,7 +74,7 @@ impl SpeedFactorMethod<Indexer3d, Point3d<i32>, SpaceSize3d> for SpeedFactor3d {
         self.factors[self.indexer.get(p) as usize]
     }
 
-    fn calculate_all(&mut self, space_size: &SpaceSize3d) {
+    fn calculate_all(&mut self, space_size: &Rc<SpaceSize3d>) {
         let w = space_size.width as usize;
         let h = space_size.height as usize;
         let a = w * h;
