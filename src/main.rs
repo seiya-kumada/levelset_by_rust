@@ -11,6 +11,7 @@ use crate::core::level_set_method::{LevelSetMethod2d, LevelSetMethod3d};
 use crate::core::parameters::Parameters;
 use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
+use crate::core::speed_factor::{SpeedFactor3d, SpeedFactorMethod};
 use crate::core::status::Status;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -47,58 +48,18 @@ fn make_input_gray_2d(size: &SpaceSize2d, front: &InitialFront2d) -> Rc<RefCell<
 }
 
 pub fn main() {
-    let mut params = Parameters::new();
-    params.wband = 3;
-    params.constant_speed = 1.0;
-    params.gain = 2.0;
-    params.wreset = 1;
-
-    let mut initial_front = InitialFront2d::new();
-    let left = 2;
-    let top = 3;
-    let right = 8;
-    let bottom = 7;
-    initial_front.vertices[0] = Point2d::<i32>::new(left, top);
-    initial_front.vertices[1] = Point2d::<i32>::new(right, bottom);
-    let size = Rc::new(SpaceSize2d::new(11, 11));
-    let gray = make_input_gray_2d(&size, &initial_front);
-    let mut lsm = LevelSetMethod2d::new(params, Rc::clone(&size), Rc::clone(&gray));
-    lsm.initialize_distance_map();
-    lsm.initialize_along_front(&initial_front);
-    lsm.initialize_over_all(&initial_front);
-    lsm.calculate_speed_factors();
-
-    let resets = true;
-
-    lsm.clear_speed_within_narrow_band(resets);
-    lsm.set_speed_on_front();
-
-    lsm.copy_nearest_speed_to_narrow_band(resets);
-
-    let squared_phi_answers: Vec<f64> = vec![
-        9.0, 10.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 10.0, 9.0, 8.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0,
-        4.0, 4.0, 5.0, 8.0, 5.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 5.0, 4.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0,
-        1.0, 4.0, 4.0, 1.0, 0.0, -1.0, -4.0, -4.0, -4.0, -1.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, -1.0,
-        -1.0, -1.0, -1.0, -1.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-        4.0, 5.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 5.0, 8.0, 5.0, 4.0, 4.0, 4.0, 4.0,
-        4.0, 4.0, 4.0, 5.0, 8.0, 9.0, 10.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 10.0, 9.0,
-    ];
-
-    let phi = lsm.get_phi();
-    let mut c = 0;
-    for (phi, ans) in phi.borrow().iter().zip(&squared_phi_answers) {
-        let mut a = ans.abs().sqrt();
-        if *ans < 0.0 {
-            a = -a;
-        }
-        //assert!((phi - a).abs() < 1.0e-03);
-        //println!("c:(phi,a,ans)={}:({},{},{})", c, phi, a, *ans);
-        if (phi - a).abs() >= 1.0e-03 {
-            println!("c:(phi,a,ans)={}:({},{},{})", c, phi, a, *ans);
-        }
-        c += 1;
-    }
+    let size = Rc::new(SpaceSize3d::new(3, 3, 3));
+    let indexer = Rc::new(Indexer3d::new(&size));
+    let gray: Rc<RefCell<Vec<u8>>> = Rc::new(RefCell::new(vec![
+        0, 100, 0, 100, 0, 100, 0, 100, 0, 0, 100, 0, 100, 0, 100, 0, 100, 0, 0, 100, 0, 100, 100,
+        100, 0, 100, 0,
+    ]));
+    let mut factor = SpeedFactor3d::new(Rc::clone(&indexer), Rc::clone(&gray));
+    factor.calculate_all(&size);
+    let answer = 1.0 / (1.0 + 12.5);
+    let p = Point3d::<i32>::new(1, 1, 1);
+    let r = factor.get_value(&p) as f32;
+    assert_eq!(answer, r);
 }
 
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)

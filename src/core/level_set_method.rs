@@ -509,8 +509,6 @@ where
     pub fn get_input_object(&self) -> Rc<RefCell<Vec<u8>>> {
         Rc::clone(&self.input_object)
     }
-
-    //pub fn copy_speed_to_narrow_band(&self) {}
 }
 
 pub type LevelSetMethod2d = LevelSetMethod<

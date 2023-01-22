@@ -16,3 +16,4 @@ pub mod test_types;
 pub mod test_upwind;
 pub mod test_upwind_scheme;
 pub mod test_util;
+pub mod test_zero_level_set_detector;

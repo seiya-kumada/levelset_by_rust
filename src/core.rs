@@ -22,3 +22,4 @@ pub mod types;
 pub mod upwind;
 pub mod upwind_scheme;
 pub mod util;
+pub mod zero_level_set_detector;

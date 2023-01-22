@@ -33,10 +33,9 @@ mod tests {
         ]));
         let mut factor = SpeedFactor3d::new(Rc::clone(&indexer), Rc::clone(&gray));
         factor.calculate_all(&size);
-        let a = (3.0f32 * 10000.0).sqrt();
-        let answer = 1.0 / (1.0 + a);
+        let answer = 1.0 / (1.0 + 12.5);
         let p = Point3d::<i32>::new(1, 1, 1);
         let r = factor.get_value(&p) as f32;
-        //assert_eq!(answer, r);
+        assert_eq!(answer, r);
     }
 }
