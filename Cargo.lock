@@ -48,6 +48,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
+name = "btreemultimap"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aba7eaea18547dd4915e745859622e5f796e5b08f5d594735ed0e08d051f97ca"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -519,6 +528,7 @@ name = "levelset_by_rust"
 version = "0.1.0"
 dependencies = [
  "bimap",
+ "btreemultimap",
  "clap",
  "image",
  "multimap",

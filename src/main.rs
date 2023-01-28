@@ -13,9 +13,9 @@ use crate::core::point::{Point2d, Point3d};
 use crate::core::space_size::{SpaceSize2d, SpaceSize3d};
 use crate::core::speed_factor::{SpeedFactor3d, SpeedFactorMethod};
 use crate::core::status::Status;
+use btreemultimap::BTreeMultiMap;
 use multimap::MultiMap;
 use ordered_multimap;
-use rustc_data_structures;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
@@ -103,12 +103,19 @@ pub fn main() {
         //    println!("a:{}", a);
         //}
     }
-    //ts.insert(1, String::from("foo"));
-    //ts.insert(3, String::from("bar"));
-    //ts.insert(2, String::from("bar"));
-    //for (k, v) in &ts {
-    //    println!("{k}: {v}");
-    //}
+
+    // btreemultimapを使うようにする。
+    // ロジックが足りていない。advanceのあたり。
+    let mut ts = BTreeMultiMap::<usize, String>::new();
+    //let mut ts = BTreeMap::<usize, String>::new();
+    ts.insert(1, String::from("foo-1"));
+    ts.insert(1, String::from("foo-2"));
+    ts.insert(3, String::from("bar"));
+    ts.insert(2, String::from("bar-1"));
+    ts.insert(2, String::from("bar-2"));
+    for (k, v) in ts.iter().rev() {
+        println!("{k}: {v}");
+    }
 }
 
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)
