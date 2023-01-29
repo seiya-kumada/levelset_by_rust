@@ -5,7 +5,7 @@ use crate::core::curvature_generator::{
 };
 use crate::core::distance_map_generator::{
     DistanceMap2d, DistanceMap3d, DistanceMapGenerator2d, DistanceMapGenerator3d,
-    DistanceMapGeneratorMethod, PointInfo2d, PointInfo3d, PointInfoMethod,
+    DistanceMapGeneratorMethod, DistanceMapMethod, PointInfo2d, PointInfo3d, PointInfoMethod,
 };
 use crate::core::grid::{Grid2d, Grid3d, GridMethod};
 use crate::core::grid_range::{GridRange2d, GridRange3d, GridRangeMethod};
@@ -153,6 +153,7 @@ where
     SpeedFactor: SpeedFactorMethod<Indexer, IntPoint, SpaceSize>,
     GridRange: GridRangeMethod<SpaceSize, Indexer, IntPoint, Self>,
     DistanceMapGenerator: DistanceMapGeneratorMethod<Indexer, DistanceMap, IntPoint, Self>,
+    DistanceMap: DistanceMapMethod<PointInfo>,
     Grid: GridMethod<InitialFront, SpaceSize, Self, IntPoint>,
     InsideEstimator: InsideEstimatorMethod<Grid, IntPoint>,
     CurvatureGenerator: CurvatureGeneratorMethod<Indexer, IntPoint, DoublePoint>,
@@ -344,7 +345,6 @@ where
     }
 
     pub fn copy_nearest_speed_to_narrow_band(&self, resets: bool) {
-        let distance_map = self.distance_map_generator.get_distance_map();
         let mut is_considerable = Vec::<Vec<bool>>::new();
         is_considerable.reserve(self.front.borrow().len());
 
@@ -362,25 +362,28 @@ where
         resets: bool,
         is_considerable: &Vec<Vec<bool>>,
         distance: &i32,
-        range: &Vec<PointInfo>,
+        //range: &Vec<PointInfo>,
     ) {
         let mut k = 0usize;
-        for p in self.front.borrow().iter() {
-            let index = self.indexer.get(p) as usize;
-            if resets {
-                self.phi.borrow_mut()[index] = 0.0;
-            }
-            let center_speed = self.speed.borrow()[index];
-            self.copy_nearest_speed_to_narrow_band_core_core(
-                &is_considerable[k],
-                range,
-                p,
-                resets,
-                distance,
-                center_speed,
-            );
-            k += 1;
-        }
+        let distance_map = self.distance_map_generator.get_distance_map();
+        let range = distance_map.get_vec(distance);
+
+        //for p in self.front.borrow().iter() {
+        //    let index = self.indexer.get(p) as usize;
+        //    if resets {
+        //        self.phi.borrow_mut()[index] = 0.0;
+        //    }
+        //    let center_speed = self.speed.borrow()[index];
+        //    self.copy_nearest_speed_to_narrow_band_core_core(
+        //        &is_considerable[k],
+        //        range,
+        //        p,
+        //        resets,
+        //        distance,
+        //        center_speed,
+        //    );
+        //    k += 1;
+        //}
     }
 
     fn copy_nearest_speed_to_narrow_band_core_core(

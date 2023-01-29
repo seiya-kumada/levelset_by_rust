@@ -113,9 +113,20 @@ pub fn main() {
     ts.insert(3, String::from("bar"));
     ts.insert(2, String::from("bar-1"));
     ts.insert(2, String::from("bar-2"));
-    for (k, v) in ts.iter().rev() {
-        println!("{k}: {v}");
-    }
+    //for (k, v) in ts.iter().rev() {
+    //    println!("{k}: {v}");
+    //}
+
+    let mut iter = ts.iter().rev();
+    //let end = iter.last();
+    //while iter != end {
+
+    //}
+    let (k, v) = iter.next().unwrap();
+
+    println!("{},{}", k, v);
+    let (k, v) = iter.next().unwrap();
+    println!("{},{}", k, v);
 }
 
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)

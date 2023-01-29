@@ -6,7 +6,7 @@ use crate::core::neighboring_point::{NEIGHBORING_POINTS2D, NEIGHBORING_POINTS3D}
 use crate::core::point::{Point2d, Point3d};
 use crate::core::status::Status;
 use bimap::BiMap;
-use multimap::MultiMap;
+use btreemultimap::BTreeMultiMap;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -220,7 +220,17 @@ impl PointInfoMethod<Point2d<i32>> for PointInfo2d {
     }
 }
 
-pub type DistanceMap2d = MultiMap<i32, PointInfo2d>;
+pub trait DistanceMapMethod<PointInfo> {
+    fn get_vec(&self, k: &i32) -> &Vec<PointInfo>;
+}
+
+pub type DistanceMap2d = BTreeMultiMap<i32, PointInfo2d>;
+
+impl DistanceMapMethod<PointInfo2d> for DistanceMap2d {
+    fn get_vec(&self, k: &i32) -> &Vec<PointInfo2d> {
+        self.get_vec(k).unwrap()
+    }
+}
 
 pub struct DistanceMapGenerator2d {
     distance_map: DistanceMap2d,
@@ -283,10 +293,11 @@ impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>, LevelSet
     }
 
     fn foreach(&self, lsm: &LevelSetMethod2d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
-        // reverse?
-        for (distance, range) in self.distance_map.iter_all() {
-            lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
-        }
+        let mut riter = self.distance_map.iter().rev();
+
+        //for (distance, range) in self.distance_map.iter().rev() {
+        //    lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
+        //}
     }
 }
 
@@ -346,7 +357,13 @@ impl PointInfo3d {
     }
 }
 
-pub type DistanceMap3d = MultiMap<i32, PointInfo3d>;
+pub type DistanceMap3d = BTreeMultiMap<i32, PointInfo3d>;
+
+impl DistanceMapMethod<PointInfo3d> for DistanceMap3d {
+    fn get_vec(&self, k: &i32) -> &Vec<PointInfo3d> {
+        self.get_vec(k).unwrap()
+    }
+}
 
 pub struct DistanceMapGenerator3d {
     distance_map: DistanceMap3d,
@@ -440,9 +457,9 @@ impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>, LevelSet
 
     // reverse?
     fn foreach(&self, lsm: &LevelSetMethod3d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
-        for (distance, range) in self.distance_map.iter_all() {
-            lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
-        }
+        //for (distance, range) in self.distance_map.iter_all() {
+        //    lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
+        //}
     }
 }
 
