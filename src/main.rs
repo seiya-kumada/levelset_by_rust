@@ -96,7 +96,7 @@ pub fn main() {
         if *ans < 0.0 {
             a = -a;
         }
-        //assert!((phi - a).abs() < 1.0e-03);
+        assert!((phi - a).abs() < 1.0e-03);
         //if (phi - a).abs() < 1.0e-03 {
         //} else {
         //    println!("phi:{}", phi);
@@ -106,27 +106,16 @@ pub fn main() {
 
     // btreemultimapを使うようにする。
     // ロジックが足りていない。advanceのあたり。
-    let mut ts = BTreeMultiMap::<usize, String>::new();
-    //let mut ts = BTreeMap::<usize, String>::new();
-    ts.insert(1, String::from("foo-1"));
-    ts.insert(1, String::from("foo-2"));
-    ts.insert(3, String::from("bar"));
-    ts.insert(2, String::from("bar-1"));
-    ts.insert(2, String::from("bar-2"));
-    //for (k, v) in ts.iter().rev() {
-    //    println!("{k}: {v}");
+    //let mut ts = BTreeMultiMap::<usize, String>::new();
+    //ts.insert(1, String::from("foo-1"));
+    //ts.insert(1, String::from("foo-2"));
+    //ts.insert(3, String::from("bar"));
+    //ts.insert(2, String::from("bar-1"));
+    //ts.insert(2, String::from("bar-2"));
+    //for k in ts.keys().rev() {
+    //    let vs = ts.get_vec(k).unwrap();
+    //    println!("{},{}", k, vs.len());
     //}
-
-    let mut iter = ts.iter().rev();
-    //let end = iter.last();
-    //while iter != end {
-
-    //}
-    let (k, v) = iter.next().unwrap();
-
-    println!("{},{}", k, v);
-    let (k, v) = iter.next().unwrap();
-    println!("{},{}", k, v);
 }
 
 //不変参照(&,borrow)と可変参照(&mut,borrow_mut)

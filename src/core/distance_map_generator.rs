@@ -293,11 +293,9 @@ impl DistanceMapGeneratorMethod<Indexer2d, DistanceMap2d, Point2d<i32>, LevelSet
     }
 
     fn foreach(&self, lsm: &LevelSetMethod2d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
-        let mut riter = self.distance_map.iter().rev();
-
-        //for (distance, range) in self.distance_map.iter().rev() {
-        //    lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
-        //}
+        for distance in self.distance_map.keys().rev() {
+            lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance);
+        }
     }
 }
 
@@ -455,11 +453,10 @@ impl DistanceMapGeneratorMethod<Indexer3d, DistanceMap3d, Point3d<i32>, LevelSet
         labels
     }
 
-    // reverse?
     fn foreach(&self, lsm: &LevelSetMethod3d, resets: bool, is_considerable: &Vec<Vec<bool>>) {
-        //for (distance, range) in self.distance_map.iter_all() {
-        //    lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance, range);
-        //}
+        for distance in self.distance_map.keys().rev() {
+            lsm.copy_nearest_speed_to_narrow_band_core(resets, is_considerable, distance);
+        }
     }
 }
 

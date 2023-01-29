@@ -362,28 +362,27 @@ where
         resets: bool,
         is_considerable: &Vec<Vec<bool>>,
         distance: &i32,
-        //range: &Vec<PointInfo>,
     ) {
         let mut k = 0usize;
         let distance_map = self.distance_map_generator.get_distance_map();
         let range = distance_map.get_vec(distance);
 
-        //for p in self.front.borrow().iter() {
-        //    let index = self.indexer.get(p) as usize;
-        //    if resets {
-        //        self.phi.borrow_mut()[index] = 0.0;
-        //    }
-        //    let center_speed = self.speed.borrow()[index];
-        //    self.copy_nearest_speed_to_narrow_band_core_core(
-        //        &is_considerable[k],
-        //        range,
-        //        p,
-        //        resets,
-        //        distance,
-        //        center_speed,
-        //    );
-        //    k += 1;
-        //}
+        for p in self.front.borrow().iter() {
+            let index = self.indexer.get(p) as usize;
+            if resets {
+                self.phi.borrow_mut()[index] = 0.0;
+            }
+            let center_speed = self.speed.borrow()[index];
+            self.copy_nearest_speed_to_narrow_band_core_core(
+                &is_considerable[k],
+                range,
+                p,
+                resets,
+                distance,
+                center_speed,
+            );
+            k += 1;
+        }
     }
 
     fn copy_nearest_speed_to_narrow_band_core_core(
@@ -406,6 +405,13 @@ where
                                 self.statuses.borrow_mut()[index] = Status::ResetBand;
                             } else {
                                 self.statuses.borrow_mut()[index] = Status::Band;
+                            }
+
+                            let d = *distance as f64;
+                            if self.phi.borrow()[index] < 0.0 {
+                                self.phi.borrow_mut()[index] = -d.sqrt();
+                            } else {
+                                self.phi.borrow_mut()[index] = d.sqrt();
                             }
                         }
                         self.speed.borrow_mut()[index] = center_speed;
